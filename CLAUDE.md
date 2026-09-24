@@ -17,7 +17,10 @@ Ceiling-mounted drop-spider prop, Mechanism A (In-Line Single-Axle Clutch Spool)
 ## Commands
 
 ```powershell
-tools\flash.ps1                 # build, flash, open console (pio)
+pio run                         # build (env nodemcu-32s, USB COM13)
+pio run -t upload               # flash over USB; tools\flash_usb.bat for the owner
+pio run -e ota -t upload        # flash over the network to dropspider.local
+python tools\console.py COM13 status "jog 1600"   # console commands, replies captured
 tools\regen_cad.ps1             # regenerate STLs and all images
 cd cad; python generate.py      # parts + clash checks only
 ```
@@ -34,13 +37,16 @@ cd cad; python generate.py      # parts + clash checks only
 
 ## Firmware notes
 
-- `firmware/src/main.cpp`, `firmware/include/config.h`. Library: ESP32Servo.
-- Compiled clean on arduino esp32 core 2.0.9. PlatformIO may pull core 3.x; if the build breaks, pin `platform = espressif32@6.4.0`.
-- Runtime settings live in NVS (flash) via the serial console; see `docs/04_firmware.md`.
+- Standard PlatformIO layout at the repo root: `platformio.ini`, `src/`, `include/`. Board `nodemcu-32s` (38-pin ESP32-S NodeMCU). Libraries: ESP32Servo, FastAccelStepper, both pinned.
+- Platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16). Core 3.x not tested.
+- WiFi and update passwords come from `secrets.ini` (gitignored); template `secrets.ini.example`. Never commit `secrets.ini`.
+- Runtime settings live in NVS (flash), set from the serial console or the web page; see `docs/04_firmware.md`.
+- Limit switch on GPIO32 is a hard cut-off for any move in the rewind direction.
 
 ## Suggested backlog, in order
 
 1. Close V1 (logic level) and V2 (servo direction) on the bench.
-2. Make rewind non-blocking so the console stays live.
-3. Optional: read LD2410C target distance over UART2 (GPIO16/17 already wired) for a tighter trigger.
-4. Add a `test` command that runs commissioning steps 4 to 11 with prompts.
+2. Optional: read LD2410C target distance over UART2 (GPIO16/17 already wired) for a tighter trigger.
+3. Add a `test` command that runs commissioning steps 4 to 11 with prompts.
+
+Non-blocking rewind is done: the machine runs on its own task and FastAccelStepper makes the pulses.

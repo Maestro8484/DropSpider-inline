@@ -2,7 +2,10 @@
 
 ![Wiring](img/wiring.png)
 
-## Pin map, ESP32 DevKit V1 30-pin
+## Pin map, 38-pin ESP32-S NodeMCU
+
+Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Every pin used here is also on the 30-pin DevKit V1, so either board works with the same wiring; the GPIO numbers printed beside the pins are what count, not their position.
+
 
 | ESP32 pin | Goes to | Direction | Notes |
 |---|---|---|---|
@@ -13,6 +16,7 @@
 | GPIO27 | carrier EN | out | LOW = motor powered, HIGH = coils off (free) |
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | LD2410C OUT | in | HIGH = someone present. Firmware adds a pull-down |
+| GPIO32 | limit switch signal | in | Pressed = spider home. Firmware adds a pull-up |
 | GPIO16 (RX2) | LD2410C TX | in | Optional, reserved for future radar config over serial |
 | GPIO17 (TX2) | LD2410C RX | out | Optional, same |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop |
@@ -30,7 +34,8 @@
 | Rail | Source | Loads | Worst case |
 |---|---|---|---|
 | 12 V | 12 V 2 A wall adapter | driver/motor, buck input | about 0.6 A while rewinding (about 3 s per scare), about 0.05 A idle |
-| 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak), SG90 (0.7 A stall peak), LD2410C (0.08 A) | about 1 A peak, well under the buck's 2 A |
+| 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2410C (0.08 A) | about 1 A peak, well under the buck's 2 A |
+| 3.3 V | ESP32's own 3V3 pin | limit switch board, if it has one (a few mA) | negligible |
 
 - 470 uF 16 V electrolytic across the servo's red and brown, at the servo end (stripe to GND). Stops servo current spikes resetting the ESP32.
 - Idle draw between scares is a few watts at most: driver disabled, servo detached, radar and ESP32 on.
@@ -48,6 +53,19 @@ If it stutters, misses, or does nothing while the driver clearly holds (shaft st
 ## Motor wiring
 
 STEPPERONLINE NEMA 11 (0.67 A): black + green = coil A, red + blue = coil B. Black to 1A, green to 1B, red to 2A, blue to 2B. If the motor buzzes but will not turn, swap black and green. Never plug or unplug the motor with 12 V on.
+
+## Limit switch wiring (3-pin endstop)
+
+The switch sits at the eyelet so the stop bead presses its lever as the spider arrives home. The firmware stops the rewind the moment it closes. Its mount is not in the CAD yet (see `08_open_items.md`).
+
+Two kinds of 3-pin endstop, wired differently. Look at yours first.
+
+| Kind | Wiring |
+|---|---|
+| Bare switch, three legs marked C (or COM), NO, NC | COM to GND, NO to GPIO32, NC unused. No power wire. |
+| Small board with 3 pins (S, -, +) and often an LED | S to GPIO32, - to GND, + to the ESP32's **3V3 pin, never 5 V**. These boards pull the signal up to their supply, and the ESP32 inputs are not 5 V tolerant. |
+
+Which way it reads depends on the kind and on how the lever rests. No need to work it out: with the firmware running, press the lever by hand and watch the web page. If it reads backwards, send `liminv 1`. Then `limit 1` turns it on. Keep the lead away from the motor wires, or twist its signal and ground together.
 
 ## Sensor wiring
 

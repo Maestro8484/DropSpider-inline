@@ -51,8 +51,8 @@ def wiring():
     a1.set_ylim(0, 7.6); a2.set_ylim(-0.2, 7.0)
     a1.set_title("1. SIGNAL WIRING (thin jumper wires)", fontsize=14, weight="bold", loc="left")
     drv = pins_box(a1, 0.4, 7.0, 3.2, "Driver carrier + TMC2209", right=["STEP", "DIR", "EN", "GND"], color="#fff8c5")
-    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 DevKit V1 (30-pin)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
-                   right=["GPIO13", "GPIO33", "GPIO16 (RX2)", "GPIO17 (TX2)"], color="#ddf4ff")
+    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32-S NodeMCU (38-pin)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
+                   right=["GPIO13", "GPIO33", "GPIO16 (RX2)", "GPIO17 (TX2)", "GPIO32"], color="#ddf4ff")
     srv = pins_box(a1, 11.4, 7.0, 3.2, "SG90 servo", left=["orange = signal"], color="#dafbe1")
     rad = pins_box(a1, 11.4, 5.5, 3.2, "LD2410C radar", left=["OUT", "TX  (optional)", "RX  (optional)"], color="#dafbe1")
     for p, q, c, l in [("STEP", "GPIO25", BLU, "step"), ("DIR", "GPIO26", BLU, "direction"), ("EN", "GPIO27", BLU, "enable"), ("GND", "GND", BLK, "ground")]:
@@ -61,10 +61,12 @@ def wiring():
     line(a1, esp["GPIO33"], rad["OUT"], PUR, "presence", mid=10.4)
     line(a1, esp["GPIO16 (RX2)"], rad["TX  (optional)"], GRY, "optional", mid=10.7)
     line(a1, esp["GPIO17 (TX2)"], rad["RX  (optional)"], GRY, None, mid=11.0)
+    lim = pins_box(a1, 11.4, 2.95, 3.2, "Limit switch (3-pin)", left=["signal (NO)"], color="#dafbe1")
+    line(a1, esp["GPIO32"], lim["signal (NO)"], PUR, "home", mid=10.1)
     mot = pins_box(a1, 0.4, 3.3, 3.2, "NEMA 11 motor, 4 wires", right=["black", "green", "red", "blue"], color="#eaeef2")
     ter = pins_box(a1, 5.9, 3.3, 3.2, "Carrier motor terminal", left=["1A", "1B", "2A", "2B"], color="#fff8c5")
     for p, q, c in [("black", "1A", BLK), ("green", "1B", GRN), ("red", "2A", RED), ("blue", "2B", BLU)]: line(a1, mot[p], ter[q], c)
-    a1.text(9.5, 2.8, "Carrier setup before anything else:\n- DIP switches 1, 2, 3 all OFF (1/8 step)\n- TMC2209 pot set to Vref 0.85 V (= 0.6 A)\n  with the motor UNPLUGGED\n- Driver's EN pin lines up with carrier's EN\n- Motor buzzes but won't turn: swap black and green\n- Never unplug the motor with 12 V on",
+    a1.text(9.3, 1.7, "Carrier setup before anything else:\n- DIP switches 1, 2, 3 all OFF (1/8 step)\n- TMC2209 pot set to Vref 0.85 V (= 0.6 A)\n  with the motor UNPLUGGED\n- Driver's EN pin lines up with carrier's EN\n- Motor buzzes but won't turn: swap black and green\n- Never unplug the motor with 12 V on",
             fontsize=10, va="top", bbox=dict(fc="#fff8c5", ec="0.6"))
     a1.text(9.5, 7.45, "BOOT button (GPIO0) = manual test drop.  Blue LED (GPIO2) blinks = armed.", fontsize=9.5, ha="center")
 

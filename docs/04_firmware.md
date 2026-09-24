@@ -1,61 +1,147 @@
 # 04 - Firmware
 
-Location: `firmware/` (PlatformIO, Arduino framework, board `esp32dev`). One source file `src/main.cpp`, constants in `include/config.h`. Only external library: ESP32Servo.
+What the code does, how to load it, and every command it takes.
 
-## Build and flash (Windows, PowerShell)
+## Where it lives
 
-```powershell
-pip install platformio
-cd firmware
-pio run -t upload
-pio device monitor
-```
+Standard PlatformIO layout at the repo root. Board `nodemcu-32s` (38-pin ESP32-S NodeMCU), Arduino framework, platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16).
 
-Or run `tools\flash.ps1`, which does the same and opens the console.
+| File | What |
+|---|---|
+| `platformio.ini` | board, pinned versions, USB port, network update target |
+| `secrets.ini` | network name, network password, update password. Not in git. Copy `secrets.ini.example` |
+| `include/config.h` | every pin and fixed number, and the factory defaults |
+| `src/main.cpp` | start-up order only |
+| `src/machine.cpp` | the cycle, stepper, finger servo, radar pin, BOOT button, limit switch |
+| `src/console.cpp` | the text commands, shared by the USB console and the web page |
+| `src/web.cpp` | WiFi, the web page, network firmware updates |
+| `src/settings.cpp` | tunables saved in flash |
+
+Libraries, both pinned in `platformio.ini`, both downloaded by PlatformIO on the first build:
+
+| Library | Why this one |
+|---|---|
+| ESP32Servo 3.0.6 | servo pulses from the ESP32's own PWM hardware |
+| FastAccelStepper 0.33.14 | step pulses from the ESP32's pulse hardware with speed ramps, so a rewind does not freeze the console or the web page. The Rev C handoff timed each pulse by hand and froze everything for 2 to 3 s |
+
+WiFi, web server, mDNS (the `dropspider.local` name), ArduinoOTA (network upload) and Update (upload page) are all built into the ESP32 core. No other libraries.
+
+## Load the firmware
+
+First time on a new PC: install VS Code and its PlatformIO extension, copy `secrets.ini.example` to `secrets.ini` and fill it in, then open this folder in VS Code.
+
+| Way | How |
+|---|---|
+| USB | double-click `tools\flash_usb.bat`, or in VS Code pick env `nodemcu-32s` and press Upload. Port is COM13 in `platformio.ini`; change it there for another PC |
+| Network | board must be on the network already. Double-click `tools\flash_ota.bat`, or env `ota` and Upload |
+| Web page | open `http://dropspider.local/update`, log in as `admin` with the update password, pick `.pio/build/nodemcu-32s/firmware.bin` |
+
+If a USB upload stops at "Connecting.....": hold the board's BOOT button, tap EN, let go of BOOT, and upload again. Some 38-pin boards do not enter flash mode on their own.
+
+Every network update switches the motor and servo off first. After any update the board restarts and, as always, does not rewind on its own.
+
+## Network
+
+- Joins the home network in `secrets.ini` by DHCP (the router hands out the address). Static address: not yet.
+- A different network saved from the web page's Network card wins over `secrets.ini`. Save it empty to go back.
+- If it cannot join in 15 s it makes its own network `DropSpider-setup` (password `dropspider`), page at `192.168.4.1`.
+- Page at `http://dropspider.local` or at the address printed on the USB console at start-up (`wifi` command prints it again).
+
+## The web page
+
+The web page is the console on your phone or PC. Every button sends a console command, and the page's Console card shows everything the board prints, so the page and the USB console always agree.
+
+| Card | What is on it |
+|---|---|
+| Status | state, chips (armed, spider home, radar, motor powered, fault), drop count, last trigger, last rewind, line length measured by the switch |
+| Run | Drop it now, Arm or Disarm, Stop, Motor and servo off, Clear fault |
+| Bench: finger servo | live angle, nudge 1 or 5 degrees, go to lock or release angle, store the current angle as lock or release |
+| Bench: motor | jog one turn or 1/8 turn each way, Rewind, Lock, Release |
+| Settings | every tunable, applied as you change it; Save settings keeps them after power loss |
+| Console | the live log and a command box |
+| Network | save a different home network and restart |
+| Firmware | link to the update page |
 
 ## Cycle
 
 ```
-IDLE (armed) --sensor edge or BOOT button--> RELEASE finger (spider free-falls)
-  --settle 1.5 s--> REWIND (fixed steps + 0.75 turn overshoot, bead stops on eyelet)
+READY (armed) --radar or BOOT button--> finger out (spider free-falls)
+  --settle 1.5 s--> REWIND (stops the moment the limit switch closes; without the switch,
+                    fixed steps + 0.75 turn overshoot and the bead stops on the eyelet)
   --> LOCK (finger in, motor off, spool settles onto a tooth, servo off)
-  --> LOCKOUT 20 s --> WAIT_CLEAR (sensor LOW for 2 s) --> IDLE
+  --> LOCKOUT 20 s --> WAIT FOR THE DOORWAY TO CLEAR (radar LOW for 2 s) --> READY
 ```
 
-Power states: armed and idle = driver off, servo off. Only the ESP32 and radar draw power.
+- Armed and ready: driver off, servo off. Only the ESP32 and the radar draw power.
+- Boot: driver off first thing, finger to lock, never rewinds on its own. If the limit switch is fitted and open at boot, the page says the spider is not home; rewind and lock by hand.
+- The machine runs on its own task, so console, page and network updates stay live during a cycle. `stop` works mid-rewind.
 
-Boot: driver off, finger to LOCK, never rewinds on its own. The spider is assumed to be up.
+## Limit switch
 
-## Serial console, 115200 baud
+A 3-pin endstop at the eyelet, pressed by the stop bead when the spider arrives home. Wiring in `02_electrical.md`.
+
+- Off until you turn it on (`limit 1`), so an unwired or backwards switch cannot stop a rewind early. Check it reads right first: the page shows "reads pressed" or "reads open"; press the lever by hand and watch. If backwards: `liminv 1`.
+- When on, it is a hard cut-off: any motor move in the rewind direction stops within a few milliseconds of the switch closing, in every state.
+- Faults it catches, each a strike (three in a row and it stops arming until `clear` or a BOOT press):
+  - trips in under a quarter of the expected rewind: line snagged or broke;
+  - full rewind runs and it never trips: bead missed it, or it is unplugged;
+  - still pressed right after a drop: wiring or `liminv` wrong. That rewind then runs on the step count alone.
+- Each good rewind from a full drop that ends on the switch reports the measured line length, to check against `line`.
+
+## Console commands
+
+USB serial at 115200, the web page's Console card, or `tools/console.py`. Replies from either one show on both.
 
 | Command | Does |
 |---|---|
-| `help`, `status` | list commands; show settings, sensor state, computed rewind steps |
-| `arm`, `disarm` | enable or ignore the sensor |
-| `drop` | full cycle now |
+| `help`, `status` | list commands; show state, settings, sensor, limit switch, rewind steps |
+| `arm`, `disarm` | let the radar fire it, or ignore the radar |
+| `drop` | full cycle now (works when disarmed) |
 | `rel` | finger out only: spider drops, no rewind |
-| `rewind` | rewind only; motor stays on until `lock` |
+| `rewind` | rewind only; motor stays on until `lock`; stops at the limit switch |
 | `lock` | finger in, motor off, settle |
-| `jog <n>` | move n microsteps (1600 = one turn), + = rewind direction, motor stays on |
+| `jog <n>` | move n microsteps (1600 = one turn), + = rewind direction, motor stays on. Refused winding in with the switch pressed |
+| `servo <deg>` | move the finger live, to find angles; it holds there |
+| `stop` | halt everything now, abort any cycle, leave the motor powered as it was |
 | `off` | motor and servo off |
-| `servo <deg>` | move the finger live, to find angles |
-| `setlock <deg>`, `setrel <deg>` | store finger angles |
-| `line <mm>` | braid length from the spool knot to the stop bead |
+| `clear` | forget faults and re-arm the cycle |
+| `setlock <deg>`, `setrel <deg>` | store finger angles (0 to 180) |
+| `line <mm>` | braid length from the spool knot to the stop bead (100 to 3000) |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
-| `save`, `defaults` | write settings to flash; reload factory values |
+| `limit <0/1>`, `liminv <0/1>` | limit switch fitted; switch reads backwards |
+| `wifi` | where the board is on the network |
+| `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
-Settings apply immediately; `save` keeps them through power loss.
+- Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes.
+- Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done.
+- Motion commands are refused while a cycle runs; `stop` and `off` always work.
+- Each motion command ends with a `[done] ...` or `refused: ...` line. `tools/console.py` waits for it.
+
+## tools/console.py
+
+Sends commands and prints the replies, then exits. Needs pyserial (`tools/requirements.txt`).
+
+```
+python tools/console.py COM13 status "jog 1600"
+python tools/console.py dropspider.local status
+python tools/console.py COM13 --listen 10
+```
+
+Opening the port does not reset the board.
 
 ## Rewind math
 
 steps = ((line - 40 mm) / (pi x 50 mm) + 0.75 turn) x 200 x 8
 
-The 40 mm is braid that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet; the motor then slips (skips steps, a short buzz, harmless at 0.6 A) for the remainder.
+The 40 mm is braid that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
+
+Speed ramps up over 600 steps and down at the end of a counted move. A stop by the limit switch is instant, no ramp down.
 
 ## Known limits
 
-- Rewind is blocking: the console does not respond for the 2 to 3 s of a rewind.
 - No stall detection: needs the driver's UART line, which the carrier does not expose.
-- Radar UART pins are wired but unused. Future: read moving-target distance directly instead of OUT.
+- Radar UART pins (GPIO16, 17) are wired but unused. Future: read target distance directly instead of OUT.
+- The update page and network upload use one shared password from `secrets.ini`. Fine on a home network; not for anything public.
+- Static IP address: not yet.

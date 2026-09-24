@@ -4,7 +4,7 @@ Parametric source for every printed part, plus an installed-assembly model used 
 clash checks and renders.
 
 Run:     python generate.py
-Needs:   pip install trimesh manifold3d shapely numpy matplotlib
+Needs:   pip install -r tools/requirements.txt
 
 ASSEMBLY FRAME (every coordinate in the docs uses this):
   y = 0   mounting face (ceiling). +y points away from the mount (toward the floor).
