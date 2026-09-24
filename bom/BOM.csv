@@ -1,0 +1,26 @@
+ref,item,qty,source,asin_or_part,status,notes
+M1,STEPPERONLINE NEMA 11 bipolar 0.67A 6Ncm (round shaft),1,amazon.com,B00PNEPF4O,ordered,Vref 0.85 V
+D1,BIGTREETECH TMC2209 V1.3 stepstick,1,amazon.com,B07ZPV4HFP,ordered,
+D2,A4988/DRV8825 stepper driver expansion board (2 pk),1,amazon.com,B0FQC39GJ2,ordered,DIP all OFF
+C1,ESP32 DevKit V1 30-pin CP2102 USB-C (3 pk),1,amazon.com,B0CR5Y2JVD,ordered,
+S1,HLK-LD2410C mmWave radar,1,amazon.com,B0BXDLHHH2,ordered,
+S2,SG90 micro servo,1,amazon.com,B072V529YD,ordered,
+P1,12 V 2 A adapter with screw-terminal jack,1,amazon.com,B01AZLA9XQ,ordered,
+P2,LM2596 buck converter (5 pk),1,amazon.com,B0D4HQ48H3,ordered,set 5.0 V before use
+H1,uxcell 5 to 6 mm rigid coupler L20 D12,1,amazon.com,B07P5Z25H8,ordered,blue threadlocker
+H2,6 mm x 100 mm hardened chrome rod,1,amazon.com,B0D2BK3X8P,ordered,
+H3,HF0612 one-way needle bearing,1,amazon.com,B0BKY2ZSTR,ordered,5 pk; orientation matters
+H4,606ZZ bearing 6x17x6,1,amazon.com,B0FQ4WJ8FQ,ordered,10 pk
+N1,2 mm round elastic cord,150 mm,any,,TO BUY,snubber; mandatory
+N2,8 mm hard plastic bead,1,any,,TO BUY,stop bead
+N3,small fishing barrel swivel (size 10 to 14),1,any,,TO BUY,
+N4,20 lb braided fishing line,1 m,any,,have?,
+N5,470 uF 16 V electrolytic capacitor,1,any,,TO BUY,at the servo
+N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
+N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling
+N8,M3x8 self-tapping or machine screws,3,any,,have?,spool disk to body
+N9,M2.5x6 screws,4,any,,have?,motor
+N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
+N11,soft foam spider <=150 g,1,any,,TO BUY,
+N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
+PRINT,spool_body / spool_ratchet / bracket / line_guide / finger x3 / spacer_A_6mm / spacer_B_50mm / shim_1mm x2 / shim_2mm x2,,printed,cad/stl,,PLA; finger PETG preferred
