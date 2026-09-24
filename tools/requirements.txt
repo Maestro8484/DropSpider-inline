@@ -1,0 +1,10 @@
+# Python packages for the helper tools in this repo.
+# Install once:  pip install -r tools/requirements.txt
+# Versions are the minimums these tools were run with.
+
+pyserial>=3.5          # tools/console.py, talks to the board over USB
+numpy>=2.0             # cad/generate.py, cad/render.py
+trimesh>=4.0           # cad/generate.py, builds and checks the printed parts
+manifold3d>=2.0        # trimesh boolean engine
+shapely>=2.0           # cad/generate.py, 2D outlines
+matplotlib>=3.8        # cad/render.py, docs/diagrams.py

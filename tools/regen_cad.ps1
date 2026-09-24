@@ -1,5 +1,5 @@
-# Regenerate every STL and every image. Run from the repo root in PowerShell.
-# Requires: pip install trimesh manifold3d shapely numpy matplotlib
+# Regenerate every STL and every image. Run from anywhere in PowerShell.
+# Requires: pip install -r tools\requirements.txt
 $ErrorActionPreference = "Stop"
 Push-Location "$PSScriptRoot\..\cad"
 try { python generate.py; python render.py } finally { Pop-Location }

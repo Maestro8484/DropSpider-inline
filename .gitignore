@@ -1,4 +1,12 @@
-firmware/.pio/
+# PlatformIO build output and downloaded libraries
+.pio/
+
+# VS Code settings; PlatformIO rewrites them on every open
+.vscode/
+
+# Network and update passwords. Template is secrets.ini.example
+secrets.ini
+
+# Python scratch
 __pycache__/
 *.pyc
-.vscode/

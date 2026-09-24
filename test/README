@@ -1,0 +1,3 @@
+PlatformIO unit tests go here (pio test). None yet.
+
+Hardware tests are run from tools/console.py against the real board and recorded in docs/commissioning_log.md.

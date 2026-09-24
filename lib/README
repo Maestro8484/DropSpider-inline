@@ -1,0 +1,3 @@
+Private libraries for this project go here, one folder each (PlatformIO standard layout).
+
+None are needed today. Outside libraries are listed under lib_deps in platformio.ini and PlatformIO downloads them on the first build.
