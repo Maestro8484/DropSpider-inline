@@ -12,6 +12,6 @@ Every bench and install result, in order. One row per attempt, failures included
 | 2026-09-25 | 3a (V11 part) | PASS | DHCP | Joined MAINFRAME007 at 192.168.1.16; `http://dropspider.local/api/status` answered from the bench PC. Network firmware update not tried yet |
 | 2026-09-25 | V11 network update | PASS | - | `pio run -e ota -t upload` to dropspider.local: 88 s, "Result: OK". Board back on the network 27 s later, uptime reset, state ready. No button presses needed |
 | 2026-09-25 | update script, WiFi | PASS | - | `scripts/update_firmware.bat wifi`: first run failed at the upload (no retry then), next runs "Result: OK" in about 28 s. Retry added: up to 3 tries. USB path not yet run |
-| 2026-09-25 | second 38-pin board | FAIL | - | New board of the same 38-pin model on COM13: USB chip seen, ESP32 silent on every try (no boot message on EN, no flash-mode reply). Set aside; likely faulty |
+| 2026-09-25 | first new board | FAIL | - | First replacement board on COM13 (probably the same 30-pin model, not confirmed): USB chip seen, ESP32 silent on every try (no boot message on EN, no flash-mode reply). Set aside; likely faulty |
 | 2026-09-25 | board swap to 30-pin DevKit V1 (V12) | PASS | - | esptool: ESP32-D0WD-V3 rev 3.0, 4 MB flash, MAC 3c:e9:0e:88:82:b8. Enters flash mode by itself: plain `pio run -t upload` and `scripts/update_firmware.bat usb` both flashed it, hash verified. Pin names checked against Joe's photo |
 | 2026-09-25 | 3, 3a | PASS | DHCP | `status` over USB: ready. Joined MAINFRAME007 at 192.168.1.138; dropspider.local answers |
