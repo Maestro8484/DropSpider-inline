@@ -36,7 +36,7 @@ Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Eve
 | 12 V | 12 V 2 A wall adapter | driver/motor, buck input | about 0.6 A while rewinding (about 3 s per scare), about 0.05 A idle |
 | 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2450 (about 0.1 A), LD2410C if fitted (0.08 A) | about 1 A peak, well under the buck's 2 A |
 
-- 470 uF 16 V electrolytic across the servo's red and brown, at the servo end (stripe to GND). Stops servo current spikes resetting the ESP32.
+- 470 uF 16 V electrolytic across the servo's red and brown: **only if** the ESP32 restarts when the finger moves (the page's "Running for" clock resets). A micro servo moving for a fraction of a second on the buck's output does not normally need it. If fitted: at the servo end, stripe to GND.
 - Idle draw between scares is a few watts at most: driver disabled, servo detached, radar and ESP32 on.
 - USB can stay connected to a PC for the console while 12 V is on.
 - Ceiling install: run 12 V up with a 5.5 x 2.1 mm DC extension cable. Keep the adapter at the outlet, never at the ceiling.

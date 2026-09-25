@@ -20,7 +20,7 @@ N1,2 mm round elastic cord,150 mm,any,,TO BUY,snubber; mandatory
 N2,8 mm hard plastic bead,1,any,,TO BUY,stop bead
 N3,small fishing barrel swivel (size 10 to 14),1,any,,TO BUY,
 N4,20 lb braided fishing line,1 m,any,,have?,
-N5,470 uF 16 V electrolytic capacitor,1,any,,TO BUY,at the servo
+N5,470 uF 16 V electrolytic capacitor,1,any,,ONLY IF ESP32 RESETS,at the servo; skip unless the board restarts when the finger moves
 N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
 N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling
 N8,M3x8 self-tapping or machine screws,3,any,,have?,spool disk to body

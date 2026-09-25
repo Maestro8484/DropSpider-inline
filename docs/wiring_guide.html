@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DropSpider Wiring Guide</title>
+</head>
+<body style="font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:11pt;color:#1f1f1f;background:#ffffff;max-width:900px;margin:16px">
+
+<!-- Made to paste into OneNote: open in a browser, Ctrl+A, Ctrl+C, paste. Inline styles only, no scripts. -->
+
+<h1 style="font-size:20pt;margin:0 0 4px 0;color:#3b2a6b">DropSpider Rev C.1: pinout and wiring guide</h1>
+<p style="margin:0 0 12px 0;color:#555555">38-pin ESP32-S NodeMCU. Every electrical part, where each wire goes, and which parts you can leave out. Source of truth: docs/02_electrical.md in the repo; if they disagree, the repo wins.</p>
+
+<table style="border-collapse:collapse;margin:0 0 16px 0" cellpadding="6">
+<tr>
+<td style="background:#d9f2e3;color:#16633a;font-weight:bold;border:1px solid #b5dcc4">NEEDED</td><td style="border:1px solid #dddddd">the machine does not work without it</td>
+</tr>
+<tr>
+<td style="background:#fff1cc;color:#7a5600;font-weight:bold;border:1px solid #ecd48a">ONLY IF</td><td style="border:1px solid #dddddd">fit it only if a named bench test fails</td>
+</tr>
+<tr>
+<td style="background:#e6e6e6;color:#444444;font-weight:bold;border:1px solid #cccccc">SKIP</td><td style="border:1px solid #dddddd">over-engineered for this build; leave it out</td>
+</tr>
+</table>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">1. ESP32 pinout</h2>
+<p style="margin:4px 0 8px 0">Go by the GPIO number printed beside each pin, not its position. The same numbers work on the 30-pin DevKit.</p>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr style="background:#3b2a6b;color:#ffffff">
+<th style="border:1px solid #3b2a6b;text-align:left">ESP32 pin</th><th style="border:1px solid #3b2a6b;text-align:left">Wire goes to</th><th style="border:1px solid #3b2a6b;text-align:left">What it does</th><th style="border:1px solid #3b2a6b;text-align:left">Watch out</th>
+</tr>
+<tr><td style="border:1px solid #cccccc"><b>VIN</b></td><td style="border:1px solid #cccccc">buck converter OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">powers the board</td><td style="border:1px solid #cccccc">never 12 V here</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GND</b> (any)</td><td style="border:1px solid #cccccc">common ground</td><td style="border:1px solid #cccccc">every ground ties together</td><td style="border:1px solid #cccccc">adapter, carrier, buck, ESP32, servo, radar, switch</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">driver carrier STEP</td><td style="border:1px solid #cccccc">one pulse = 1/8 motor step</td><td style="border:1px solid #cccccc"></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO26</b></td><td style="border:1px solid #cccccc">driver carrier DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">driver carrier EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO13</b></td><td style="border:1px solid #cccccc">servo signal (orange)</td><td style="border:1px solid #cccccc">finger lock and release</td><td style="border:1px solid #cccccc"><b>not GPIO14</b>: 14 pulses at boot and would drop the spider</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO16</b> (RX2)</td><td style="border:1px solid #cccccc">LD2450 TX</td><td style="border:1px solid #cccccc">radar data in</td><td style="border:1px solid #cccccc">TX crosses to RX</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO17</b> (TX2)</td><td style="border:1px solid #cccccc">LD2450 RX</td><td style="border:1px solid #cccccc">radar data out</td><td style="border:1px solid #cccccc">RX crosses to TX</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO32</b></td><td style="border:1px solid #cccccc">KW12-3 switch, NO leg</td><td style="border:1px solid #cccccc">spider home: stops the rewind</td><td style="border:1px solid #cccccc">pull-up is inside the chip; no resistor</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO33</b></td><td style="border:1px solid #cccccc">LD2410C OUT</td><td style="border:1px solid #cccccc">backup radar, yes/no</td><td style="border:1px solid #cccccc">optional, see section 4</td></tr>
+<tr><td style="border:1px solid #cccccc">GPIO0</td><td style="border:1px solid #cccccc">on-board button marked IO0</td><td style="border:1px solid #cccccc">manual test drop; hold for USB flashing</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GPIO2</td><td style="border:1px solid #cccccc">on-board blue LED</td><td style="border:1px solid #cccccc">slow blink = armed and ready</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
+<tr><td style="border:1px solid #cccccc">EN</td><td style="border:1px solid #cccccc">on-board button marked EN</td><td style="border:1px solid #cccccc">restart</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
+</table>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">2. Power</h2>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr style="background:#3b2a6b;color:#ffffff">
+<th style="border:1px solid #3b2a6b;text-align:left">From</th><th style="border:1px solid #3b2a6b;text-align:left">To</th><th style="border:1px solid #3b2a6b;text-align:left">Notes</th>
+</tr>
+<tr><td style="border:1px solid #cccccc">12 V adapter +</td><td style="border:1px solid #cccccc">carrier VMOT, and buck IN+</td><td style="border:1px solid #cccccc">motor draws about 0.6 A while moving</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">12 V adapter -</td><td style="border:1px solid #cccccc">carrier GND, and buck IN-</td><td style="border:1px solid #cccccc"></td></tr>
+<tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, LD2450 5V, LD2410C VCC if fitted</td><td style="border:1px solid #cccccc"><b>set 5.0 V with a meter before connecting anything</b></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">buck OUT-</td><td style="border:1px solid #cccccc">ESP32 GND, servo brown, radar GND, switch COM</td><td style="border:1px solid #cccccc">one common ground</td></tr>
+</table>
+<ul style="margin:8px 0 0 0">
+<li>Peak on the 5 V side is about 1 A (servo moving plus WiFi); the buck is good for 2 A.</li>
+<li>USB can stay plugged into the PC while 12 V is on.</li>
+<li>Ceiling install: run 12 V up a 5.5 x 2.1 mm DC extension. The adapter stays at the outlet.</li>
+</ul>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">3. Each part, wire by wire</h2>
+
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Stepper driver: TMC2209 on the carrier board</h3>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">STEP, DIR, EN</td><td style="border:1px solid #cccccc">GPIO25, GPIO26, GPIO27</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">VMOT, GND</td><td style="border:1px solid #cccccc">12 V adapter</td></tr>
+<tr><td style="border:1px solid #cccccc">DIP switches 1, 2, 3</td><td style="border:1px solid #cccccc">all OFF (1/8 step)</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Current pot</td><td style="border:1px solid #cccccc"><b>0.85 V</b> pot top to GND, 12 V on, <b>motor unplugged</b> (= 0.6 A)</td></tr>
+<tr><td style="border:1px solid #cccccc">Orientation</td><td style="border:1px solid #cccccc">driver's EN pin on the carrier's EN position. Backwards destroys it</td></tr>
+</table>
+
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Motor: NEMA 11, 4 wires, into the carrier terminal</h3>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">black / green</td><td style="border:1px solid #cccccc">1A / 1B</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">red / blue</td><td style="border:1px solid #cccccc">2A / 2B</td></tr>
+<tr><td style="border:1px solid #cccccc">Buzzes, will not turn</td><td style="border:1px solid #cccccc">swap black and green</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Never</td><td style="border:1px solid #cccccc">plug or unplug the motor with 12 V on</td></tr>
+</table>
+
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Finger servo (micro servo, SG90 in the parts list; an MG90S wires the same)</h3>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">orange (signal)</td><td style="border:1px solid #cccccc">GPIO13</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">red (+)</td><td style="border:1px solid #cccccc">buck 5 V, not the ESP32's 3V3 pin</td></tr>
+<tr><td style="border:1px solid #cccccc">brown (-)</td><td style="border:1px solid #cccccc">GND</td></tr>
+</table>
+
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Limit switch: KW12-3 roller switch in the fairlead</h3>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">COM</td><td style="border:1px solid #cccccc">GND</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">NO</td><td style="border:1px solid #cccccc">GPIO32</td></tr>
+<tr><td style="border:1px solid #cccccc">NC</td><td style="border:1px solid #cccccc">nothing</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Check</td><td style="border:1px solid #cccccc">lift the flap by hand, watch the web page. Backwards: <code>liminv 1</code>. Then <code>limit 1</code></td></tr>
+<tr><td style="border:1px solid #cccccc">Normal</td><td style="border:1px solid #cccccc">reads open when the spider is parked; that is by design</td></tr>
+</table>
+
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Radar: HLK-LD2450 (the trigger)</h3>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">5V</td><td style="border:1px solid #cccccc">buck 5 V</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GND</td><td style="border:1px solid #cccccc">GND</td></tr>
+<tr><td style="border:1px solid #cccccc">TX</td><td style="border:1px solid #cccccc">GPIO16</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">RX</td><td style="border:1px solid #cccccc">GPIO17</td></tr>
+<tr><td style="border:1px solid #cccccc">Plug</td><td style="border:1px solid #cccccc">4-pin, 1.25 mm pitch at the sensor. No OUT pin</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Mount</td><td style="border:1px solid #cccccc">flat on the wall above the door, hallway side, looking straight out</td></tr>
+</table>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">4. Parts to leave out: over-engineering check</h2>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr style="background:#3b2a6b;color:#ffffff">
+<th style="border:1px solid #3b2a6b;text-align:left;width:22%">Part</th><th style="border:1px solid #3b2a6b;text-align:left;width:12%">Call</th><th style="border:1px solid #3b2a6b;text-align:left">Why</th>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">470 uF capacitor at the servo</td>
+<td style="border:1px solid #cccccc;background:#e6e6e6;color:#444444;font-weight:bold">SKIP</td>
+<td style="border:1px solid #cccccc">A micro servo stalls at well under 1 A, and it moves for a fraction of a second per scare. The buck converter already has its own output capacitors, and the ESP32 has its own 3.3 V regulator after VIN. Fit one only if the board restarts when the finger moves (the page's "Running for" clock resets). A restart does no damage: settings are kept, and the board never rewinds on its own at start-up, so the worst case is a spider left hanging that you rewind from the page.</td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">74AHCT125 logic buffer</td>
+<td style="border:1px solid #cccccc;background:#fff1cc;color:#7a5600;font-weight:bold">ONLY IF</td>
+<td style="border:1px solid #cccccc">Only if the motor stutters or will not turn on <code>jog 1600</code> (commissioning step 4, item V1). Most TMC2209 boards take 3.3 V signals directly.</td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">LD2410C backup radar</td>
+<td style="border:1px solid #cccccc;background:#e6e6e6;color:#444444;font-weight:bold">SKIP</td>
+<td style="border:1px solid #cccccc">The LD2450 does the job and tells approaching from leaving. The LD2410C is only a fallback if the LD2450 dies. Leave it in the drawer; three wires if you ever need it (5 V, GND, OUT to GPIO33).</td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">Resistors or capacitors on the limit switch</td>
+<td style="border:1px solid #cccccc;background:#e6e6e6;color:#444444;font-weight:bold">SKIP</td>
+<td style="border:1px solid #cccccc">The chip's own pull-up and the firmware's debounce (ignoring the contact's first few milliseconds of chatter) cover it. Twisting the switch's two wires together is enough if the motor wires run beside them.</td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">Bigger power adapter</td>
+<td style="border:1px solid #cccccc;background:#e6e6e6;color:#444444;font-weight:bold">SKIP</td>
+<td style="border:1px solid #cccccc">The 12 V 2 A adapter has three times the headroom the motor needs.</td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">Capacitor at the driver's 12 V input</td>
+<td style="border:1px solid #cccccc;background:#d9f2e3;color:#16633a;font-weight:bold">NEEDED</td>
+<td style="border:1px solid #cccccc">Not over-engineering: a stepper driver can be killed by a voltage spike on 12 V without one. Most carrier boards already have one (a round can near the power terminal). Look for it; if yours has one, nothing to add. <i>Not checked on this carrier.</i></td>
+</tr>
+<tr>
+<td style="border:1px solid #cccccc">Setting the buck to 5.0 V and the driver to 0.85 V first</td>
+<td style="border:1px solid #cccccc;background:#d9f2e3;color:#16633a;font-weight:bold">NEEDED</td>
+<td style="border:1px solid #cccccc">A new buck can come set to 12 V or more and would kill the ESP32, servo and radar. The driver's factory current is too high for this motor.</td>
+</tr>
+</table>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">5. Order to wire and power up</h2>
+<ol style="margin:4px 0 0 0">
+<li>Buck on 12 V alone: meter it, set 5.0 V.</li>
+<li>Driver on 12 V, motor unplugged: set 0.85 V on the pot.</li>
+<li>Power off. Wire the ESP32, servo, switch and radar. Motor still unplugged.</li>
+<li>Power on: web page at dropspider.local shows "ready". Lift the switch flap and watch it change.</li>
+<li>Power off, plug in the motor, power on, then <code>jog 1600</code> with hands clear.</li>
+</ol>
+
+<h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">Checked, and not checked</h2>
+<table style="border-collapse:collapse;width:100%" cellpadding="6">
+<tr><td style="border:1px solid #cccccc;width:30%">Checked 2026-09-25</td><td style="border:1px solid #cccccc">Pin numbers match the firmware (include/config.h) and doc 02. The board on COM13 is an ESP32 with 4 MB flash, on the home WiFi, updating by WiFi.</td></tr>
+<tr style="background:#fff1cc"><td style="border:1px solid #cccccc">Not yet checked</td><td style="border:1px solid #cccccc">Nothing on this sheet has been watched working with the motor, servo, switch or LD2450 connected. The LD2450 wiring is from the maker's pinout and doc 03; the firmware to read it is not written yet. The servo capacitor call is judgement, confirmed only when the servo moves on the bench without a restart.</td></tr>
+</table>
+
+</body>
+</html>
