@@ -23,7 +23,7 @@ if "%WAY%"=="" (
   echo   DropSpider firmware update
   echo.
   echo   1  WiFi  - board on the network at dropspider.local. No buttons. About 90 seconds.
-  echo   2  USB   - board plugged into %PORT%. You press two buttons first.
+  echo   2  USB   - board plugged into %PORT%. Buttons only if it asks.
   echo.
   set /p "PICK=Type 1 or 2 and press Enter: "
 )
@@ -57,14 +57,17 @@ goto :wifi_try
 
 :usb
 echo.
-echo Building...
-"%PIO%" run -e nodemcu-32s
-if errorlevel 1 goto :fail
+echo Building and loading over USB. Most boards go into flash mode by themselves.
+echo When it restarts the finger servo moves to its lock angle: keep hands clear.
 echo.
-echo Now put the board in flash mode, with the USB cable plugged in:
-echo   1. press and hold IO0
+"%PIO%" run -e nodemcu-32s -t upload
+if not errorlevel 1 goto :ok
+echo.
+echo The board did not go into flash mode by itself. Do it by hand instead,
+echo with the USB cable plugged in:
+echo   1. press and hold BOOT (marked IO0 on some boards)
 echo   2. press and let go of EN
-echo   3. let go of IO0
+echo   3. let go of BOOT
 echo When it restarts the finger servo moves to its lock angle: keep hands clear.
 echo.
 pause
@@ -73,7 +76,7 @@ set "A0=%USERPROFILE%\.platformio\packages\framework-arduinoespressif32\tools\pa
 "%PY%" tools\esptool_noreset.py --chip esp32 --port %PORT% --baud 460800 --before no_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 "%B%\bootloader.bin" 0x8000 "%B%\partitions.bin" 0xe000 "%A0%" 0x10000 "%B%\firmware.bin"
 if errorlevel 1 (
   echo.
-  echo USB update FAILED. Do the IO0 and EN buttons again and rerun this.
+  echo USB update FAILED. Do the BOOT and EN buttons again and rerun this.
   goto :fail
 )
 goto :ok

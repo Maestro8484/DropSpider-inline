@@ -2,9 +2,9 @@
 
 ![Wiring](img/wiring.png)
 
-## Pin map, 38-pin ESP32-S NodeMCU
+## Pin map, 30-pin ESP32 DevKit V1 (board in use)
 
-Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Every pin used here is also on the 30-pin DevKit V1, so either board works with the same wiring; the GPIO numbers printed beside the pins are what count, not their position.
+Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. The 38-pin NodeMCU-32S uses the same GPIO numbers and works unchanged; go by the name printed beside each pin, not its position. The 5 V input pin is marked VIN on the 30-pin board and 5V on the 38-pin.
 
 
 | ESP32 pin | Goes to | Direction | Notes |
@@ -19,7 +19,7 @@ Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Eve
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
 | GPIO16 (RX2) | LD2450 TX | in | Primary trigger, UART2 at 256000 baud |
 | GPIO17 (TX2) | LD2450 RX | out | Primary trigger |
-| GPIO0 | on-board BOOT button | in | Press = manual test drop |
+| GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
 ## Driver: BIGTREETECH TMC2209 V1.3 on the A4988/DRV8825 carrier

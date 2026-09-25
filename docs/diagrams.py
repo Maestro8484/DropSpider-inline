@@ -33,7 +33,7 @@ def wiring():
     a1.set_ylim(-1.4, 8.2); a2.set_ylim(-0.2, 7.0)
     a1.set_title("1. SIGNAL WIRING (thin jumper wires)", fontsize=14, weight="bold", loc="left")
     drv = pins_box(a1, 0.4, 7.0, 3.2, "Driver carrier + TMC2209", right=["STEP", "DIR", "EN", "GND"], color="#fff8c5")
-    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 (38-pin NodeMCU-32S)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
+    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 DevKit V1 (30-pin)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
                    right=["GPIO13", "GPIO16 (RX2)", "GPIO17 (TX2)", "GPIO32", "GND ", "GPIO33"], color="#ddf4ff")
     srv = pins_box(a1, 11.4, 7.4, 3.2, "SG90 servo", left=["orange = signal"], color="#dafbe1")
     rad = pins_box(a1, 11.4, 5.85, 3.2, "LD2450 radar (primary)", left=["TX", "RX"], color="#dafbe1")
@@ -52,7 +52,7 @@ def wiring():
     for p, q, c in [("black", "1A", BLK), ("green", "1B", GRN), ("red", "2A", RED), ("blue", "2B", BLU)]: line(a1, mot[p], ter[q], c)
     a1.text(0.4, -1.35, "Carrier setup before anything else:\nDIP switches 1, 2, 3 all OFF (1/8 step).  TMC2209 pot to Vref 0.85 V (= 0.6 A) with the motor UNPLUGGED.\nDriver's EN pin on the carrier's EN.  Motor buzzes but won't turn: swap black and green.  Never unplug the motor with 12 V on.",
             fontsize=10, va="bottom", bbox=dict(fc="#fff8c5", ec="0.6"))
-    a1.text(7.5, 7.75, "Same GPIO numbers on the 30-pin DevKit. BOOT button (GPIO0) = manual test drop. KW12-3 NC leg unused.", fontsize=9.5, ha="center")
+    a1.text(7.5, 7.75, "Same GPIO numbers on the 38-pin NodeMCU-32S. BOOT button (GPIO0) = manual test drop. KW12-3 NC leg unused.", fontsize=9.5, ha="center")
 
     a2.set_title("2. POWER WIRING (thicker wire for the 12 V run, 22 AWG is fine)", fontsize=14, weight="bold", loc="left")
     psu = pins_box(a2, 0.4, 6.3, 3.2, "12 V 2 A adapter + jack", right=["+12 V", "GND"], color="#ffebe9")

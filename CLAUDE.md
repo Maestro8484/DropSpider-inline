@@ -27,7 +27,7 @@ Ceiling-mounted drop-spider prop, Mechanism A (In-Line Single-Axle Clutch Spool)
 
 ```powershell
 pio run                         # build (env nodemcu-32s, USB COM13)
-scripts\update_firmware.bat     # the owner's update: WiFi (3 tries) or USB (IO0 + EN buttons, esptool_noreset)
+scripts\update_firmware.bat     # the owner's update: WiFi (3 tries) or USB (automatic; falls back to BOOT + EN buttons)
 pio run -e ota -t upload        # flash over the network to dropspider.local
 python tools\console.py COM13 status "jog 1600"   # console commands, replies captured
 tools\regen_cad.ps1             # regenerate STLs and all images
@@ -47,7 +47,7 @@ cd cad; python generate.py      # parts + clash checks only
 
 ## Firmware notes
 
-- Standard PlatformIO layout at the repo root: `platformio.ini`, `src/`, `include/`. Board `nodemcu-32s` (38-pin ESP32-S NodeMCU). Libraries: ESP32Servo, FastAccelStepper, both pinned.
+- Standard PlatformIO layout at the repo root: `platformio.ini`, `src/`, `include/`. Board in use: 30-pin ESP32 DevKit V1 (PlatformIO board `nodemcu-32s`, same chip; the 38-pin NodeMCU-32S also works). Libraries: ESP32Servo, FastAccelStepper, both pinned.
 - Platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16). Core 3.x not tested.
 - WiFi and update passwords come from `secrets.ini` (gitignored); template `secrets.ini.example`. Never commit `secrets.ini`.
 - Runtime settings live in NVS (flash), set from the serial console or the web page; see `docs/04_firmware.md`.

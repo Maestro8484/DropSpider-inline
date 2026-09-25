@@ -1,6 +1,6 @@
 """Run esptool with the USB serial control lines held off.
 
-Why: on the 38-pin NodeMCU on the bench, esptool's normal port open asserts
+Why: on the first 38-pin NodeMCU board, esptool's normal port open asserts
 RTS, which holds the ESP32 in reset (EN low), so a board already put in flash
 mode by hand (hold BOOT, tap EN, let go of BOOT) never answers. This opens the
 port with DTR and RTS off, then hands every argument to esptool unchanged.

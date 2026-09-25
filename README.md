@@ -27,7 +27,7 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 | `docs/M1_fix_handoff.md`, `docs/handoff_sensor_bearings.md` | Rev C.1 owner handoffs: clutch fix and motor-led drop; LD2450 and bearing care |
 | `cad/generate.py`, `cad/fairlead.py` | source of truth for every printed part (`tools\regen_cad.ps1` rebuilds STLs and images) |
 | `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts: do not print |
-| `platformio.ini`, `src/`, `include/` | firmware, standard PlatformIO layout, 38-pin ESP32-S NodeMCU |
+| `platformio.ini`, `src/`, `include/` | firmware, standard PlatformIO layout, 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works) |
 | `secrets.ini.example` | template for `secrets.ini`: WiFi name, password, update password (never committed) |
 | `docs/commissioning_log.md` | every bench and install result, dated |
 | `bom/BOM.csv` | every part, ordered or still to buy |

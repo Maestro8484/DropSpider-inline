@@ -36,7 +36,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V13 | Top drop speed and stopping ability of the NEMA 11 at 12 V, 0.6 A, with the real spider (estimate: about 500 rpm, stops 60 g or less cleanly) | T4, T5, T7 in `M1_fix_handoff.md` | lower `droprpm` / `dropdec`; lighter spider |
 | V14 | **Answered by the fairlead geometry:** after the lock seat the bead drops off the flap, so the switch reads OPEN at rest. Firmware must infer home from the last cycle (switch stop, then seat move), not from the boot reading | commissioning step 10; boot with the spider home | firmware rule, not hardware |
 | V15 | LD2450 as the trigger: tracking through the door frame, speed sign, approach-only firing, arrival timing | S1 to S5 in `handoff_sensor_bearings.md` | widen or narrow `doorwidth`, tune `leadms`; `sensor 2410` fallback |
-| V12 | Board on COM13 is the 38-pin ESP32-S NodeMCU (ESP32, 4 MB flash) | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
+| V12 | Board on COM13 is an ESP32 with 4 MB flash. **Closed 2026-09-25:** first the 38-pin NodeMCU-32S, now the 30-pin DevKit V1 in use, both ESP32-D0WD-V3, 4 MB, read by esptool | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
 
 ## Closed
 

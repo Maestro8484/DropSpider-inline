@@ -4,7 +4,7 @@ What the code does, how to load it, and every command it takes.
 
 ## Where it lives
 
-Standard PlatformIO layout at the repo root. Board `nodemcu-32s` (38-pin ESP32-S NodeMCU), Arduino framework, platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16).
+Standard PlatformIO layout at the repo root. Board in use: 30-pin ESP32 DevKit V1 (PlatformIO board `nodemcu-32s`, same chip as the 38-pin NodeMCU-32S), Arduino framework, platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16).
 
 | File | What |
 |---|---|
@@ -33,10 +33,10 @@ First time on a new PC: install VS Code and its PlatformIO extension, copy `secr
 | Way | How |
 |---|---|
 | Network | board must be on the network already. Double-click `scripts\update_firmware.bat` and pick 1, or VS Code env `ota` and Upload. No buttons. It retries up to 3 times, because the first try sometimes drops |
-| USB | double-click `scripts\update_firmware.bat` and pick 2. It builds, then asks you to put the board in flash mode (hold IO0, tap EN, let go of IO0) and writes it through `tools/esptool_noreset.py`. VS Code's plain Upload does not work on this board: its port open holds the chip in reset. Port is COM13 in the script and `platformio.ini` |
+| USB | double-click `scripts\update_firmware.bat` and pick 2. It builds and loads it; the 30-pin board goes into flash mode by itself. If a board does not (the first 38-pin board did not), the script asks you to hold BOOT (marked IO0 on some boards), tap EN, let go of BOOT, and writes through `tools/esptool_noreset.py`. Port is COM13 in the script and `platformio.ini` |
 | Web page | open `http://dropspider.local/update`, log in as `admin` with the update password, pick `.pio/build/nodemcu-32s/firmware.bin` |
 
-The 38-pin board on the bench does not enter flash mode on its own over USB. Its BOOT button is marked IO0.
+The 30-pin DevKit V1 in use enters flash mode on its own, so VS Code's plain Upload works too. The first 38-pin board did not.
 
 Every network update switches the motor and servo off first. After any update the board restarts and, as always, does not rewind on its own.
 

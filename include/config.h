@@ -4,8 +4,9 @@
 #pragma once
 
 // ---------- board ----------
-// 38-pin ESP32-S NodeMCU (ESP-WROOM-32, CP2102 USB). PlatformIO board: nodemcu-32s.
-// Every pin below is on both the 38-pin and the 30-pin DevKit, and none of them
+// In use: 30-pin ESP32 DevKit V1 (ESP-WROOM-32, CP2102 USB). The 38-pin NodeMCU-32S
+// also works unchanged. PlatformIO board: nodemcu-32s (same chip, same pins).
+// Every pin below is on both the 30-pin and the 38-pin board, and none of them
 // is a pin the chip uses for itself at boot except GPIO0 (the BOOT button) and
 // GPIO2 (the LED), which are used for exactly those things.
 
