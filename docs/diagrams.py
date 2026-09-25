@@ -57,7 +57,7 @@ def wiring():
     a2.set_title("2. POWER WIRING (thicker wire for the 12 V run, 22 AWG is fine)", fontsize=14, weight="bold", loc="left")
     psu = pins_box(a2, 0.4, 6.3, 3.2, "12 V 2 A adapter + jack", right=["+12 V", "GND"], color="#ffebe9")
     drvp = pins_box(a2, 5.9, 6.3, 3.2, "Expansion board power", left=["VMOT (+12 V)", "GND"], color="#fff8c5")
-    buck = pins_box(a2, 5.9, 4.3, 3.2, "LM2596 buck (set 5.0 V first!)", left=["IN+", "IN-"], right=["OUT+", "OUT-"], color="#ffebe9")
+    buck = pins_box(a2, 5.9, 4.3, 3.2, "MP1584EN buck, fixed 5 V (meter it first!)", left=["IN+", "IN-"], right=["OUT+", "OUT-"], color="#ffebe9")
     e5 = pins_box(a2, 11.4, 6.3, 3.2, "ESP32", left=["VIN", "GND"], color="#ddf4ff")
     s5 = pins_box(a2, 11.4, 4.6, 3.2, "SG90 servo", left=["red (5 V)", "brown (GND)"], color="#dafbe1")
     r5 = pins_box(a2, 11.4, 2.55, 3.2, "LD2450 (and LD2410C if fitted)", left=["VCC (5 V)", "GND"], color="#dafbe1")

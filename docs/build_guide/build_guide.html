@@ -126,7 +126,7 @@ a{color:var(--accent)}
         <li>Micro servo (SG90 or MG90S)</li>
         <li>KW12-3 roller micro switch</li>
         <li>HLK-LD2450 radar with its 4-pin 1.25 mm cable</li>
-        <li>LM2596 buck converter</li>
+        <li>MP1584EN mini buck module, fixed 5 V out</li>
         <li>12 V 2 A adapter with screw-terminal jack</li>
         <li>Dupont jumpers, 22 AWG wire for the 12 V run, heat shrink</li>
       </ul>
@@ -137,7 +137,7 @@ a{color:var(--accent)}
       <ul class="tight">
         <li>Multimeter (needed before anything is connected)</li>
         <li>Soldering iron, solder, heat gun or lighter for heat shrink</li>
-        <li>Small Phillips, small flat screwdriver (buck and driver pots)</li>
+        <li>Small Phillips, small flat screwdriver (driver current pot)</li>
         <li>1.5 mm and 2 mm hex keys (coupler set screws)</li>
         <li>Vise or clamp, CA glue, blue threadlocker</li>
         <li>A phone or PC on the same WiFi as the board</li>
@@ -204,8 +204,8 @@ a{color:var(--accent)}
       <text x="430" y="214" fill="#fff" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11">- GND</text>
       <!-- buck -->
       <rect x="600" y="150" width="150" height="90" rx="6" fill="#1f5fa8" stroke="#16457b"/>
-      <text x="675" y="140" text-anchor="middle" font-weight="600">LM2596 buck, set 5.0 V</text>
-      <circle cx="640" cy="200" r="16" fill="#555"/><rect x="668" y="186" width="18" height="28" fill="#1d4f8a" stroke="#9cc3ff"/><text x="677" y="232" fill="#cfe2ff" font-size="9" text-anchor="middle">pot</text>
+      <text x="675" y="140" text-anchor="middle" font-weight="600">MP1584EN buck, fixed 5 V</text>
+      <rect x="650" y="186" width="30" height="28" rx="3" fill="#555"/><text x="665" y="232" fill="#cfe2ff" font-size="9" text-anchor="middle">no pot</text>
       <text x="606" y="190" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace">IN+</text><text x="606" y="216" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace">IN-</text>
       <text x="744" y="190" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace" text-anchor="end">OUT+</text><text x="744" y="216" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace" text-anchor="end">OUT-</text>
       <!-- 12V wires -->
@@ -232,12 +232,12 @@ a{color:var(--accent)}
         <text x="620" y="258" text-anchor="middle">SOLDER</text><text x="735" y="258" text-anchor="middle">SOLDER</text>
         <text x="830" y="112" text-anchor="middle">PLUG</text><text x="830" y="275" text-anchor="middle">PLUG</text>
       </g>
-      <text x="20" y="300" fill="var(--svg-dim)" font-size="12">Peak on 5 V about 1 A (servo moving plus WiFi), buck rated 2 A.</text>
+      <text x="20" y="300" fill="var(--svg-dim)" font-size="12">Peak on 5 V about 1 A (servo moving plus WiFi); the MP1584EN is comfortable to about 1.5 A.</text>
       <text x="20" y="318" fill="var(--svg-dim)" font-size="12">Motor draws about 0.6 A from 12 V while moving.</text>
       <text x="20" y="336" fill="var(--svg-dim)" font-size="12">USB may stay plugged into the PC with 12 V on.</text>
     </g>
   </svg>
-  <figcaption>Set the buck to 5.0 V with a meter before any of the right-hand wires are connected. A new buck can arrive set to 12 V or more.</figcaption>
+  <figcaption>Meter the buck on 12 V before any of the right-hand wires are connected: it must read 4.95 to 5.05 V. It is fixed at 5 V, but a faulty or mislabelled module would kill the ESP32, servo and radar at once.</figcaption>
   </figure>
 </section>
 
@@ -316,15 +316,15 @@ a{color:var(--accent)}
       <p class="dim">Pin order per Hi-Link's manual (5V, RX, TX, GND); check the print beside the plug. TX to GPIO16, RX to GPIO17: they cross. Hi-Link asks for a 5 V supply able to give 200 mA; the buck is fine.</p>
     </div>
     <div class="card">
-      <h3>LM2596 buck</h3>
-      <svg viewBox="0 0 300 150" aria-label="LM2596 buck pads">
+      <h3>MP1584EN buck, fixed 5 V</h3>
+      <svg viewBox="0 0 300 150" aria-label="MP1584EN buck pads">
         <rect x="20" y="30" width="260" height="90" rx="6" fill="#1f5fa8"/>
-        <circle cx="90" cy="75" r="22" fill="#555"/><rect x="150" y="50" width="24" height="44" fill="#1d4f8a" stroke="#9cc3ff"/><circle cx="162" cy="56" r="4" fill="#d9c27a"/>
+        <rect x="120" y="55" width="40" height="40" rx="4" fill="#555"/><rect x="175" y="62" width="14" height="10" fill="#222"/>
         <g fill="#c9a14a"><circle cx="36" cy="50" r="6"/><circle cx="36" cy="100" r="6"/><circle cx="264" cy="50" r="6"/><circle cx="264" cy="100" r="6"/></g>
         <g font-family="IBM Plex Mono,monospace" font-size="10" fill="#fff"><text x="48" y="54">IN+</text><text x="48" y="104">IN-</text><text x="252" y="54" text-anchor="end">OUT+</text><text x="252" y="104" text-anchor="end">OUT-</text></g>
-        <text x="162" y="112" fill="#cfe2ff" font-size="9" text-anchor="middle">brass screw: turn to set 5.0 V</text>
+        <text x="150" y="112" fill="#cfe2ff" font-size="9" text-anchor="middle">about 22 x 17 mm, fixed 5 V, nothing to adjust</text>
       </svg>
-      <p class="dim">12 V in, meter on OUT+ and OUT-, turn the brass screw until it reads 4.95 to 5.05 V. Many turns may be needed before the reading moves.</p>
+      <p class="dim">12 V in, meter on OUT+ and OUT-: it must read 4.95 to 5.05 V. Nothing to adjust. Some modules share one GND pad for IN- and OUT-; read the print. It runs warm at 1 A: keep it in the open, not under the ESP32.</p>
     </div>
   </div>
 </section>
@@ -356,7 +356,7 @@ a{color:var(--accent)}
   <ol class="steps">
     <li><div><h3>Header pins on the ESP32</h3><p>Solder full 15-pin header strips down both sides, pins pointing down from the underside, so every jumper plugs on. If you only do the ones this build uses: <b>VIN, GND, D13, D27, D26, D25, D32</b> on the top row (the row with VIN), and <b>GND, RX2, TX2</b> on the other row. Push the strip into a breadboard to hold it straight, solder one pin at each end, check it is square, then the rest. Each joint a shiny cone, no bridges to the next pin.</p></div></li>
     <li><div><h3>Buck input and output leads</h3><p>Tin the four pads. Solder a red and a black 22 AWG lead to IN+ and IN-, and a red and a black lead to OUT+ and OUT-. Leave each 10 cm long.</p></div></li>
-    <li><div><h3>Set the buck before anything else</h3><p>IN leads into the jack's screw terminals with the 12 V adapter. Meter on OUT: turn the pot to 5.0 V. Unplug.</p></div></li>
+    <li><div><h3>Check the buck before anything else</h3><p>IN leads into the jack's screw terminals with the 12 V adapter. Meter on OUT: 4.95 to 5.05 V. Unplug.</p></div></li>
     <li><div><h3>Protoboard: sockets, pins, bridges</h3><p>Follow the protoboard drawing in section 05b: two 15-pin female sockets for the ESP32, single male pins beside the used signals and on the two rails, and two solder bridges (a blob of solder, or a short bare wire, across the gap between two neighbouring holes) that tie the ESP32's VIN to the 5 V rail and its GND to the GND rail.</p></div></li>
     <li><div><h3>Buck into the rails</h3><p>Buck OUT+ lead into the 5 V rail's input pin, OUT- into the GND rail's input pin (female dupont ends, or solder straight into a rail hole).</p></div></li>
     <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. Female dupont ends: COM to the GND rail, NO to the LIMIT pin. Twist the two wires together along their length.</p></div></li>
@@ -388,7 +388,7 @@ a{color:var(--accent)}
 <section id="bringup">
   <h2><span class="n">07</span>First power-up, one layer at a time</h2>
   <ol class="steps">
-    <li><div><h3>Buck alone</h3><p>12 V on, nothing on the 5 V side. Meter reads 4.95 to 5.05 V.</p></div></li>
+    <li><div><h3>Buck alone</h3><p>12 V on, nothing on the 5 V side. Meter reads 4.95 to 5.05 V (fixed 5 V module, nothing to adjust).</p></div></li>
     <li><div><h3>Driver current</h3><p>Motor unplugged, 12 V on. Meter from the pot's metal top to GND: turn to <b>0.85 V</b> (that is 0.6 A). Factory setting is about 1.2 V, too high for this motor.</p></div></li>
     <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The blue LED blinks slowly when armed and ready. The finger servo swings to its lock angle once at start-up: keep fingers clear.</p></div></li>
     <li><div><h3>Motor last</h3><p>Power off, plug in the motor, power on. Never plug or unplug the motor with 12 V on.</p></div></li>

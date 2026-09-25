@@ -34,7 +34,7 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 | Rail | Source | Loads | Worst case |
 |---|---|---|---|
 | 12 V | 12 V 2 A wall adapter | driver/motor, buck input | about 0.6 A while rewinding (about 3 s per scare), about 0.05 A idle |
-| 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2450 (about 0.1 A), LD2410C if fitted (0.08 A) | about 1 A peak, well under the buck's 2 A |
+| 5 V | MP1584EN mini buck, fixed 5 V (not adjustable). Meter its output on 12 V **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2450 (about 0.1 A), LD2410C if fitted (0.08 A) | about 1 A peak; the MP1584EN is comfortable to about 1.5 A |
 
 - 470 uF 16 V electrolytic across the servo's red and brown: **only if** the ESP32 restarts when the finger moves (the page's "Running for" clock resets). A micro servo moving for a fraction of a second on the buck's output does not normally need it. If fitted: at the servo end, stripe to GND.
 - Idle draw between scares is a few watts at most: driver disabled, servo detached, radar and ESP32 on.

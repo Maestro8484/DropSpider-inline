@@ -51,11 +51,11 @@
 </tr>
 <tr><td style="border:1px solid #cccccc">12 V adapter +</td><td style="border:1px solid #cccccc">expansion board VMOT, and buck IN+</td><td style="border:1px solid #cccccc">motor draws about 0.6 A while moving</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">12 V adapter -</td><td style="border:1px solid #cccccc">expansion board GND, and buck IN-</td><td style="border:1px solid #cccccc"></td></tr>
-<tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, LD2450 5V, LD2410C VCC if fitted</td><td style="border:1px solid #cccccc"><b>set 5.0 V with a meter before connecting anything</b></td></tr>
+<tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, LD2450 5V, LD2410C VCC if fitted</td><td style="border:1px solid #cccccc"><b>meter 5.0 V before connecting anything</b></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">buck OUT-</td><td style="border:1px solid #cccccc">ESP32 GND, servo brown, radar GND, switch COM</td><td style="border:1px solid #cccccc">one common ground</td></tr>
 </table>
 <ul style="margin:8px 0 0 0">
-<li>Peak on the 5 V side is about 1 A (servo moving plus WiFi); the buck is good for 2 A.</li>
+<li>Peak on the 5 V side is about 1 A (servo moving plus WiFi); the MP1584EN buck is comfortable to about 1.5 A.</li>
 <li>USB can stay plugged into the PC while 12 V is on.</li>
 <li>Ceiling install: run 12 V up a 5.5 x 2.1 mm DC extension. The adapter stays at the outlet.</li>
 </ul>
@@ -141,15 +141,15 @@
 <td style="border:1px solid #cccccc">Not over-engineering: a stepper driver can be killed by a voltage spike on 12 V without one. Most expansion boards already have one (a round can near the power terminal). Look for it; if yours has one, nothing to add. <i>Not checked on this expansion board.</i></td>
 </tr>
 <tr>
-<td style="border:1px solid #cccccc">Setting the buck to 5.0 V and the driver to 0.85 V first</td>
+<td style="border:1px solid #cccccc">Metering the buck (5.0 V) and setting the driver to 0.85 V first</td>
 <td style="border:1px solid #cccccc;background:#d9f2e3;color:#16633a;font-weight:bold">NEEDED</td>
-<td style="border:1px solid #cccccc">A new buck can come set to 12 V or more and would kill the ESP32, servo and radar. The driver's factory current is too high for this motor.</td>
+<td style="border:1px solid #cccccc">The buck is a fixed 5 V MP1584EN, but a faulty or mislabelled module would kill the ESP32, servo and radar. The driver's factory current is too high for this motor.</td>
 </tr>
 </table>
 
 <h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">5. Order to wire and power up</h2>
 <ol style="margin:4px 0 0 0">
-<li>Buck on 12 V alone: meter it, set 5.0 V.</li>
+<li>Buck on 12 V alone: meter it, 4.95 to 5.05 V.</li>
 <li>Driver on 12 V, motor unplugged: set 0.85 V on the pot.</li>
 <li>Power off. Wire the ESP32, servo, switch and radar. Motor still unplugged.</li>
 <li>Power on: web page at dropspider.local shows "ready". Lift the switch flap and watch it change.</li>

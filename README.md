@@ -42,7 +42,7 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 1. Print the parts in `cad/stl/` (settings in doc 01).
 2. Buy the "TO BUY" lines in `bom/BOM.csv`.
 3. Assemble per doc 05.
-4. Wire per doc 02. Set buck to 5.0 V and driver Vref to 0.85 V first.
+4. Wire per doc 02. Meter the 5 V buck (must read 4.95 to 5.05 V) and set driver Vref to 0.85 V first.
 5. Copy `secrets.ini.example` to `secrets.ini` and put in your WiFi name and password.
 6. Plug the board in by USB, double-click `scripts\update_firmware.bat`, pick 2 (USB), then run doc 07 on the bench.
 7. From then on, the web page at `http://dropspider.local` is the console, and firmware updates go over the network (doc 04).
