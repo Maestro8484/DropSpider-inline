@@ -68,7 +68,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ## F. Electronics
 
-19. Set the buck to 5.0 V with the meter before connecting any loads.
+19. Meter the 5 V buck (MP1584EN, fixed, not adjustable): 4.95 to 5.05 V before connecting any loads.
 20. Set the TMC2209 Vref to 0.85 V, motor unplugged. DIP switches all OFF.
 21. Wire per `02_electrical.md` (LD2450 on GPIO16/17, KW12-3 NO to GPIO32 and COM to GND). Mount the controller board on the pad with foam tape or zip ties through the x = -80 holes. Keep the x = -56 holes and the two at the servo end clear: they are the ceiling screw holes.
 22. Go to `07_commissioning.md` before mounting anything overhead.
