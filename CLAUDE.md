@@ -27,7 +27,7 @@ Ceiling-mounted drop-spider prop, Mechanism A (In-Line Single-Axle Clutch Spool)
 
 ```powershell
 pio run                         # build (env nodemcu-32s, USB COM13)
-pio run -t upload               # flash over USB; tools\flash_usb.bat for the owner
+scripts\update_firmware.bat     # the owner's update: WiFi (3 tries) or USB (IO0 + EN buttons, esptool_noreset)
 pio run -e ota -t upload        # flash over the network to dropspider.local
 python tools\console.py COM13 status "jog 1600"   # console commands, replies captured
 tools\regen_cad.ps1             # regenerate STLs and all images

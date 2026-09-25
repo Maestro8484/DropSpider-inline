@@ -11,3 +11,4 @@ Every bench and install result, in order. One row per attempt, failures included
 | 2026-09-25 | 3 | PASS | - | `status` over USB: state ready, sensor 0, driver off, servo off. What is wired to the board was not recorded |
 | 2026-09-25 | 3a (V11 part) | PASS | DHCP | Joined MAINFRAME007 at 192.168.1.16; `http://dropspider.local/api/status` answered from the bench PC. Network firmware update not tried yet |
 | 2026-09-25 | V11 network update | PASS | - | `pio run -e ota -t upload` to dropspider.local: 88 s, "Result: OK". Board back on the network 27 s later, uptime reset, state ready. No button presses needed |
+| 2026-09-25 | update script, WiFi | PASS | - | `scripts/update_firmware.bat wifi`: first run failed at the upload (no retry then), next runs "Result: OK" in about 28 s. Retry added: up to 3 tries. USB path not yet run |

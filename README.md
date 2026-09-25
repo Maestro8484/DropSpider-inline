@@ -31,7 +31,8 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 | `secrets.ini.example` | template for `secrets.ini`: WiFi name, password, update password (never committed) |
 | `docs/commissioning_log.md` | every bench and install result, dated |
 | `bom/BOM.csv` | every part, ordered or still to buy |
-| `tools/flash_usb.bat`, `tools/flash_ota.bat` | double-click to load firmware over USB or over the network |
+| `scripts/update_firmware.bat` | double-click to update the firmware, by WiFi or by USB |
+| `tools/esptool_noreset.py` | USB flashing helper the update script uses |
 | `tools/console.py` | send console commands over USB or the network, print the replies |
 | `tools/requirements.txt` | Python packages for the tools |
 | `tools/*.ps1` | same as the .bat files for PowerShell; regenerate CAD and images |
@@ -43,6 +44,6 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 3. Assemble per doc 05.
 4. Wire per doc 02. Set buck to 5.0 V and driver Vref to 0.85 V first.
 5. Copy `secrets.ini.example` to `secrets.ini` and put in your WiFi name and password.
-6. Plug the board in by USB, double-click `tools\flash_usb.bat`, then run doc 07 on the bench.
+6. Plug the board in by USB, double-click `scripts\update_firmware.bat`, pick 2 (USB), then run doc 07 on the bench.
 7. From then on, the web page at `http://dropspider.local` is the console, and firmware updates go over the network (doc 04).
 8. Install per doc 06.

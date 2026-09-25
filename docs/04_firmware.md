@@ -32,11 +32,11 @@ First time on a new PC: install VS Code and its PlatformIO extension, copy `secr
 
 | Way | How |
 |---|---|
-| USB | double-click `tools\flash_usb.bat`, or in VS Code pick env `nodemcu-32s` and press Upload. Port is COM13 in `platformio.ini`; change it there for another PC |
-| Network | board must be on the network already. Double-click `tools\flash_ota.bat`, or env `ota` and Upload |
+| Network | board must be on the network already. Double-click `scripts\update_firmware.bat` and pick 1, or VS Code env `ota` and Upload. No buttons. It retries up to 3 times, because the first try sometimes drops |
+| USB | double-click `scripts\update_firmware.bat` and pick 2. It builds, then asks you to put the board in flash mode (hold IO0, tap EN, let go of IO0) and writes it through `tools/esptool_noreset.py`. VS Code's plain Upload does not work on this board: its port open holds the chip in reset. Port is COM13 in the script and `platformio.ini` |
 | Web page | open `http://dropspider.local/update`, log in as `admin` with the update password, pick `.pio/build/nodemcu-32s/firmware.bin` |
 
-If a USB upload stops at "Connecting.....": hold the board's BOOT button, tap EN, let go of BOOT, and upload again. Some 38-pin boards do not enter flash mode on their own.
+The 38-pin board on the bench does not enter flash mode on its own over USB. Its BOOT button is marked IO0.
 
 Every network update switches the motor and servo off first. After any update the board restarts and, as always, does not rewind on its own.
 
