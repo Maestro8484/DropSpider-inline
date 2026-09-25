@@ -1,0 +1,569 @@
+<title>DropSpider · Build Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#eef1ee; --panel:#ffffff; --ink:#1b2320; --dim:#58655f; --line:#d3dbd6; --row:#f5f8f6;
+  --accent:#1f5a3f; --accent-ink:#ffffff;
+  --pcb:#1c4f38; --pcb-edge:#123626; --silk:#f2f6f1; --pad:#c9a14a; --can:#b9c0c4; --can-edge:#8d969b;
+  --ready-bg:#d8f0e1; --ready-fg:#155e36; --t1-bg:#fbeec5; --t1-fg:#6e5000; --t2-bg:#dde8fb; --t2-fg:#1e4a8f; --plan-bg:#ececec; --plan-fg:#4a4a4a;
+  --warn-bg:#fde4df; --warn-fg:#8c2414;
+  --w12:#b3261e; --w5:#e0442f; --wgnd:#222; --wsig:#2563c9; --wsrv:#ea7a17; --wsw:#7b4bc9; --wrad:#0f8f8a; --wmute:#9aa3a0;
+  --svg-bg:#ffffff; --svg-ink:#1b2320; --svg-dim:#5c6763;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#101614; --panel:#17201c; --ink:#e3ebe6; --dim:#97a59e; --line:#2a3531; --row:#1b2521;
+  --accent:#6cc79a; --accent-ink:#0d1a13;
+  --ready-bg:#173a28; --ready-fg:#8fe0b1; --t1-bg:#3a3014; --t1-fg:#f0cf73; --t2-bg:#16284a; --t2-fg:#9dbdf5; --plan-bg:#2a2f2d; --plan-fg:#c3cbc7;
+  --warn-bg:#401b15; --warn-fg:#ffb4a6;
+  --wgnd:#cfd6d2; --svg-bg:#17201c; --svg-ink:#e3ebe6; --svg-dim:#97a59e;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101614; --panel:#17201c; --ink:#e3ebe6; --dim:#97a59e; --line:#2a3531; --row:#1b2521;
+  --accent:#6cc79a; --accent-ink:#0d1a13;
+  --ready-bg:#173a28; --ready-fg:#8fe0b1; --t1-bg:#3a3014; --t1-fg:#f0cf73; --t2-bg:#16284a; --t2-fg:#9dbdf5; --plan-bg:#2a2f2d; --plan-fg:#c3cbc7;
+  --warn-bg:#401b15; --warn-fg:#ffb4a6;
+  --wgnd:#cfd6d2; --svg-bg:#17201c; --svg-ink:#e3ebe6; --svg-dim:#97a59e;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,"Segoe UI",sans-serif;padding:0 16px;padding-block:0 56px}
+main{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px;padding:8px 16px;overflow-x:auto;white-space:nowrap}
+nav.toc a{color:var(--dim);text-decoration:none;font-size:13px;font-weight:600;margin-right:14px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent);outline:none;text-decoration:underline}
+header.top{padding-top:28px;display:flex;flex-direction:column;gap:10px}
+h1{font-size:30px;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-size:22px;line-height:1.2;margin:0 0 4px;text-wrap:balance;display:flex;gap:10px;align-items:baseline}
+h2 .n{font-family:"IBM Plex Mono",monospace;font-size:14px;color:var(--accent)}
+h3{font-size:16px;margin:0}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:52px}
+p{margin:0;max-width:70ch}
+.dim{color:var(--dim)}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.05em;white-space:nowrap;vertical-align:1px}
+.ready{background:var(--ready-bg);color:var(--ready-fg)} .t1{background:var(--t1-bg);color:var(--t1-fg)} .t2{background:var(--t2-bg);color:var(--t2-fg)} .plan{background:var(--plan-bg);color:var(--plan-fg);outline:1px dashed var(--dim);outline-offset:-1px}
+.j{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;border:1px solid var(--line);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--dim)}
+.legend span{display:inline-flex;gap:7px;align-items:center}
+.banner{background:var(--warn-bg);color:var(--warn-fg);border-radius:8px;padding:12px 14px;font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.fig{background:var(--svg-bg);border:1px solid var(--line);border-radius:10px;padding:10px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:680px}
+.fig figcaption,.shot figcaption{font-size:13px;color:var(--dim);padding:6px 4px 0}
+figure{margin:0}
+.shot{background:#ffffff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.shot img{display:block;width:100%;height:auto;border-radius:4px}
+.shot figcaption{color:#56615c}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:nth-child(even){background:var(--row)}
+.sw{display:inline-block;width:18px;height:5px;border-radius:3px;vertical-align:middle;margin-right:6px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;counter-reset:s}
+.steps>li{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}
+.steps>li::before{counter-increment:s;content:counter(s);font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink)}
+.steps>li>div{display:flex;flex-direction:column;gap:8px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.card svg{width:100%;height:auto;display:block}
+ul.tight{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+/* web page mockup, copies the look of the page the board serves */
+.ui{background:#121016;color:#ece9f2;border-radius:12px;padding:12px;font:13px/1.4 system-ui,"Segoe UI",sans-serif;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.ui .c{background:#1d1a23;border:1px solid #332e3d;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.ui .h{font-size:10.5px;color:#9a93a8;text-transform:uppercase;letter-spacing:.06em}
+.ui .st{font-size:17px;font-weight:600}
+.ui .ch{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;margin:1px 3px 1px 0}
+.ui .ok{background:rgba(74,196,122,.16);color:#4ac47a} .ui .wa{background:rgba(232,180,74,.16);color:#e8b44a} .ui .no{background:rgba(226,96,79,.16);color:#e2604f}
+.ui .r{display:flex;justify-content:space-between;border-bottom:1px solid #332e3d;padding:2px 0;font-size:12px} .ui .r span{color:#9a93a8}
+.ui .b{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.ui .b i{font-style:normal;background:#3a3548;border-radius:7px;padding:6px 4px;text-align:center;font-weight:600;font-size:11.5px}
+.ui .b i.p{background:#7a5cff} .ui .b i.d{background:#e2604f}
+.ui pre{margin:0;background:#0b0a0e;border:1px solid #332e3d;border-radius:6px;padding:6px;font:11px/1.35 ui-monospace,Consolas,monospace;white-space:pre-wrap;color:#cfc9da}
+.ui .big{font-size:18px;font-weight:700;text-align:center}
+footer{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--dim)}
+a{color:var(--accent)}
+@media (max-width:520px){ h1{font-size:25px} .steps>li{grid-template-columns:30px 1fr} }
+</style>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
+</nav>
+
+<main>
+<header class="top">
+  <h1>DropSpider build guide, Rev C.1</h1>
+  <p class="dim">One page, top to bottom: wire the 38-pin ESP32-S NodeMCU, assemble the device, power it up, then set it up and test it from its own web page. The repo docs (02, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
+  <div class="legend">
+    <span><b class="chip ready">READY TODAY</b> works with the firmware on the board now</span>
+    <span><b class="chip t1">AFTER TASK 1</b> needs the Rev C.1 drop firmware</span>
+    <span><b class="chip t2">AFTER TASK 2</b> needs the LD2450 radar firmware</span>
+    <span><b class="chip plan">PLANNED</b> designed, not written yet</span>
+  </div>
+  <div class="legend">
+    <span><b class="j">SOLDER</b> soldered and heat-shrunk</span>
+    <span><b class="j">PLUG</b> dupont jumper or the part's own plug</span>
+    <span><b class="j">SCREW</b> screw terminal</span>
+  </div>
+  <div class="banner">The board still runs the Rev C firmware. Until the task 1 update, do not press Drop it now or Release, and do not type <code>drop</code> or <code>rel</code>: they drop with the motor off, which Rev C.1 forbids.</div>
+</header>
+
+<!-- ============================================================ -->
+<section id="parts">
+  <h2><span class="n">01</span>Parts and tools</h2>
+  <div class="two">
+    <div class="panel">
+      <h3>Electrical parts (all already owned)</h3>
+      <ul class="tight">
+        <li>38-pin ESP32-S NodeMCU, USB-C</li>
+        <li>TMC2209 driver on the stepper carrier board</li>
+        <li>NEMA 11 stepper motor, 4 wires</li>
+        <li>Micro servo (SG90 or MG90S)</li>
+        <li>KW12-3 roller micro switch</li>
+        <li>HLK-LD2450 radar with its 4-pin 1.25 mm cable</li>
+        <li>LM2596 buck converter</li>
+        <li>12 V 2 A adapter with screw-terminal jack</li>
+        <li>Dupont jumpers, 22 AWG wire for the 12 V run, heat shrink</li>
+      </ul>
+      <p class="dim" style="margin-top:8px">Left out on purpose: the 470 uF servo capacitor, the 74AHCT125 buffer and the LD2410C backup radar. Each is only fitted if a named test fails.</p>
+    </div>
+    <div class="panel">
+      <h3>Tools</h3>
+      <ul class="tight">
+        <li>Multimeter (needed before anything is connected)</li>
+        <li>Soldering iron, solder, heat gun or lighter for heat shrink</li>
+        <li>Small Phillips, small flat screwdriver (buck and driver pots)</li>
+        <li>1.5 mm and 2 mm hex keys (coupler set screws)</li>
+        <li>Vise or clamp, CA glue, blue threadlocker</li>
+        <li>A phone or PC on the same WiFi as the board</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="pinout">
+  <h2><span class="n">02</span>Board pinout, top view</h2>
+  <p>Board face up, antenna end away from you, USB-C toward you. Pin order is Espressif's 38-pin layout (ESP32-DevKitC headers J2 and J3). Clones print the names differently (<code>P32</code>, <code>IO32</code> or <code>32</code>; <code>SVP</code> or <code>VP</code>; <code>5V</code> or <code>VIN</code>): <b>go by the name printed next to the pin on your board</b>, not by counting.</p>
+  <figure class="fig">
+  <svg viewBox="0 0 920 540" role="img" aria-label="Top view of the 38-pin ESP32-S NodeMCU with the wires used by DropSpider">
+    <defs>
+      <pattern id="ant" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 5 H5 V0 M5 10 V5 H10" fill="none" stroke="#c9a14a" stroke-width="1.4"/></pattern>
+    </defs>
+    <!-- board -->
+    <rect x="360" y="30" width="200" height="460" rx="10" fill="var(--pcb)" stroke="var(--pcb-edge)" stroke-width="2"/>
+    <!-- module and antenna -->
+    <rect x="410" y="34" width="100" height="44" fill="var(--pcb-edge)"/>
+    <rect x="414" y="40" width="92" height="32" fill="url(#ant)"/>
+    <text x="460" y="92" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">ANTENNA END</text>
+    <rect x="410" y="100" width="100" height="160" rx="3" fill="var(--can)" stroke="var(--can-edge)"/>
+    <text x="460" y="175" fill="#3b4246" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">ESP-WROOM-32</text>
+    <text x="460" y="192" fill="#3b4246" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">metal can: warm</text>
+    <text x="460" y="205" fill="#3b4246" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">to the touch is normal</text>
+    <!-- USB chip and regulator -->
+    <rect x="440" y="330" width="40" height="40" fill="#2a2a2a"/><text x="460" y="385" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="8" text-anchor="middle">CP2102</text>
+    <rect x="420" y="400" width="24" height="16" fill="#2a2a2a"/><text x="432" y="428" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="7" text-anchor="middle">3V3 REG</text>
+    <circle cx="492" cy="408" r="4" fill="#4aa3ff"/><text x="492" y="428" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="7" text-anchor="middle">LED IO2</text>
+    <!-- buttons and USB -->
+    <rect x="404" y="448" width="26" height="18" rx="3" fill="#e7e7e7" stroke="#999"/><circle cx="417" cy="457" r="5" fill="#333"/>
+    <text x="417" y="482" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" text-anchor="middle">EN</text>
+    <rect x="490" y="448" width="26" height="18" rx="3" fill="#e7e7e7" stroke="#999"/><circle cx="503" cy="457" r="5" fill="#333"/>
+    <text x="503" y="482" fill="var(--silk)" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" text-anchor="middle">IO0</text>
+    <rect x="440" y="470" width="40" height="34" rx="6" fill="#b8bec2" stroke="#7d868b"/><text x="460" y="522" fill="var(--svg-dim)" font-family="IBM Plex Mono,monospace" font-size="10" text-anchor="middle">USB-C (toward you)</text>
+    <g id="pins"></g>
+    <g id="tags"></g>
+  </svg>
+  <figcaption>Coloured pins are used. Pins marked on-board need no wire. GPIO33 is left free unless the LD2410C backup radar is ever fitted.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ -->
+<section id="power">
+  <h2><span class="n">03</span>Power: one tree, no loops</h2>
+  <p>12 V feeds the motor driver and the buck converter. The buck makes 5 V for the ESP32, the servo and the radar. Every ground is one ground.</p>
+  <figure class="fig">
+  <svg viewBox="0 0 1000 380" role="img" aria-label="Power distribution from the 12 volt jack to every part">
+    <g font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="var(--svg-ink)">
+      <!-- carrier -->
+      <rect x="20" y="120" width="190" height="110" rx="8" fill="#23324a" stroke="#152033"/>
+      <text x="115" y="146" fill="#fff" text-anchor="middle" font-weight="600">TMC2209 carrier</text>
+      <text x="115" y="162" fill="#cdd7e6" text-anchor="middle" font-size="11">power screw terminal</text>
+      <rect x="170" y="176" width="36" height="44" fill="#2e8b57" stroke="#1b5e3a"/>
+      <text x="164" y="192" fill="#fff" text-anchor="end" font-size="11" font-family="IBM Plex Mono,monospace">VMOT</text>
+      <text x="164" y="214" fill="#fff" text-anchor="end" font-size="11" font-family="IBM Plex Mono,monospace">GND</text>
+      <!-- jack -->
+      <rect x="370" y="150" width="120" height="90" rx="8" fill="#2b2b2b"/>
+      <text x="430" y="140" text-anchor="middle" font-weight="600">12 V 2 A jack</text>
+      <rect x="380" y="176" width="100" height="44" fill="#3d9a5c"/>
+      <text x="430" y="194" fill="#fff" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11">+ 12 V</text>
+      <text x="430" y="214" fill="#fff" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11">- GND</text>
+      <!-- buck -->
+      <rect x="600" y="150" width="150" height="90" rx="6" fill="#1f5fa8" stroke="#16457b"/>
+      <text x="675" y="140" text-anchor="middle" font-weight="600">LM2596 buck, set 5.0 V</text>
+      <circle cx="640" cy="200" r="16" fill="#555"/><rect x="668" y="186" width="18" height="28" fill="#1d4f8a" stroke="#9cc3ff"/><text x="677" y="232" fill="#cfe2ff" font-size="9" text-anchor="middle">pot</text>
+      <text x="606" y="190" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace">IN+</text><text x="606" y="216" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace">IN-</text>
+      <text x="744" y="190" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace" text-anchor="end">OUT+</text><text x="744" y="216" fill="#fff" font-size="10" font-family="IBM Plex Mono,monospace" text-anchor="end">OUT-</text>
+      <!-- 12V wires -->
+      <path d="M380 190 H206" stroke="var(--w12)" stroke-width="5" fill="none"/>
+      <path d="M380 212 H206" stroke="var(--wgnd)" stroke-width="5" fill="none"/>
+      <path d="M480 190 H600" stroke="var(--w12)" stroke-width="5" fill="none"/>
+      <path d="M480 212 H600" stroke="var(--wgnd)" stroke-width="5" fill="none"/>
+      <text x="293" y="182" text-anchor="middle" font-size="11" fill="var(--svg-dim)">22 AWG</text>
+      <text x="540" y="182" text-anchor="middle" font-size="11" fill="var(--svg-dim)">22 AWG</text>
+      <text x="293" y="236" text-anchor="middle" font-size="10" fill="var(--svg-dim)">2 wires share each jack screw</text>
+      <!-- splices -->
+      <path d="M750 186 H790 V90 H830" stroke="var(--w5)" stroke-width="4" fill="none"/>
+      <path d="M750 212 H790 V290 H830" stroke="var(--wgnd)" stroke-width="4" fill="none"/>
+      <circle cx="830" cy="90" r="9" fill="var(--w5)"/><text x="830" y="70" text-anchor="middle" font-weight="600">5 V splice</text>
+      <circle cx="830" cy="290" r="9" fill="var(--wgnd)"/><text x="830" y="322" text-anchor="middle" font-weight="600">GND splice</text>
+      <g stroke="var(--w5)" stroke-width="3" fill="none"><path d="M839 90 L880 40"/><path d="M839 90 H880"/><path d="M839 90 L880 140"/></g>
+      <text x="886" y="44">ESP32 5V pin</text><text x="886" y="94">servo red</text><text x="886" y="144">LD2450 5V</text>
+      <g stroke="var(--wgnd)" stroke-width="3" fill="none"><path d="M839 290 L880 215"/><path d="M839 290 L880 262"/><path d="M839 290 L880 310"/><path d="M839 290 L880 358"/></g>
+      <text x="886" y="219">ESP32 GND pin</text><text x="886" y="266">servo brown</text><text x="886" y="314">LD2450 GND</text><text x="886" y="362">KW12-3 COM</text>
+      <!-- joint marks -->
+      <g font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--svg-dim)">
+        <text x="188" y="244" text-anchor="middle">SCREW</text>
+        <text x="430" y="258" text-anchor="middle">SCREW</text>
+        <text x="620" y="258" text-anchor="middle">SOLDER</text><text x="735" y="258" text-anchor="middle">SOLDER</text>
+        <text x="830" y="112" text-anchor="middle">SOLDER</text><text x="830" y="275" text-anchor="middle">SOLDER</text>
+      </g>
+      <text x="20" y="300" fill="var(--svg-dim)" font-size="12">Peak on 5 V about 1 A (servo moving plus WiFi), buck rated 2 A.</text>
+      <text x="20" y="318" fill="var(--svg-dim)" font-size="12">Motor draws about 0.6 A from 12 V while moving.</text>
+      <text x="20" y="336" fill="var(--svg-dim)" font-size="12">USB may stay plugged into the PC with 12 V on.</text>
+    </g>
+  </svg>
+  <figcaption>Set the buck to 5.0 V with a meter before any of the right-hand wires are connected. A new buck can arrive set to 12 V or more.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ -->
+<section id="connections">
+  <h2><span class="n">04</span>Every connection</h2>
+  <p class="dim">One row per wire, both ends. Wire colours are a suggestion so the pictures match; what matters is which pin goes where.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Wire</th><th>From</th><th>To</th><th>Joints</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>step</td><td>ESP32 GPIO25</td><td>carrier STEP</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>direction</td><td>ESP32 GPIO26</td><td>carrier DIR</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>enable</td><td>ESP32 GPIO27</td><td>carrier EN</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>signal ground</td><td>ESP32 GND (right row, pin 1)</td><td>carrier GND next to STEP/DIR</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsrv)"></span>servo signal</td><td>ESP32 GPIO13</td><td>servo orange</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsw)"></span>switch</td><td>ESP32 GPIO32</td><td>KW12-3 NO leg</td><td><span class="j">PLUG</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data in</td><td>ESP32 GPIO16</td><td>LD2450 TX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data out</td><td>ESP32 GPIO17</td><td>LD2450 RX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--w5)"></span>5 V</td><td>buck OUT+</td><td>5 V splice: ESP32 5V, servo red, LD2450 5V</td><td><span class="j">SOLDER</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>ground</td><td>buck OUT-</td><td>GND splice: ESP32 GND (left row), servo brown, LD2450 GND, KW12-3 COM</td><td><span class="j">SOLDER</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--w12)"></span>12 V</td><td>jack +</td><td>carrier VMOT, and buck IN+</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>12 V ground</td><td>jack -</td><td>carrier GND, and buck IN-</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td>motor, 4 wires</td><td>NEMA 11 black, green, red, blue</td><td>carrier 1A, 1B, 2A, 2B</td><td><span class="j">PLUG</span></td></tr>
+      <tr><td class="dim">not wired</td><td class="dim">ESP32 GPIO33</td><td class="dim">LD2410C OUT, only if the backup radar is ever fitted</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <div class="cards">
+    <div class="card">
+      <h3>TMC2209 on the carrier</h3>
+      <svg viewBox="0 0 300 170" aria-label="Driver carrier with its pins">
+        <rect x="10" y="10" width="280" height="150" rx="6" fill="#23324a"/>
+        <rect x="90" y="30" width="110" height="90" rx="3" fill="#5b3a8f" stroke="#3b2560"/><circle cx="175" cy="52" r="9" fill="#d9c27a" stroke="#8a7632"/><text x="145" y="100" fill="#fff" font-size="11" text-anchor="middle" font-family="IBM Plex Mono,monospace">TMC2209</text><text x="175" y="72" fill="#fff" font-size="8" text-anchor="middle">pot</text>
+        <rect x="24" y="36" width="44" height="30" fill="#c0392b"/><text x="46" y="80" fill="#fff" font-size="9" text-anchor="middle">DIP all OFF</text>
+        <g font-family="IBM Plex Mono,monospace" font-size="10" fill="#fff">
+          <text x="236" y="40">STEP</text><text x="236" y="60">DIR</text><text x="236" y="80">EN</text><text x="236" y="100">GND</text>
+        </g>
+        <g fill="#c9a14a"><circle cx="226" cy="36" r="4"/><circle cx="226" cy="56" r="4"/><circle cx="226" cy="76" r="4"/><circle cx="226" cy="96" r="4"/></g>
+        <rect x="24" y="120" width="56" height="30" fill="#2e8b57"/><text x="52" y="139" fill="#fff" font-size="9" text-anchor="middle">VMOT GND</text>
+        <g font-family="IBM Plex Mono,monospace" font-size="9" fill="#fff"><text x="100" y="146">1A 1B 2A 2B</text></g>
+        <g><rect x="98" y="126" width="12" height="8" fill="#222"/><rect x="116" y="126" width="12" height="8" fill="#1f8a4c"/><rect x="134" y="126" width="12" height="8" fill="#d23a2f"/><rect x="152" y="126" width="12" height="8" fill="#2563c9"/></g>
+      </svg>
+      <p class="dim">Pot to 0.85 V (pot top to GND), 12 V on, motor unplugged. Driver's EN pin on the carrier's EN position. Motor order as printed on your carrier; if it buzzes, swap black and green.</p>
+    </div>
+    <div class="card">
+      <h3>KW12-3 roller switch</h3>
+      <svg viewBox="0 0 300 170" aria-label="KW12-3 switch legs">
+        <rect x="60" y="40" width="170" height="70" rx="4" fill="#2b2b2b"/>
+        <path d="M80 40 L220 18" stroke="#c7ccd0" stroke-width="4"/><circle cx="224" cy="16" r="9" fill="#e9eef1" stroke="#8a9398"/>
+        <rect x="140" y="30" width="8" height="12" fill="#c62828"/>
+        <g fill="#c9a14a"><rect x="80" y="110" width="10" height="26"/><rect x="140" y="110" width="10" height="26"/><rect x="200" y="110" width="10" height="26"/></g>
+        <g font-family="IBM Plex Mono,monospace" font-size="11" text-anchor="middle" fill="var(--svg-ink)"><text x="85" y="154">COM</text><text x="145" y="154">NC</text><text x="205" y="154">NO</text></g>
+        <path d="M85 136 V148" stroke="var(--wgnd)" stroke-width="0"/>
+        <text x="150" y="80" fill="#ddd" font-size="10" text-anchor="middle" font-family="IBM Plex Mono,monospace">KW12-3</text>
+      </svg>
+      <p><b>COM</b> to GND splice, <b>NO</b> to GPIO32, <b>NC</b> nothing. Leg order differs between makers: <b>read the letters moulded beside each leg</b>. Solder, then heat shrink each leg.</p>
+    </div>
+    <div class="card">
+      <h3>Micro servo</h3>
+      <svg viewBox="0 0 300 150" aria-label="Micro servo wires">
+        <rect x="20" y="40" width="130" height="60" rx="4" fill="#1f5fa8"/><circle cx="60" cy="70" r="16" fill="#fff" stroke="#999"/>
+        <path d="M150 62 H250" stroke="#7a4a26" stroke-width="5"/><path d="M150 70 H250" stroke="#d23a2f" stroke-width="5"/><path d="M150 78 H250" stroke="#ea7a17" stroke-width="5"/>
+        <rect x="250" y="56" width="26" height="28" fill="#222"/>
+        <g font-size="11" font-family="IBM Plex Mono,monospace" fill="var(--svg-ink)"><text x="160" y="116">brown GND</text><text x="160" y="130">red 5 V</text><text x="160" y="144">orange GPIO13</text></g>
+      </svg>
+      <p class="dim">The servo's 3-pin plug has red in the middle. Use three separate jumpers from the plug: orange to GPIO13, red to the 5 V splice, brown to the GND splice. Never red to the ESP32's 3V3 pin.</p>
+    </div>
+    <div class="card">
+      <h3>HLK-LD2450 radar</h3>
+      <svg viewBox="0 0 300 150" aria-label="LD2450 board and connector">
+        <rect x="30" y="20" width="160" height="110" rx="6" fill="#1d4f38"/>
+        <g fill="#c9a14a"><rect x="50" y="40" width="30" height="30"/><rect x="95" y="40" width="30" height="30"/><rect x="140" y="40" width="30" height="30"/></g>
+        <text x="110" y="100" fill="#fff" font-size="10" text-anchor="middle" font-family="IBM Plex Mono,monospace">antennas face out</text>
+        <rect x="190" y="58" width="16" height="44" fill="#eee" stroke="#999"/>
+        <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--svg-ink)"><text x="214" y="64">5V</text><text x="214" y="78">RX</text><text x="214" y="92">TX</text><text x="214" y="106">GND</text></g>
+      </svg>
+      <p class="dim">Pin order per Hi-Link's manual (5V, RX, TX, GND); check the print beside the plug. TX to GPIO16, RX to GPIO17: they cross. Hi-Link asks for a 5 V supply able to give 200 mA; the buck is fine.</p>
+    </div>
+    <div class="card">
+      <h3>LM2596 buck</h3>
+      <svg viewBox="0 0 300 150" aria-label="LM2596 buck pads">
+        <rect x="20" y="30" width="260" height="90" rx="6" fill="#1f5fa8"/>
+        <circle cx="90" cy="75" r="22" fill="#555"/><rect x="150" y="50" width="24" height="44" fill="#1d4f8a" stroke="#9cc3ff"/><circle cx="162" cy="56" r="4" fill="#d9c27a"/>
+        <g fill="#c9a14a"><circle cx="36" cy="50" r="6"/><circle cx="36" cy="100" r="6"/><circle cx="264" cy="50" r="6"/><circle cx="264" cy="100" r="6"/></g>
+        <g font-family="IBM Plex Mono,monospace" font-size="10" fill="#fff"><text x="48" y="54">IN+</text><text x="48" y="104">IN-</text><text x="252" y="54" text-anchor="end">OUT+</text><text x="252" y="104" text-anchor="end">OUT-</text></g>
+        <text x="162" y="112" fill="#cfe2ff" font-size="9" text-anchor="middle">brass screw: turn to set 5.0 V</text>
+      </svg>
+      <p class="dim">12 V in, meter on OUT+ and OUT-, turn the brass screw until it reads 4.95 to 5.05 V. Many turns may be needed before the reading moves.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="solder">
+  <h2><span class="n">05</span>Soldering, in order</h2>
+  <ol class="steps">
+    <li><div><h3>Buck input and output leads</h3><p>Tin the four pads. Solder a red and a black 22 AWG lead to IN+ and IN-, and a red and a black lead to OUT+ and OUT-. Leave each 10 cm long.</p></div></li>
+    <li><div><h3>Set the buck before anything else</h3><p>IN leads into the jack's screw terminals with the 12 V adapter. Meter on OUT: turn the pot to 5.0 V. Unplug.</p></div></li>
+    <li><div><h3>5 V splice</h3><p>Strip 8 mm of the buck's OUT+ lead and three female-ended jumpers (for ESP32 5V, servo red, LD2450 5V). Slide heat shrink on first, twist the four together, solder, shrink. Label it 5 V with tape.</p></div></li>
+    <li><div><h3>GND splice</h3><p>Same with OUT- and four black jumpers (ESP32 GND, servo brown, LD2450 GND, KW12-3 COM).</p></div></li>
+    <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. COM wire goes to the GND splice lead; NO wire gets a female dupont end for GPIO32. Twist the two wires together along their length.</p></div></li>
+    <li><div><h3>Check with the meter before power</h3><p>Continuity mode: 5 V splice to GND splice must NOT beep. KW12-3 NO to COM beeps only while the lever is pressed.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section id="assembly">
+  <h2><span class="n">06</span>Mechanical assembly</h2>
+  <p class="dim">Condensed from doc 05. Pictures are the CAD renders from the repo; new parts in each step are in full colour.</p>
+  <figure class="shot"><img src="img:exploded" alt="Exploded view of every part along the rod"><figcaption>Everything on one 6 mm rod, motor to bearing: coupler, spacer A, ratchet disk, spool body with the HF0612 clutch, spacer B, 606ZZ.</figcaption></figure>
+  <ol class="steps">
+    <li><div><h3>Press the clutch into the spool</h3><p>HF0612 into <code>spool_body</code> from the flange side. Test on a spare rod: spins free one way, locks the other. From the plain flange side (it will face the 606ZZ end), free must be <b>counterclockwise</b>. If not, press it out and flip it. This is the Rev C.1 fix.</p></div></li>
+    <li><div><h3>Ratchet and line</h3><p>Ratchet disk on the boss, 3x M3x8. Tie 150 mm of 2 mm elastic round the barrel, then the braid to the elastic with a small double uni knot, trimmed tight (it must pass the 3.2 mm fairlead throat). The elastic is mandatory.</p></div></li>
+    <li><div><h3>Bearing and motor</h3><p>606ZZ into the end plate. Motor on the outside of the motor plate, 4x M2.5x6, wires toward the base.</p><figure class="shot"><img src="img:step1" alt="Step 1 render"></figure></div></li>
+    <li><div><h3>Coupler</h3><p>5 mm side onto the motor shaft until it stops, blue threadlocker, tighten. 6 mm side loose.</p><figure class="shot"><img src="img:step2" alt="Step 2 render"></figure></div></li>
+    <li><div><h3>Measure, then stack</h3><p>Motor plate outer face to the coupler's free end: 30 mm means use <code>spacer_A_6mm</code> as is; 27 to 29 mm add shims. Hold spacer A, spool (ratchet toward the motor), spacer B in line in the frame.</p><figure class="shot"><img src="img:step3" alt="Step 3 render"></figure></div></li>
+    <li><div><h3>Rod in</h3><p>From outside the 606ZZ plate, through everything into the coupler until it bottoms; turn the spool its free way as the rod enters the needles. Threadlocker, tighten. Check: spool free counterclockwise from the 606ZZ end, clockwise drags the motor. End play no more than 0.5 mm.</p><figure class="shot"><img src="img:step4" alt="Step 4 render"></figure></div></li>
+    <li><div><h3>Servo and finger</h3><p>Servo into the tower pocket, spline toward the spool, two tab screws. Horn on later, at 90 degrees, during calibration (section 09). Finger over the horn, glued with CA.</p><figure class="shot"><img src="img:step5" alt="Step 5 render"></figure><figure class="shot"><img src="img:lock_detail" alt="Lock detail section"><figcaption>Locked: finger level in the teeth, the tooth pushes it up onto the ledge, not into the servo.</figcaption></figure></div></li>
+    <li><div><h3>Fairlead, flap and switch</h3><p>Clear the bore with a 3 mm drill by hand. KW12-3 on the switch plate, roller toward the fairlead, 2x M2 finger-tight. Flap on a 30 mm filament pin. Slide the switch until the roller just touches the flap tail, back off a paper's thickness, tighten. Lift the flap by hand: click at about 2 mm, then it stops flat.</p><figure class="shot"><img src="img:fairlead_exploded" alt="Fairlead parts"></figure></div></li>
+    <li><div><h3>Glue the fairlead, thread the line</h3><p>Fairlead body glued to the pad (two M3 screws as alignment pins while it cures, then out). Wind elastic then braid counterclockwise from the 606ZZ end, down through the fairlead, into the flap's slot. Below: 8 mm bead, swivel, spider (60 g at most).</p><figure class="shot"><img src="img:step6" alt="Step 6 render"></figure></div></li>
+    <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to bead, elastic included, unstretched: that number is <b>Line length</b> on the web page.</p><figure class="shot"><img src="img:fairlead_home" alt="Spider home: bead lifts the flap"><figcaption>Spider home: the bead lifts the flap, the flap's tail presses the roller.</figcaption></figure></div></li>
+    <li><div><h3>Controller on the pad</h3><p>Board, carrier and buck on the electronics pad with foam tape or zip ties through the x = -80 holes. Keep the x = -56 holes and the two at the servo end clear: those are the ceiling screws.</p><figure class="shot"><img src="img:base_layout" alt="Base layout with mounting holes"></figure></div></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section id="bringup">
+  <h2><span class="n">07</span>First power-up, one layer at a time</h2>
+  <ol class="steps">
+    <li><div><h3>Buck alone</h3><p>12 V on, nothing on the 5 V side. Meter reads 4.95 to 5.05 V.</p></div></li>
+    <li><div><h3>Driver current</h3><p>Motor unplugged, 12 V on. Meter from the pot's metal top to GND: turn to <b>0.85 V</b> (that is 0.6 A). Factory setting is about 1.2 V, too high for this motor.</p></div></li>
+    <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The blue LED blinks slowly when armed and ready. The finger servo swings to its lock angle once at start-up: keep fingers clear.</p></div></li>
+    <li><div><h3>Motor last</h3><p>Power off, plug in the motor, power on. Never plug or unplug the motor with 12 V on.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section id="web">
+  <h2><span class="n">08</span>The web page is the control panel</h2>
+  <p>The board serves its own page. On a phone or PC on the same WiFi, open <b class="mono">http://dropspider.local</b>. If that name does not resolve (some Android phones), use the address the board got from the router: today it is <b class="mono">192.168.1.16</b>. If the board cannot join the WiFi within 15 s it makes its own network, <b>DropSpider-setup</b> (password <code>dropspider</code>), and the page is at <b class="mono">192.168.4.1</b>.</p>
+  <p>Every button sends a text command, and the Console card shows everything the board says, so the page and the USB console always agree. The page refreshes itself a little faster than once a second. <b class="chip ready">READY TODAY</b></p>
+  <div class="ui" aria-label="Mockup of the board's web page">
+    <div class="c"><div class="h">Status</div><div class="st">ready</div>
+      <div><span class="ch ok">armed</span><span class="ch wa">switch open, spider not home</span><span class="ch ok">radar: clear</span></div>
+      <div class="r"><span>Drops so far</span><b>0</b></div><div class="r"><span>Last rewind</span><b>none yet</b></div><div class="r"><span>Running for</span><b>2 min 14 s</b></div></div>
+    <div class="c"><div class="h">Run</div><div class="b"><i class="p">Drop it now</i><i>Disarm</i><i class="d">Stop</i><i>Motor and servo off</i><i>Clear fault</i></div></div>
+    <div class="c"><div class="h">Bench: finger servo</div><div class="big">90° holding</div><div class="b"><i>-5°</i><i>+5°</i><i>-1°</i><i>+1°</i><i>Store as lock</i><i>Store as release</i></div></div>
+    <div class="c"><div class="h">Bench: motor</div><div class="b"><i>-1 turn</i><i>+1 turn</i><i>-1/8</i><i>+1/8</i><i>Rewind</i><i>Lock</i></div></div>
+    <div class="c"><div class="h">Settings</div><div class="r"><span>Finger lock angle</span><b>90</b></div><div class="r"><span>Line length</span><b>720</b></div><div class="r"><span>Limit switch fitted</span><b>1</b></div><div class="b"><i class="p">Save settings</i><i>Factory values</i></div></div>
+    <div class="c"><div class="h">Console</div><pre>&gt; jog 200
+[jog] ran 200 steps
+[done] jog (motor stays on)
+&gt; off
+[done] off: motor and servo off</pre></div>
+  </div>
+  <p class="dim">What the chips mean: <b>armed</b> means the radar may fire it. <b>Motor powered</b> appears whenever the driver is on. <b>Spider home</b> is the limit switch. A red chip is a fault, with its reason; three in a row and it stops until you press Clear fault.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="calibrate">
+  <h2><span class="n">09</span>Calibrate from the web page, in this order</h2>
+  <p class="dim">Bench first: device base-down on the table edge, spool hanging over so the line can drop about 0.7 m. Any bench move disarms the radar on purpose; step 10 re-arms it. Record each result in the commissioning log.</p>
+  <ol class="steps">
+    <li><div><h3>Page loads <b class="chip ready">READY TODAY</b></h3><p>State reads "ready" or "waiting for the doorway to clear". The Console card shows the start-up lines.</p></div></li>
+    <li><div><h3>Limit switch reads right <b class="chip ready">READY TODAY</b></h3><p>Lift the fairlead flap by hand and let go, watching the status chip change between "reads pressed" and "reads open". If it is backwards, type <code>liminv 1</code> in the Console. Then set <b>Limit switch fitted</b> to 1 and press <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Motor turns cleanly <b class="chip ready">READY TODAY</b></h3><p>Hands and line clear. Bench: motor, <b>+1 turn</b> then <b>-1 turn</b>. One smooth turn each way. Stutters or buzzes: this is the logic-level check (open item V1); see doc 02.</p></div></li>
+    <li><div><h3>Finger angles <b class="chip ready">READY TODAY</b></h3><p>Bench: finger servo. With the servo at 90, press the horn on pointing at the rod. Nudge until the finger sits level in the teeth: <b>Store as lock</b>. Nudge toward the floor until it is clear of the teeth: <b>Store as release</b>. <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Rewind direction <b class="chip ready">READY TODAY</b></h3><p>Spider hanging. <b>+1/8</b>: the spool should wind the line up. If the motor turns but the spool slips, set <b>Rewind direction</b> to the other value and try again. If neither way winds, the clutch is still in the Rev C direction: flip it (assembly step 1).</p></div></li>
+    <li><div><h3>Line length <b class="chip ready">READY TODAY</b></h3><p>Enter the measured number in <b>Line length</b>, <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Release under load, drop, rewind, lock <b class="chip t1">AFTER TASK 1</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. New settings arrive with it: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
+    <li><div><h3>Five full drops <b class="chip t1">AFTER TASK 1</b></h3><p>All complete, no tangles, finger always relocks. After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
+    <li><div><h3>Radar live view <b class="chip t2">AFTER TASK 2</b></h3><p>See section 10. Walk toward the door, away, and across; confirm it fires only walking in.</p></div></li>
+    <li><div><h3>Arm and save <b class="chip ready">READY TODAY</b></h3><p>Press <b>Arm</b>, then <b>Save settings</b> so it stays armed after a power cut.</p></div></li>
+  </ol>
+  <div class="panel">
+    <h3>Planned: a Calibrate card that walks these steps <b class="chip plan">PLANNED</b></h3>
+    <p style="margin-top:6px">One card on the page that shows the current step, what to do with your hands, a single button that runs the move, and Pass or Fail buttons. Results are written to the board's log so they can be copied into the commissioning log. This replaces the <code>test</code> console command on the backlog: same steps, but on the phone in your hand at the bench.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="live">
+  <h2><span class="n">10</span>Live sensor readings in the browser</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Reading</th><th>Where on the page</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Limit switch pressed or open</td><td>Status chip, about once a second</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>Finger servo angle and whether it is holding</td><td>Bench: finger servo</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>Motor powered, last rewind steps, measured line length</td><td>Status card</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>Every event the board logs</td><td>Console card</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>Radar yes/no</td><td>Status chip (LD2410C pin only)</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>LD2450 people: position, speed, arrival time</td><td>Radar card, about 5 times a second</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
+      <tr><td>"Would fire now" lamp</td><td>Radar card</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
+    </tbody>
+  </table></div>
+  <figure class="fig">
+  <svg viewBox="0 0 900 420" role="img" aria-label="Planned radar card: top-down map of the hallway with people as dots">
+    <g font-family="IBM Plex Sans,system-ui,sans-serif" fill="var(--svg-ink)">
+      <rect x="10" y="10" width="560" height="400" rx="10" fill="#121016"/>
+      <text x="30" y="36" fill="#9a93a8" font-size="11" letter-spacing="1">RADAR, TOP VIEW OF THE HALLWAY (PLANNED)</text>
+      <!-- sensor and fov -->
+      <path d="M290 60 L60 330 A 330 330 0 0 0 520 330 Z" fill="rgba(122,92,255,.10)" stroke="#3a3548"/>
+      <rect x="275" y="52" width="30" height="10" fill="#7a5cff"/><text x="290" y="50" fill="#9a93a8" font-size="10" text-anchor="middle">LD2450 above the door</text>
+      <!-- door window -->
+      <rect x="240" y="62" width="100" height="300" fill="rgba(74,196,122,.12)" stroke="#4ac47a" stroke-dasharray="5 4"/>
+      <text x="290" y="378" fill="#4ac47a" font-size="10" text-anchor="middle">door width window (doorwidth 1000 mm)</text>
+      <g stroke="#332e3d"><path d="M40 162 H540"/><path d="M40 262 H540"/><path d="M40 362 H540"/></g>
+      <g fill="#6f6880" font-size="10"><text x="44" y="158">1 m</text><text x="44" y="258">2 m</text><text x="44" y="358">3 m</text></g>
+      <!-- targets -->
+      <circle cx="300" cy="190" r="9" fill="#e8b44a"/><path d="M300 190 V150" stroke="#e8b44a" stroke-width="3"/><path d="M294 158 L300 148 L306 158" fill="#e8b44a"/>
+      <text x="314" y="194" fill="#ece9f2" font-size="11">person 1, walking in</text>
+      <circle cx="440" cy="300" r="9" fill="#9a93a8"/><path d="M440 300 H400" stroke="#9a93a8" stroke-width="3"/>
+      <text x="454" y="304" fill="#9a93a8" font-size="11">person 2, across</text>
+      <!-- lamp -->
+      <circle cx="505" cy="40" r="11" fill="#4ac47a"/><text x="490" y="44" fill="#ece9f2" font-size="11" text-anchor="end">would fire now</text>
+    </g>
+    <g font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--svg-ink)">
+      <text x="600" y="40" font-family="IBM Plex Sans,sans-serif" font-weight="600">Readout, example values</text>
+      <text x="600" y="70" fill="var(--svg-dim)">#   X mm   Y mm   m/s   arrives</text>
+      <text x="600" y="94">1    +80   1280  -1.2    1070 ms</text>
+      <text x="600" y="118" fill="var(--svg-dim)">2  +1500   2380   0.0       none</text>
+      <text x="600" y="142" fill="var(--svg-dim)">3      -      -     -          -</text>
+      <text x="600" y="186" font-family="IBM Plex Sans,sans-serif">Fires when one person is inside the</text>
+      <text x="600" y="206" font-family="IBM Plex Sans,sans-serif">window, walking in faster than 0.3 m/s,</text>
+      <text x="600" y="226" font-family="IBM Plex Sans,sans-serif">and arriving within leadms (750 ms),</text>
+      <text x="600" y="246" font-family="IBM Plex Sans,sans-serif">for 2 readings in a row.</text>
+      <text x="600" y="290" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">Tune from the page: doorwidth,</text>
+      <text x="600" y="310" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">approach, leadms. Nothing is sent</text>
+      <text x="600" y="330" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">to the radar itself.</text>
+    </g>
+  </svg>
+  <figcaption>Design for task 2, drawn with example numbers, not live data. The map only updates quickly while the card is open, so an idle page costs the board nothing.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ -->
+<section id="place">
+  <h2><span class="n">11</span>Placement on the ceiling</h2>
+  <figure class="shot"><img src="img:install" alt="Side section through the doorway showing the device, the drop and the radar"></figure>
+  <div class="two">
+    <div class="tw"><table>
+      <thead><tr><th>Point (8 ft ceiling, 6 ft 8 in door)</th><th>Height</th></tr></thead>
+      <tbody>
+        <tr><td>Ceiling</td><td>2440 mm (96 in)</td></tr>
+        <tr><td>Top of door opening</td><td>2030 mm (80 in)</td></tr>
+        <tr><td>Spider, retracted</td><td>bottom about 2230 mm</td></tr>
+        <tr><td>Spider at rest after the drop</td><td>1550 mm (61 in)</td></tr>
+        <tr><td>Lowest, if the motor loses grip and the elastic catches</td><td>about 1450 mm (57 in)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="panel">
+      <ul class="tight">
+        <li>On the ceiling, <b>room side</b> of the doorway, fairlead <b>300 mm (12 in) in from the wall</b>, centred on the door.</li>
+        <li>Rod parallel to the wall. Electronics pad toward the doorway.</li>
+        <li>4 screws: the 2 at the servo end, the 2 pad holes at x = -56. Joist: #4 x 1 in wood screws. Drywall only: ribbed anchors or small toggles.</li>
+        <li>LD2450 flat on the wall above the door, <b>hallway side</b>, looking straight out, not tilted. Lead over the door head.</li>
+        <li>12 V adapter stays at the outlet; DC extension up the trim.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Line length for your ceiling</h3>
+    <p style="margin-top:6px" class="mono">line = (ceiling - 85) - (rest height + spider height + 30) + 45</p>
+    <p class="dim" style="margin-top:6px">All in mm. Example: (2440 - 85) - (1550 + 100 + 30) + 45 = 720. Tie it long, enter it as Line length, then shorten on site until the resting height is right.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="arm">
+  <h2><span class="n">12</span>On site, then arm</h2>
+  <ol class="steps">
+    <li><div><h3>Five drops in place <b class="chip t1">AFTER TASK 1</b></h3><p>Adjust Line length (and drop distance) until the spider stops at face height.</p></div></li>
+    <li><div><h3>Walk tests <b class="chip t2">AFTER TASK 2</b></h3><p>Walk in from 3 m: it fires and the spider arrives as you reach the doorway. Walk away, walk across, stand still: no drop.</p></div></li>
+    <li><div><h3>No double scare <b class="chip ready">READY TODAY</b></h3><p>After a scare, stand in the doorway: nothing until you leave and 20 s pass (Lockout after a scare).</p></div></li>
+    <li><div><h3>Before each night</h3><p>Check the knot, bead, flap and elastic. Soft foam spider only, 60 g at most. Press Disarm, or unplug, when small children are about to run through.</p></div></li>
+  </ol>
+</section>
+
+<footer>
+  <div><b>How this was checked, 2026-09-25.</b> Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. Header order from Espressif's ESP32-DevKitC pin tables. LD2450 pin order and 200 mA supply from Hi-Link's manual. Assembly, placement and heights from docs 05, 06 and 09. Web page cards copied from <code>src/web.cpp</code>. Board on COM13 read by esptool (ESP32, 4 MB flash); it joins the home WiFi at 192.168.1.16 and takes updates over WiFi.</div>
+  <div><b>Not checked.</b> That your board's silkscreen matches Espressif's order. Nothing here has been watched working with the motor, servo, switch or radar connected. Everything marked AFTER TASK 1, AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
+</footer>
+</main>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  var L=["3V3","EN","VP","VN","IO34","IO35","IO32","IO33","IO25","IO26","IO27","IO14","IO12","GND","IO13","D2","D3","CMD","5V"];
+  var R=["GND","IO23","IO22","TX","RX","IO21","GND","IO19","IO18","IO5","IO17","IO16","IO4","IO0","IO2","IO15","D1","D0","CLK"];
+  // side, index: [label, wire colour var, joint, muted]
+  var USE={
+    "L6":["to KW12-3 NO leg","--wsw","PLUG"],
+    "L8":["to carrier STEP","--wsig","PLUG"],
+    "L9":["to carrier DIR","--wsig","PLUG"],
+    "L10":["to carrier EN","--wsig","PLUG"],
+    "L13":["to GND splice","--wgnd","PLUG"],
+    "L14":["to servo orange","--wsrv","PLUG"],
+    "L18":["to 5 V splice (power in)","--w5","PLUG"],
+    "L7":["free (LD2410C, not fitted)","--wmute","",1],
+    "R0":["to carrier GND by STEP/DIR","--wgnd","PLUG"],
+    "R10":["to LD2450 RX","--wrad","PLUG"],
+    "R11":["to LD2450 TX","--wrad","PLUG"],
+    "R13":["on-board IO0 button, no wire","--wmute","",1],
+    "R14":["on-board blue LED, no wire","--wmute","",1]
+  };
+  function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(p||pins).appendChild(e);return e}
+  var pins=document.getElementById("pins"), tags=document.getElementById("tags");
+  if(!pins) return;
+  var y0=94, dy=19;
+  function side(names,s){
+    for(var i=0;i<names.length;i++){
+      var y=y0+i*dy, x=s==="L"?374:546, key=s+i, u=USE[key];
+      var col=u?"var("+u[1]+")":"none";
+      el("circle",{cx:x,cy:y,r:6.5,fill:u&&!u[3]?col:"var(--pcb-edge)",stroke:"var(--pad)","stroke-width":2.5});
+      var t=el("text",{x:s==="L"?386:534,y:y+3.5,fill:"var(--silk)","font-family":"IBM Plex Mono,monospace","font-size":9.5,"text-anchor":s==="L"?"start":"end"});
+      t.textContent=names[i];
+      if(u){
+        var x2=s==="L"?330:590, xt=s==="L"?322:598;
+        el("path",{d:"M"+x+" "+y+" H"+x2,stroke:col,"stroke-width":u[3]?2:3.5,"stroke-dasharray":u[3]?"4 3":"none",fill:"none"},tags);
+        var g=el("text",{x:xt,y:y+4,"font-family":"IBM Plex Sans,system-ui,sans-serif","font-size":12.5,fill:u[3]?"var(--svg-dim)":"var(--svg-ink)","text-anchor":s==="L"?"end":"start"},tags);
+        g.textContent=(s==="L"?"":"")+names[i]+"  "+u[0];
+        if(u[2]){var jb=el("text",{x:s==="L"?xt-g.getComputedTextLength()-8:xt+g.getComputedTextLength()+8,y:y+4,"font-family":"IBM Plex Mono,monospace","font-size":9.5,fill:"var(--svg-dim)","text-anchor":s==="L"?"end":"start"},tags);jb.textContent=u[2];}
+      }
+    }
+  }
+  side(L,"L"); side(R,"R");
+  el("text",{x:374,y:y0-18,fill:"var(--silk)","font-family":"IBM Plex Mono,monospace","font-size":8.5,"text-anchor":"start"},pins).textContent="J2";
+  el("text",{x:546,y:y0-18,fill:"var(--silk)","font-family":"IBM Plex Mono,monospace","font-size":8.5,"text-anchor":"end"},pins).textContent="J3";
+})();
+</script>
