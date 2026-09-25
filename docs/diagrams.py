@@ -67,8 +67,8 @@ def wiring():
     line(a2, psu["GND"], buck["IN-"], BLK, None, mid=4.0)
     for dst, bx in [((e5["VIN"]), 10.0), ((s5["red (5 V)"]), 10.3), ((r5["VCC (5 V)"]), 10.6)]: line(a2, buck["OUT+"], dst, ORG, None, mid=bx)
     for dst, bx in [((e5["GND"]), 9.6), ((s5["brown (GND)"]), 9.8), ((r5["GND"]), 10.9)]: line(a2, buck["OUT-"], dst, BLK, None, mid=bx)
-    a2.add_patch(Circle((11.0, 4.37), 0.16, fc="white", ec=ORG, lw=2))
-    a2.text(7.3, 0.35, "470 uF 16 V capacitor across the servo red/brown at the servo end (stripe = GND).\nAll grounds tie together: adapter, carrier, buck, ESP32, servo, radar, switch COM.\nUSB can stay plugged in for the serial console while 12 V is on.",
+    a2.add_patch(Circle((11.0, 4.37), 0.16, fc="white", ec=ORG, lw=2, ls="--"))
+    a2.text(7.3, 0.35, "Dashed circle: 470 uF capacitor at the servo, ONLY if the ESP32 restarts when the finger moves.\nAll grounds tie together: adapter, carrier, buck, ESP32, servo, radar, switch COM.\nUSB can stay plugged in for the serial console while 12 V is on.",
             fontsize=10, ha="center", bbox=dict(fc="white", ec="0.6"))
     fig.savefig(os.path.join(IMG, "wiring.png"), dpi=100, bbox_inches="tight"); plt.close(fig)
 
