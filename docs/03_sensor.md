@@ -31,6 +31,9 @@ UART2 at 256000 baud, 8N1. Hardware UART only.
 - Flat on the wall above the door, **hallway side**, facing straight out down the approach. Not tilted down: the LD2450 is built to look straight out (about 120 degrees wide, 70 degrees tall).
 - Its X axis is left-right across the doorway, Y is distance out into the hallway.
 - Keep ceiling fans and moving curtains out of its view; they show up as targets.
+- **Orientation, from Hi-Link's manual (section 7, figure 6):** module standing upright, long edge vertical, the end marked **Up** in the manual's figure at the top, antenna face toward the hallway. Mounted this way its left-right reading is the X axis across the doorway. Confirm on the bench: walk left to right in front of it; X must change, Y stay steady. If Y changes instead, it is on its side: turn it 90 degrees.
+- **Height:** Hi-Link recommends 1.5 to 2 m. Above a 6 ft 8 in door the wall is about 2.05 to 2.1 m, just over; that is fine for walkers, not tilted. If it misses people close to the door, mount it beside the door frame at about 1.8 m instead.
+- **Back of the sensor:** the manual warns it also sees a little through its back. The dropping spider is on the room side, behind it. A piece of kitchen foil on the wall behind the sensor (not touching its pins) cuts that down; the firmware lockout covers the rest.
 
 ## Trigger rule (firmware)
 

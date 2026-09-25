@@ -92,7 +92,7 @@ a{color:var(--accent)}
 </style>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
+  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#powerboard">Power board</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
 </nav>
 
 <main>
@@ -332,7 +332,7 @@ a{color:var(--accent)}
 <!-- ============================================================ -->
 <section id="proto">
   <h2><span class="n">05b</span>Protoboard layout, one quarter</h2>
-  <p>The ESP32 sits on one quarter of the snappable protoboard (17 holes across, 19 down). Underneath, the copper joins the holes in <b>groups of three</b> across, with a <b>15-hole rail</b> down each side. So each ESP32 pin shares its group with two more holes: a male pin two holes outward is already connected to it, no wire needed. One rail carries 5 V, the other ground. The second quarter, beside it, carries the buck converter; the expansion board mounts on its own.</p>
+  <p>The ESP32 sits on one quarter of the snappable protoboard (17 holes across, 19 down). Underneath, the copper joins the holes in <b>groups of three</b> across, with a <b>15-hole rail</b> down each side. So each ESP32 pin shares its group with two more holes: a male pin two holes outward is already connected to it, no wire needed. One rail carries 5 V, the other ground. The second quarter, to its right, is the power board (below). The expansion board mounts on its own.</p>
   <figure class="fig">
   <svg id="protosvg" viewBox="0 0 960 560" role="img" aria-label="Protoboard quarter, top view, with the ESP32 sockets, signal pins, rails and solder bridges"></svg>
   <figcaption>Top view, parts side, USB end at the top edge so the cable reaches it. Faint gold bars show the copper groups on the underside. <b>From the solder side everything is mirrored left to right</b>: count holes from the rail, not from the edge you are looking at.</figcaption>
@@ -342,8 +342,8 @@ a{color:var(--accent)}
     <tbody>
       <tr><td>2 x 15-pin female socket strip</td><td>columns 3 and 13, rows 2 to 16 (10 holes apart)</td><td>ESP32 unplugs in seconds; one board has already failed</td></tr>
       <tr><td>Signal male pins</td><td>column 15 (VIN side) and column 1 (3V3 side), same row as their ESP32 pin</td><td>same copper group as the ESP32 pin, no wire; one pin per wire, servo wires separate</td></tr>
-      <tr><td>5 V rail, male pins</td><td>right rail, rows 13 to 15, plus a bridge at row 2</td><td>buck in, servo red, LD2450 5V; servo current never passes through the ESP32</td></tr>
-      <tr><td>GND rail, male pins</td><td>left rail, rows 12 to 15, plus a bridge at row 3</td><td>buck in, servo brown, LD2450 GND, KW12-3 COM</td></tr>
+      <tr><td>5 V rail, male pins</td><td>right rail, rows 13 to 15, plus a bridge at row 2</td><td>5 V in from the power board, servo red, LD2450 5V; servo current never passes through the ESP32</td></tr>
+      <tr><td>GND rail, male pins</td><td>left rail, rows 12 to 15, plus a bridge at row 3</td><td>GND in from the power board, servo brown, LD2450 GND, KW12-3 COM</td></tr>
       <tr><td>Nothing else</td><td>-</td><td>switch and radar need no resistors; servo capacitor and logic buffer only if a test fails (2 free rail holes kept for the capacitor)</td></tr>
     </tbody>
   </table></div>
@@ -351,14 +351,37 @@ a{color:var(--accent)}
 </section>
 
 <!-- ============================================================ -->
+<section id="powerboard">
+  <h2><span class="n">05c</span>Power board, the second quarter</h2>
+  <p>12 V comes in on a screw terminal, feeds the MP1584EN, and leaves again on a second screw terminal for the expansion board. The MP1584EN's 5 V goes to the ESP32 board's rails on two jumpers. Same protoboard, same 3-hole copper groups, so most joints need no wire: only one red link on the underside.</p>
+  <figure class="fig">
+  <svg id="powersvg" viewBox="0 0 960 560" role="img" aria-label="Power board quarter, top view, with two screw terminals, the MP1584EN and the outputs to the ESP32 board"></svg>
+  <figcaption>Top view, parts side, placed to the right of the ESP32 board so its 5 V OUT pin sits next to the ESP32 board's 5 V rail. <b>From the solder side it is mirrored left to right.</b></figcaption>
+  </figure>
+  <div class="tw"><table>
+    <thead><tr><th>Part</th><th>Holes</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>12 V IN screw terminal</td><td>column 15, rows 3 (+12 V) and 5 (GND)</td><td>wire openings toward the right edge; the DC jack's cable lands here</td></tr>
+      <tr><td>12 V OUT screw terminal</td><td>column 15, rows 13 (+12 V) and 15 (GND)</td><td>to the expansion board's VMOT and GND, 22 AWG</td></tr>
+      <tr><td>MP1584EN on 4 short wire legs</td><td>IN+ 13,3 · IN- 13,9 · OUT+ 3,3 · OUT- 3,9</td><td>resistor clippings make good legs; the exact pad spacing does not matter. Some modules share one GND pad: then both GND legs go to it</td></tr>
+      <tr><td>Red link, underside, 22 AWG</td><td>14,3 to 14,13</td><td>carries 12 V from the IN terminal to the OUT terminal</td></tr>
+      <tr><td>3 solder bridges to the right rail (GND)</td><td>rows 5, 9 and 15, column 15 to 16</td><td>all grounds on this board meet on that rail</td></tr>
+      <tr><td>2 male pins</td><td>5V OUT at 1,3 · GND OUT at 1,9</td><td>jumpers to the ESP32 board: 5 V rail input and GND rail input</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Before the ESP32 board is connected: 12 V into the IN terminal, meter on 5V OUT and GND OUT: 4.95 to 5.05 V. Meter on the OUT terminal: 12 V.</p>
+</section>
+
+<!-- ============================================================ -->
 <section id="solder">
   <h2><span class="n">05</span>Soldering, in order</h2>
   <ol class="steps">
     <li><div><h3>Header pins on the ESP32</h3><p>Solder full 15-pin header strips down both sides, pins pointing down from the underside, so every jumper plugs on. If you only do the ones this build uses: <b>VIN, GND, D13, D27, D26, D25, D32</b> on the top row (the row with VIN), and <b>GND, RX2, TX2</b> on the other row. Push the strip into a breadboard to hold it straight, solder one pin at each end, check it is square, then the rest. Each joint a shiny cone, no bridges to the next pin.</p></div></li>
-    <li><div><h3>Buck input and output leads</h3><p>Tin the four pads. Solder a red and a black 22 AWG lead to IN+ and IN-, and a red and a black lead to OUT+ and OUT-. Leave each 10 cm long.</p></div></li>
-    <li><div><h3>Check the buck before anything else</h3><p>IN leads into the jack's screw terminals with the 12 V adapter. Meter on OUT: 4.95 to 5.05 V. Unplug.</p></div></li>
+    <li><div><h3>Legs on the MP1584EN</h3><p>Tin the four pads and solder a short bare wire leg (a resistor clipping) into each, pointing down.</p></div></li>
+    <li><div><h3>Meter the buck before it goes in</h3><p>Hold its IN legs on the 12 V adapter's jack terminals (or clip them). Meter on the OUT legs: 4.95 to 5.05 V. Unplug.</p></div></li>
     <li><div><h3>Protoboard: sockets, pins, bridges</h3><p>Follow the protoboard drawing in section 05b: two 15-pin female sockets for the ESP32, single male pins beside the used signals and on the two rails, and two solder bridges (a blob of solder, or a short bare wire, across the gap between two neighbouring holes) that tie the ESP32's VIN to the 5 V rail and its GND to the GND rail.</p></div></li>
-    <li><div><h3>Buck into the rails</h3><p>Buck OUT+ lead into the 5 V rail's input pin, OUT- into the GND rail's input pin (female dupont ends, or solder straight into a rail hole).</p></div></li>
+    <li><div><h3>Power board</h3><p>Build it per section 05c: two screw terminals, the MP1584EN on wire legs, the red 12 V link, three bridges, two male pins. Check it alone on 12 V before anything else is connected.</p></div></li>
+    <li><div><h3>Power board to ESP32 board</h3><p>Two female-female jumpers: power board 5V OUT to the ESP32 board's "5 V in" rail pin, power board GND OUT to its "GND in" rail pin. 12 V OUT terminal to the expansion board's VMOT and GND.</p></div></li>
     <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. Female dupont ends: COM to the GND rail, NO to the LIMIT pin. Twist the two wires together along their length.</p></div></li>
     <li><div><h3>Check with the meter before power</h3><p>ESP32 out of its sockets. Continuity mode: 5 V rail to GND rail must NOT beep. Each signal pin to its socket hole must beep. No signal pin may beep to a rail. KW12-3 NO to COM beeps only while the lever is pressed.</p></div></li>
   </ol>
@@ -514,7 +537,7 @@ a{color:var(--accent)}
         <li>On the ceiling, <b>room side</b> of the doorway, fairlead <b>300 mm (12 in) in from the wall</b>, centred on the door.</li>
         <li>Rod parallel to the wall. Electronics pad toward the doorway.</li>
         <li>4 screws: the 2 at the servo end, the 2 pad holes at x = -56. Joist: #4 x 1 in wood screws. Drywall only: ribbed anchors or small toggles.</li>
-        <li>LD2450 flat on the wall above the door, <b>hallway side</b>, looking straight out, not tilted. Lead over the door head.</li>
+        <li>LD2450 on the wall above the door, <b>hallway side</b>, looking straight out, not tilted. <b>Standing upright</b> (long edge vertical, antennas toward the hallway), per Hi-Link's manual figure 6: that makes its X reading run left-right across the doorway. Check on the bench: walk across in front of it and X must change. Hi-Link recommends 1.5 to 2 m high; above the door is about 2.1 m, fine. Kitchen foil on the wall behind it (not touching the pins) stops it seeing the spider through its back. Lead over the door head.</li>
         <li>12 V adapter stays at the outlet; DC extension up the trim.</li>
       </ul>
     </div>
@@ -632,12 +655,12 @@ a{color:var(--accent)}
     [15,8,"--wsig","DIR (D26): expansion board DIR"],
     [15,9,"--wsig","STEP (D25): expansion board STEP"],
     [15,11,"--wsw","LIMIT (D32): KW12-3 NO"],
-    [16,13,"--w5","5 V in: buck OUT+"],
+    [16,13,"--w5","5 V in: from power board 5V OUT"],
     [16,14,"--w5","5 V: servo red"],
     [16,15,"--w5","5 V: LD2450 5V"],
     [1,7,"--wrad","RX2 (GPIO16): LD2450 TX"],
     [1,8,"--wrad","TX2 (GPIO17): LD2450 RX"],
-    [0,12,"--wgnd","GND in: buck OUT-"],
+    [0,12,"--wgnd","GND in: from power board GND OUT"],
     [0,13,"--wgnd","GND: servo brown"],
     [0,14,"--wgnd","GND: LD2450 GND"],
     [0,15,"--wgnd","GND: KW12-3 COM"]
@@ -660,5 +683,57 @@ a{color:var(--accent)}
   bridge(15,16,2,"solder bridge: VIN to 5 V rail",true);
   bridge(0,1,3,"solder bridge: GND to GND rail",false);
   txt(X0+17*P/2,Y0+19*P+44,"Rows and columns counted from the top-left corner hole, parts side up. Unused holes stay empty.",{"text-anchor":"middle","font-size":11.5,fill:"var(--svg-dim)"});
+})();
+</script>
+
+<script>
+(function(){
+  var svg=document.getElementById("powersvg"); if(!svg) return;
+  var NS="http://www.w3.org/2000/svg", P=24, X0=276, Y0=52;
+  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e}
+  function cx(c){return X0+c*P+P/2} function cy(r){return Y0+r*P+P/2}
+  function txt(x,y,t,a){var e=el("text",Object.assign({x:x,y:y,"font-family":"IBM Plex Sans,system-ui,sans-serif","font-size":12,fill:"var(--svg-ink)"},a||{}));e.textContent=t;return e}
+  el("rect",{x:X0-6,y:Y0-6,width:17*P+12,height:19*P+12,rx:10,fill:"#1d3f86",stroke:"#12295a","stroke-width":2});
+  for(var r=0;r<19;r++){ for(var g=0;g<5;g++){ el("rect",{x:cx(1+g*3)-8,y:cy(r)-6,width:2*P+16,height:12,rx:6,fill:"#c9a14a",opacity:.28}); } }
+  [0,16].forEach(function(c){ el("rect",{x:cx(c)-6,y:cy(2)-8,width:12,height:14*P+16,rx:6,fill:"#c9a14a",opacity:.28}); });
+  for(var r=0;r<19;r++){ for(var c=0;c<17;c++){ if((c===0||c===16)&&(r<2||r>16)) continue; el("circle",{cx:cx(c),cy:cy(r),r:4.2,fill:"#e9d49a",stroke:"#8a6d22","stroke-width":1}); } }
+  [[0,0],[16,0],[0,18],[16,18]].forEach(function(m){ el("circle",{cx:cx(m[0]),cy:cy(m[1]),r:8,fill:"#0e1f45",stroke:"#e9d49a","stroke-width":2}); });
+  for(var c=0;c<17;c++) txt(cx(c),Y0-14,String(c),{"font-size":9.5,fill:"var(--svg-dim)","text-anchor":"middle","font-family":"IBM Plex Mono,monospace"});
+  for(var r=0;r<19;r++) txt(X0-18,cy(r)+3,String(r),{"font-size":9.5,fill:"var(--svg-dim)","text-anchor":"end","font-family":"IBM Plex Mono,monospace"});
+  el("rect",{x:cx(16)-4,y:cy(2)-6,width:8,height:14*P+12,rx:4,fill:"var(--wgnd)",opacity:.55});
+  txt(cx(16),cy(17)+22,"GND rail",{"text-anchor":"middle","font-weight":600});
+  // red link on the underside
+  el("path",{d:"M"+cx(14)+" "+cy(3)+" V"+cy(13),stroke:"var(--w12)","stroke-width":4,"stroke-dasharray":"7 4",fill:"none"});
+  // screw terminals
+  function term(r1,label){
+    el("rect",{x:cx(15)-11,y:cy(r1)-12,width:28,height:2*P+24,rx:3,fill:"#2f8f4e",stroke:"#1c5e32","stroke-width":1.5});
+    [r1,r1+2].forEach(function(r){ el("circle",{cx:cx(15)+3,cy:cy(r),r:6,fill:"#d9dde0",stroke:"#6c757a"}); el("path",{d:"M"+(cx(15)-1)+" "+cy(r)+" h8",stroke:"#6c757a","stroke-width":1.6}); });
+    txt(cx(15)+26,cy(r1)+4,"+12 V",{"font-size":11,"font-weight":600,fill:"var(--w12)"});
+    txt(cx(15)+26,cy(r1+2)+4,"GND",{"font-size":11,"font-weight":600});
+    txt(cx(15)+70,cy(r1+1)+4,label,{"font-size":11.5,"font-weight":600});
+  }
+  term(3,"12 V IN from DC jack");
+  term(13,"12 V OUT to expansion board");
+  // bridges to the GND rail
+  [5,9,15].forEach(function(r){ el("path",{d:"M"+cx(15)+" "+cy(r)+" H"+cx(16),stroke:"#d9dde0","stroke-width":7,"stroke-linecap":"round"}); el("path",{d:"M"+cx(15)+" "+cy(r)+" H"+cx(16),stroke:"#8f989d","stroke-width":2}); });
+  // MP1584EN on legs
+  el("rect",{x:cx(3)-8,y:cy(3)-10,width:cx(13)-cx(3)+16,height:cy(9)-cy(3)+20,rx:5,fill:"#16325e",stroke:"#0b1a33","stroke-width":1.5,opacity:.92});
+  el("rect",{x:cx(7),y:cy(5)-2,width:40,height:32,rx:4,fill:"#555"});
+  txt(cx(8),cy(4)+2,"MP1584EN, fixed 5 V",{"text-anchor":"middle","font-weight":600,fill:"#ffffff","font-size":12});
+  txt(cx(8),cy(8)+14,"on 4 wire legs",{"text-anchor":"middle",fill:"#cfe2ff","font-size":10.5});
+  [[13,3,"IN+"],[13,9,"IN-"],[3,3,"OUT+"],[3,9,"OUT-"]].forEach(function(l){
+    el("circle",{cx:cx(l[0]),cy:cy(l[1]),r:6,fill:"#c9a14a",stroke:"#fff","stroke-width":1.5});
+    txt(cx(l[0])+(l[0]>8?-10:10),cy(l[1])+4,l[2],{"font-size":10,fill:"#ffffff","font-family":"IBM Plex Mono,monospace","text-anchor":l[0]>8?"end":"start"});
+  });
+  // output pins
+  [[1,3,"--w5","5V OUT: to ESP32 board 5 V in"],[1,9,"--wgnd","GND OUT: to ESP32 board GND in"]].forEach(function(p){
+    var x=cx(p[0]), y=cy(p[1]), col="var("+p[2]+")";
+    el("rect",{x:x-6,y:y-6,width:12,height:12,rx:2,fill:col,stroke:"#fff","stroke-width":1.5});
+    el("path",{d:"M"+(x-7)+" "+y+" H"+(X0-40),stroke:col,"stroke-width":2,fill:"none"});
+    txt(X0-46,y+4,p[3],{"text-anchor":"end"});
+  });
+  txt(cx(14)+10,cy(8),"red link",{"font-size":11,fill:"var(--w12)","font-weight":600});
+  txt(cx(14)+10,cy(8)+14,"(underside)",{"font-size":10,fill:"var(--w12)"});
+  txt(X0+17*P/2,Y0+19*P+44,"Same row and column numbering as the ESP32 board. Terminals' wire openings face the right edge.",{"text-anchor":"middle","font-size":11.5,fill:"var(--svg-dim)"});
 })();
 </script>
