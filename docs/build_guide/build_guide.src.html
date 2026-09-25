@@ -92,7 +92,7 @@ a{color:var(--accent)}
 </style>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
+  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
 </nav>
 
 <main>
@@ -216,11 +216,11 @@ a{color:var(--accent)}
       <text x="293" y="182" text-anchor="middle" font-size="11" fill="var(--svg-dim)">22 AWG</text>
       <text x="540" y="182" text-anchor="middle" font-size="11" fill="var(--svg-dim)">22 AWG</text>
       <text x="293" y="236" text-anchor="middle" font-size="10" fill="var(--svg-dim)">2 wires share each jack screw</text>
-      <!-- splices -->
+      <!-- protoboard rails -->
       <path d="M750 186 H790 V90 H830" stroke="var(--w5)" stroke-width="4" fill="none"/>
       <path d="M750 212 H790 V290 H830" stroke="var(--wgnd)" stroke-width="4" fill="none"/>
-      <circle cx="830" cy="90" r="9" fill="var(--w5)"/><text x="830" y="70" text-anchor="middle" font-weight="600">5 V splice</text>
-      <circle cx="830" cy="290" r="9" fill="var(--wgnd)"/><text x="830" y="322" text-anchor="middle" font-weight="600">GND splice</text>
+      <circle cx="830" cy="90" r="9" fill="var(--w5)"/><text x="830" y="70" text-anchor="middle" font-weight="600">5 V rail</text>
+      <circle cx="830" cy="290" r="9" fill="var(--wgnd)"/><text x="830" y="322" text-anchor="middle" font-weight="600">GND rail</text>
       <g stroke="var(--w5)" stroke-width="3" fill="none"><path d="M839 90 L880 40"/><path d="M839 90 H880"/><path d="M839 90 L880 140"/></g>
       <text x="886" y="44">ESP32 VIN pin</text><text x="886" y="94">servo red</text><text x="886" y="144">LD2450 5V</text>
       <g stroke="var(--wgnd)" stroke-width="3" fill="none"><path d="M839 290 L880 215"/><path d="M839 290 L880 262"/><path d="M839 290 L880 310"/><path d="M839 290 L880 358"/></g>
@@ -230,7 +230,7 @@ a{color:var(--accent)}
         <text x="188" y="244" text-anchor="middle">SCREW</text>
         <text x="430" y="258" text-anchor="middle">SCREW</text>
         <text x="620" y="258" text-anchor="middle">SOLDER</text><text x="735" y="258" text-anchor="middle">SOLDER</text>
-        <text x="830" y="112" text-anchor="middle">SOLDER</text><text x="830" y="275" text-anchor="middle">SOLDER</text>
+        <text x="830" y="112" text-anchor="middle">PLUG</text><text x="830" y="275" text-anchor="middle">PLUG</text>
       </g>
       <text x="20" y="300" fill="var(--svg-dim)" font-size="12">Peak on 5 V about 1 A (servo moving plus WiFi), buck rated 2 A.</text>
       <text x="20" y="318" fill="var(--svg-dim)" font-size="12">Motor draws about 0.6 A from 12 V while moving.</text>
@@ -256,8 +256,8 @@ a{color:var(--accent)}
       <tr><td><span class="sw" style="background:var(--wsw)"></span>switch</td><td>ESP32 GPIO32</td><td>KW12-3 NO leg</td><td><span class="j">PLUG</span> <span class="j">SOLDER</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data in</td><td>ESP32 RX2 (GPIO16)</td><td>LD2450 TX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data out</td><td>ESP32 TX2 (GPIO17)</td><td>LD2450 RX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--w5)"></span>5 V</td><td>buck OUT+</td><td>5 V splice: ESP32 VIN, servo red, LD2450 5V</td><td><span class="j">SOLDER</span> <span class="j">SOLDER</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wgnd)"></span>ground</td><td>buck OUT-</td><td>GND splice: ESP32 GND (left row), servo brown, LD2450 GND, KW12-3 COM</td><td><span class="j">SOLDER</span> <span class="j">SOLDER</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--w5)"></span>5 V</td><td>buck OUT+</td><td>5 V rail on the protoboard: ESP32 VIN (solder bridge), servo red, LD2450 5V</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>ground</td><td>buck OUT-</td><td>GND rail on the protoboard: ESP32 GND (solder bridge), servo brown, LD2450 GND, KW12-3 COM</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--w12)"></span>12 V</td><td>jack +</td><td>expansion board VMOT, and buck IN+</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wgnd)"></span>12 V ground</td><td>jack -</td><td>expansion board GND, and buck IN-</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
       <tr><td>motor, 4 wires</td><td>NEMA 11 black, green, red, blue</td><td>expansion board 1A, 1B, 2A, 2B</td><td><span class="j">PLUG</span></td></tr>
@@ -288,11 +288,11 @@ a{color:var(--accent)}
         <path d="M80 40 L220 18" stroke="#c7ccd0" stroke-width="4"/><circle cx="224" cy="16" r="9" fill="#e9eef1" stroke="#8a9398"/>
         <rect x="140" y="30" width="8" height="12" fill="#c62828"/>
         <g fill="#c9a14a"><rect x="80" y="110" width="10" height="26"/><rect x="140" y="110" width="10" height="26"/><rect x="200" y="110" width="10" height="26"/></g>
-        <g font-family="IBM Plex Mono,monospace" font-size="11" text-anchor="middle" fill="var(--svg-ink)"><text x="85" y="154">COM</text><text x="145" y="154">NC</text><text x="205" y="154">NO</text></g>
+        <g font-family="IBM Plex Mono,monospace" font-size="11" text-anchor="middle" fill="var(--svg-ink)"><text x="85" y="154">COM</text><text x="145" y="154">NO</text><text x="205" y="154">NC</text></g>
         <path d="M85 136 V148" stroke="var(--wgnd)" stroke-width="0"/>
         <text x="150" y="80" fill="#ddd" font-size="10" text-anchor="middle" font-family="IBM Plex Mono,monospace">KW12-3</text>
       </svg>
-      <p><b>COM</b> to GND splice, <b>NO</b> to GPIO32, <b>NC</b> nothing. Leg order differs between makers: <b>read the letters moulded beside each leg</b>. Solder, then heat shrink each leg.</p>
+      <p><b>COM</b> to the GND rail, <b>NO</b> to GPIO32, <b>NC</b> nothing. On your switch, from the lever's hinge end: <b>COM, NO, NC</b> (read off the part 2026-09-25). Confirm before soldering, meter on beep: at rest COM beeps to NC only; lever held, COM beeps to NO only. The leg that beeps both times is COM. Solder, then heat shrink each leg.</p>
     </div>
     <div class="card">
       <h3>Micro servo</h3>
@@ -302,7 +302,7 @@ a{color:var(--accent)}
         <rect x="250" y="56" width="26" height="28" fill="#222"/>
         <g font-size="11" font-family="IBM Plex Mono,monospace" fill="var(--svg-ink)"><text x="160" y="116">brown GND</text><text x="160" y="130">red 5 V</text><text x="160" y="144">orange GPIO13</text></g>
       </svg>
-      <p class="dim">The servo's 3-pin plug has red in the middle. Use three separate jumpers from the plug: orange to GPIO13, red to the 5 V splice, brown to the GND splice. Never red to the ESP32's 3V3 pin.</p>
+      <p class="dim">The servo's 3-pin plug has red in the middle. Use three separate jumpers from the plug: orange to GPIO13, red to the 5 V rail, brown to the GND rail. Never red to the ESP32's 3V3 pin.</p>
     </div>
     <div class="card">
       <h3>HLK-LD2450 radar</h3>
@@ -330,16 +330,37 @@ a{color:var(--accent)}
 </section>
 
 <!-- ============================================================ -->
+<section id="proto">
+  <h2><span class="n">05b</span>Protoboard layout, one quarter</h2>
+  <p>The ESP32 sits on one quarter of the snappable protoboard (17 holes across, 19 down). Underneath, the copper joins the holes in <b>groups of three</b> across, with a <b>15-hole rail</b> down each side. So each ESP32 pin shares its group with two more holes: a male pin two holes outward is already connected to it, no wire needed. One rail carries 5 V, the other ground. The second quarter, beside it, carries the buck converter; the expansion board mounts on its own.</p>
+  <figure class="fig">
+  <svg id="protosvg" viewBox="0 0 960 560" role="img" aria-label="Protoboard quarter, top view, with the ESP32 sockets, signal pins, rails and solder bridges"></svg>
+  <figcaption>Top view, parts side, USB end at the top edge so the cable reaches it. Faint gold bars show the copper groups on the underside. <b>From the solder side everything is mirrored left to right</b>: count holes from the rail, not from the edge you are looking at.</figcaption>
+  </figure>
+  <div class="tw"><table>
+    <thead><tr><th>Part on the protoboard</th><th>Where</th><th>Why there</th></tr></thead>
+    <tbody>
+      <tr><td>2 x 15-pin female socket strip</td><td>columns 3 and 13, rows 2 to 16 (10 holes apart)</td><td>ESP32 unplugs in seconds; one board has already failed</td></tr>
+      <tr><td>Signal male pins</td><td>column 15 (VIN side) and column 1 (3V3 side), same row as their ESP32 pin</td><td>same copper group as the ESP32 pin, no wire; one pin per wire, servo wires separate</td></tr>
+      <tr><td>5 V rail, male pins</td><td>right rail, rows 13 to 15, plus a bridge at row 2</td><td>buck in, servo red, LD2450 5V; servo current never passes through the ESP32</td></tr>
+      <tr><td>GND rail, male pins</td><td>left rail, rows 12 to 15, plus a bridge at row 3</td><td>buck in, servo brown, LD2450 GND, KW12-3 COM</td></tr>
+      <tr><td>Nothing else</td><td>-</td><td>switch and radar need no resistors; servo capacitor and logic buffer only if a test fails (2 free rail holes kept for the capacitor)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Check before soldering: drop the ESP32's header pins into the board. They must land in columns 3 and 13, 10 holes apart. That spacing is read off your photo, not measured; if your pins land 9 holes apart, use columns 3 and 12 and move the right-hand pins one column in.</p>
+</section>
+
+<!-- ============================================================ -->
 <section id="solder">
   <h2><span class="n">05</span>Soldering, in order</h2>
   <ol class="steps">
     <li><div><h3>Header pins on the ESP32</h3><p>Solder full 15-pin header strips down both sides, pins pointing down from the underside, so every jumper plugs on. If you only do the ones this build uses: <b>VIN, GND, D13, D27, D26, D25, D32</b> on the top row (the row with VIN), and <b>GND, RX2, TX2</b> on the other row. Push the strip into a breadboard to hold it straight, solder one pin at each end, check it is square, then the rest. Each joint a shiny cone, no bridges to the next pin.</p></div></li>
     <li><div><h3>Buck input and output leads</h3><p>Tin the four pads. Solder a red and a black 22 AWG lead to IN+ and IN-, and a red and a black lead to OUT+ and OUT-. Leave each 10 cm long.</p></div></li>
     <li><div><h3>Set the buck before anything else</h3><p>IN leads into the jack's screw terminals with the 12 V adapter. Meter on OUT: turn the pot to 5.0 V. Unplug.</p></div></li>
-    <li><div><h3>5 V splice</h3><p>Strip 8 mm of the buck's OUT+ lead and three female-ended jumpers (for ESP32 5V, servo red, LD2450 5V). Slide heat shrink on first, twist the four together, solder, shrink. Label it 5 V with tape.</p></div></li>
-    <li><div><h3>GND splice</h3><p>Same with OUT- and four black jumpers (ESP32 GND, servo brown, LD2450 GND, KW12-3 COM).</p></div></li>
-    <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. COM wire goes to the GND splice lead; NO wire gets a female dupont end for GPIO32. Twist the two wires together along their length.</p></div></li>
-    <li><div><h3>Check with the meter before power</h3><p>Continuity mode: 5 V splice to GND splice must NOT beep. KW12-3 NO to COM beeps only while the lever is pressed.</p></div></li>
+    <li><div><h3>Protoboard: sockets, pins, bridges</h3><p>Follow the protoboard drawing in section 05b: two 15-pin female sockets for the ESP32, single male pins beside the used signals and on the two rails, and two solder bridges (a blob of solder, or a short bare wire, across the gap between two neighbouring holes) that tie the ESP32's VIN to the 5 V rail and its GND to the GND rail.</p></div></li>
+    <li><div><h3>Buck into the rails</h3><p>Buck OUT+ lead into the 5 V rail's input pin, OUT- into the GND rail's input pin (female dupont ends, or solder straight into a rail hole).</p></div></li>
+    <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. Female dupont ends: COM to the GND rail, NO to the LIMIT pin. Twist the two wires together along their length.</p></div></li>
+    <li><div><h3>Check with the meter before power</h3><p>ESP32 out of its sockets. Continuity mode: 5 V rail to GND rail must NOT beep. Each signal pin to its socket hole must beep. No signal pin may beep to a rail. KW12-3 NO to COM beeps only while the lever is pressed.</p></div></li>
   </ol>
 </section>
 
@@ -535,8 +556,8 @@ a{color:var(--accent)}
     "L8":["GPIO26, to expansion board DIR","--wsig","PLUG"],
     "L9":["GPIO27, to expansion board EN","--wsig","PLUG"],
     "L12":["GPIO13, to servo orange","--wsrv","PLUG"],
-    "L13":["to GND splice","--wgnd","PLUG"],
-    "L14":["to 5 V splice (power in)","--w5","PLUG"],
+    "L13":["bridged to the GND rail","--wgnd","PLUG"],
+    "L14":["bridged to the 5 V rail (power in)","--w5","PLUG"],
     "R8":["GPIO17, to LD2450 RX","--wrad","PLUG"],
     "R9":["GPIO16, to LD2450 TX","--wrad","PLUG"],
     "R11":["GPIO2, on-board blue LED, no wire","--wmute","",1],
@@ -563,5 +584,81 @@ a{color:var(--accent)}
     }
   }
   side(L,"L"); side(R,"R");
+})();
+</script>
+
+<script>
+(function(){
+  var svg=document.getElementById("protosvg"); if(!svg) return;
+  var NS="http://www.w3.org/2000/svg", P=24, X0=276, Y0=52;
+  function el(n,a,parent){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(parent||svg).appendChild(e);return e}
+  function cx(c){return X0+c*P+P/2} function cy(r){return Y0+r*P+P/2}
+  function txt(x,y,t,a){var e=el("text",Object.assign({x:x,y:y,"font-family":"IBM Plex Sans,system-ui,sans-serif","font-size":12,fill:"var(--svg-ink)"},a||{}));e.textContent=t;return e}
+  // board
+  el("rect",{x:X0-6,y:Y0-6,width:17*P+12,height:19*P+12,rx:10,fill:"#1d3f86",stroke:"#12295a","stroke-width":2});
+  // copper on the underside (faint)
+  for(var r=0;r<19;r++){ for(var g=0;g<5;g++){ var c1=1+g*3; el("rect",{x:cx(c1)-8,y:cy(r)-6,width:2*P+16,height:12,rx:6,fill:"#c9a14a",opacity:.28}); } }
+  [0,16].forEach(function(c){ el("rect",{x:cx(c)-6,y:cy(2)-8,width:12,height:14*P+16,rx:6,fill:"#c9a14a",opacity:.28}); });
+  // holes
+  for(var r=0;r<19;r++){ for(var c=0;c<17;c++){ var rail=(c===0||c===16); if(rail&&(r<2||r>16)) continue; el("circle",{cx:cx(c),cy:cy(r),r:4.2,fill:"#e9d49a",stroke:"#8a6d22","stroke-width":1}); } }
+  [[0,0],[16,0],[0,18],[16,18]].forEach(function(m){ el("circle",{cx:cx(m[0]),cy:cy(m[1]),r:8,fill:"#0e1f45",stroke:"#e9d49a","stroke-width":2}); });
+  // column and row numbers
+  for(var c=0;c<17;c++) txt(cx(c),Y0-14,String(c),{"font-size":9.5,fill:"var(--svg-dim)","text-anchor":"middle","font-family":"IBM Plex Mono,monospace"});
+  for(var r=0;r<19;r++) txt(X0-18,cy(r)+3,String(r),{"font-size":9.5,fill:"var(--svg-dim)","text-anchor":"end","font-family":"IBM Plex Mono,monospace"});
+  // rails colour
+  el("rect",{x:cx(16)-4,y:cy(2)-6,width:8,height:14*P+12,rx:4,fill:"var(--w5)",opacity:.55});
+  el("rect",{x:cx(0)-4,y:cy(2)-6,width:8,height:14*P+12,rx:4,fill:"var(--wgnd)",opacity:.55});
+  txt(cx(16),cy(17)+22,"5 V rail",{"text-anchor":"middle","font-weight":600,fill:"var(--w5)"});
+  txt(cx(0),cy(17)+22,"GND rail",{"text-anchor":"middle","font-weight":600});
+  // ESP32 outline (translucent) over columns 3..13
+  el("rect",{x:cx(2.45),y:cy(-1.35),width:(13.55-2.45)*P,height:(19.6-(-1.35))*P,rx:6,fill:"#111",opacity:.30,stroke:"#111","stroke-width":1.5});
+  el("rect",{x:cx(8)-18,y:cy(-1.35)-14,width:36,height:18,rx:4,fill:"#b8bec2",stroke:"#7d868b"});
+  txt(cx(8),Y0-26,"USB",{"text-anchor":"middle","font-size":10,fill:"var(--svg-dim)"});
+  txt(cx(8),cy(9),"ESP32 DevKit V1",{"text-anchor":"middle","font-weight":600,fill:"#ffffff"});
+  txt(cx(8),cy(10),"in its sockets, USB up",{"text-anchor":"middle","font-size":10.5,fill:"#ffffff"});
+  var Lnames=["3V3","GND","D15","D2","D4","RX2","TX2","D5","D18","D19","D21","RX0","TX0","D22","D23"];
+  var Rnames=["VIN","GND","D13","D12","D14","D27","D26","D25","D33","D32","D35","D34","VN","VP","EN"];
+  for(var i=0;i<15;i++){
+    el("rect",{x:cx(3)-6,y:cy(2+i)-6,width:12,height:12,fill:"#222",stroke:"#555"});
+    el("rect",{x:cx(13)-6,y:cy(2+i)-6,width:12,height:12,fill:"#222",stroke:"#555"});
+    txt(cx(3)+11,cy(2+i)+3.5,Lnames[i],{"font-size":8.5,fill:"#ffffff","font-family":"IBM Plex Mono,monospace"});
+    txt(cx(13)-11,cy(2+i)+3.5,Rnames[i],{"font-size":8.5,fill:"#ffffff","font-family":"IBM Plex Mono,monospace","text-anchor":"end"});
+  }
+  // male pins and tags. [col,row,colourVar,label]
+  var pins=[
+    [15,3,"--wgnd","ESP32 GND: expansion board GND"],
+    [15,4,"--wsrv","SERVO (D13): servo orange"],
+    [15,7,"--wsig","EN (D27): expansion board EN"],
+    [15,8,"--wsig","DIR (D26): expansion board DIR"],
+    [15,9,"--wsig","STEP (D25): expansion board STEP"],
+    [15,11,"--wsw","LIMIT (D32): KW12-3 NO"],
+    [16,13,"--w5","5 V in: buck OUT+"],
+    [16,14,"--w5","5 V: servo red"],
+    [16,15,"--w5","5 V: LD2450 5V"],
+    [1,7,"--wrad","RX2 (GPIO16): LD2450 TX"],
+    [1,8,"--wrad","TX2 (GPIO17): LD2450 RX"],
+    [0,12,"--wgnd","GND in: buck OUT-"],
+    [0,13,"--wgnd","GND: servo brown"],
+    [0,14,"--wgnd","GND: LD2450 GND"],
+    [0,15,"--wgnd","GND: KW12-3 COM"]
+  ];
+  pins.forEach(function(p){
+    var x=cx(p[0]), y=cy(p[1]), right=p[0]>=8, col="var("+p[2]+")";
+    el("rect",{x:x-6,y:y-6,width:12,height:12,rx:2,fill:col,stroke:"#fff","stroke-width":1.5});
+    var xe=right?X0+17*P+30:X0-40;
+    el("path",{d:"M"+(x+(right?7:-7))+" "+y+" H"+xe,stroke:col,"stroke-width":2,fill:"none"});
+    txt(right?xe+6:xe-6,y+4,p[3],{"text-anchor":right?"start":"end","font-size":12});
+  });
+  // solder bridges
+  function bridge(c1,c2,r,label,right){
+    el("path",{d:"M"+cx(c1)+" "+cy(r)+" H"+cx(c2),stroke:"#d9dde0","stroke-width":7,"stroke-linecap":"round"});
+    el("path",{d:"M"+cx(c1)+" "+cy(r)+" H"+cx(c2),stroke:"#8f989d","stroke-width":2});
+    var xe=right?X0+17*P+30:X0-40;
+    el("path",{d:"M"+cx(right?c2:c1)+" "+cy(r)+" H"+xe,stroke:"#8f989d","stroke-width":2,"stroke-dasharray":"4 3",fill:"none"});
+    txt(right?xe+6:xe-6,cy(r)+4,label,{"text-anchor":right?"start":"end","font-size":12,"font-weight":600});
+  }
+  bridge(15,16,2,"solder bridge: VIN to 5 V rail",true);
+  bridge(0,1,3,"solder bridge: GND to GND rail",false);
+  txt(X0+17*P/2,Y0+19*P+44,"Rows and columns counted from the top-left corner hole, parts side up. Unused holes stay empty.",{"text-anchor":"middle","font-size":11.5,fill:"var(--svg-dim)"});
 })();
 </script>
