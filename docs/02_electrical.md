@@ -15,10 +15,10 @@ Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Eve
 | GPIO26 | carrier DIR | out | Rewind direction set in firmware |
 | GPIO27 | carrier EN | out | LOW = motor powered, HIGH = coils off (free) |
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
-| GPIO33 | LD2410C OUT | in | HIGH = someone present. Firmware adds a pull-down |
-| GPIO32 | limit switch signal | in | Pressed = spider home. Firmware adds a pull-up |
-| GPIO16 (RX2) | LD2410C TX | in | Optional, reserved for future radar config over serial |
-| GPIO17 (TX2) | LD2410C RX | out | Optional, same |
+| GPIO33 | LD2410C OUT (fallback only) | in | HIGH = someone present. Firmware adds a pull-down. Used only with `sensor 2410` |
+| GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
+| GPIO16 (RX2) | LD2450 TX | in | Primary trigger, UART2 at 256000 baud |
+| GPIO17 (TX2) | LD2450 RX | out | Primary trigger |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
@@ -34,8 +34,7 @@ Board: ESP-WROOM-32 module, CP2102 USB chip, PlatformIO board `nodemcu-32s`. Eve
 | Rail | Source | Loads | Worst case |
 |---|---|---|---|
 | 12 V | 12 V 2 A wall adapter | driver/motor, buck input | about 0.6 A while rewinding (about 3 s per scare), about 0.05 A idle |
-| 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2410C (0.08 A) | about 1 A peak, well under the buck's 2 A |
-| 3.3 V | ESP32's own 3V3 pin | limit switch board, if it has one (a few mA) | negligible |
+| 5 V | LM2596 buck, set to 5.0 V with a meter **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2450 (about 0.1 A), LD2410C if fitted (0.08 A) | about 1 A peak, well under the buck's 2 A |
 
 - 470 uF 16 V electrolytic across the servo's red and brown, at the servo end (stripe to GND). Stops servo current spikes resetting the ESP32.
 - Idle draw between scares is a few watts at most: driver disabled, servo detached, radar and ESP32 on.
@@ -48,25 +47,24 @@ The carrier powers the driver's logic side from its own 5 V regulator, and the E
 
 Test: with the motor connected, run `jog 1600` from the console. The motor must make exactly one smooth turn. Then `jog -1600`, one turn back.
 
-If it stutters, misses, or does nothing while the driver clearly holds (shaft stiff): add a 74AHCT125 (or any 5 V buffer with 3.3 V-compatible inputs) powered from the 5 V rail between ESP32 and carrier on STEP, DIR, EN. Wiring: ESP32 pin -> buffer input, buffer output -> carrier, buffer enable pins to GND.
+If it stutters, misses, or does nothing while the driver clearly holds (shaft stiff): add a 74AHCT125 (or any 5 V buffer with 3.3 V-compatible inputs) powered from the 5 V rail between ESP32 and carrier on STEP, DIR, EN. Wiring: ESP32 pin to buffer input, buffer output to carrier, buffer enable pins to GND.
 
 ## Motor wiring
 
 STEPPERONLINE NEMA 11 (0.67 A): black + green = coil A, red + blue = coil B. Black to 1A, green to 1B, red to 2A, blue to 2B. If the motor buzzes but will not turn, swap black and green. Never plug or unplug the motor with 12 V on.
 
-## Limit switch wiring (3-pin endstop)
+## Limit switch wiring (KW12-3 in the fairlead)
 
-The switch sits at the eyelet so the stop bead presses its lever as the spider arrives home. The firmware stops the rewind the moment it closes. Its mount is not in the CAD yet (see `08_open_items.md`).
+The KW12-3 roller switch is built into the fairlead (doc 09). On rewind the stop bead lifts a hinged flap, the flap's tail presses the roller, and the firmware stops the motor the moment it closes.
 
-Two kinds of 3-pin endstop, wired differently. Look at yours first.
+Bare switch, three legs: **COM to GND, NO to GPIO32, NC unused.** No power wire.
 
-| Kind | Wiring |
-|---|---|
-| Bare switch, three legs marked C (or COM), NO, NC | COM to GND, NO to GPIO32, NC unused. No power wire. |
-| Small board with 3 pins (S, -, +) and often an LED | S to GPIO32, - to GND, + to the ESP32's **3V3 pin, never 5 V**. These boards pull the signal up to their supply, and the ESP32 inputs are not 5 V tolerant. |
+Open = HIGH, pressed = LOW with the firmware's pull-up. Check with the web page by lifting the flap by hand; if it reads backwards, `liminv 1`. Then `limit 1` turns it on. Keep the lead away from the motor wires, or twist its signal and ground together.
 
-Which way it reads depends on the kind and on how the lever rests. No need to work it out: with the firmware running, press the lever by hand and watch the web page. If it reads backwards, send `liminv 1`. Then `limit 1` turns it on. Keep the lead away from the motor wires, or twist its signal and ground together.
+By design the switch reads **open** at rest after the lock seat (doc 09, V14): the seat move lets the bead drop off the flap.
 
 ## Sensor wiring
 
-LD2410C on a 1 m lead (4 conductors minimum: VCC, GND, OUT, spare). 5 V power, 3.3 V output, so OUT goes straight to GPIO33. See `03_sensor.md` for placement and tuning.
+**LD2450 (primary):** 5 V, GND, TX to GPIO16, RX to GPIO17. 4-pin, 1.25 mm plug at the sensor. No OUT pin. See `03_sensor.md`.
+
+**LD2410C (fallback, optional):** 5 V, GND, OUT to GPIO33 (3.3 V output, goes straight in). Used only with `sensor 2410`.

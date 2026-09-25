@@ -1,0 +1,65 @@
+# 09 - Fairlead and limit switch (Rev C.1)
+
+Replaces `line_guide.stl`. The bracket is unchanged and reused. Closes open item V10 (switch mount).
+Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and images with `tools\regen_cad.ps1`.
+
+![Spider away](img/fairlead_rest.png)
+![Spider home](img/fairlead_home.png)
+![Sub-assembly](img/fairlead_exploded.png)
+
+**Quantity: one fairlead body and one flap per build** (print a spare flap if you like).
+
+## What it is
+
+| Part | Job |
+|---|---|
+| `fairlead_body.stl` | Glues to the pad in the old line guide's spot. Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
+| Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the braid to saw on. Centered on the spool's line channel |
+| `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied |
+| KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
+| Hinge pin | 30 mm piece of 1.75 mm filament |
+
+## How it works
+
+1. Spider away: the flap hangs level on its rest stop. The switch is open.
+2. Rewind: the 8 mm stop bead rises and lifts the flap's free end. The flap pivots; its tail swings down onto the switch roller.
+3. The switch clicks after about 2.3 mm of bead travel (2.6 mm at the roller). The firmware stops the motor.
+4. If the motor keeps pulling, the flap lands flat against the fairlead's underside (the hard stop) after 3.3 mm of bead travel. The motor's pull goes into that face, not into the switch or the hinge pin.
+5. Spider drops: gravity and the switch spring return the flap to its rest stop.
+
+Measured in CAD: hard stop at 14.75 degrees; roller pushed 4.3 mm at the stop, 0.3 mm gap at rest, so about 4.0 mm of actual push against the switch's 2.6 mm to click plus 0.8 mm minimum overtravel. No collisions with the spool, bracket, servo or motor; 2 mm clearance to the spinning spool.
+
+## Print
+
+| File | Orientation | Settings |
+|---|---|---|
+| fairlead_body.stl | as exported (flat side down, 17 mm tall) | PLA, 4 walls, 40% gyroid, **no supports** (the bore and slots bridge) |
+| fairlead_flap.stl | as exported (flat side down) | PLA or PETG, 4 walls, 100% rectilinear, brim 5 mm |
+
+One flap is needed; a second is a spare.
+
+## Assemble
+
+1. Clean the fairlead bore with a 3 mm drill turned by hand. Run a scrap of braid through it; it must slide without catching. Sand the top flare smooth if it feels rough.
+2. Fit the switch to the plate: **roller end toward the fairlead** (toward the spool), body on the side away from the plate's flat back. Two M2 screws through the plate's slots and the switch, nuts on the switch side. Leave them finger-tight.
+3. Push the flap's knuckle into the gap below the fairlead, line up the holes, and push the filament pin in from the flat outer face. It is snug in the body and free in the flap. Trim flush.
+4. Flap level on its rest stop: slide the switch up in its slots until the roller just touches the flap tail, then back it off about 0.3 mm (a piece of paper's thickness). Tighten.
+5. Check by hand: lift the flap's free end. Click at about 2 mm; flap stops flat against the fairlead a moment later. Let go: it drops back, switch opens.
+6. Glue the body to the pad exactly as the old line guide: CA or epoxy along the rail, two M3 screws through the rail and the x = -32 pad holes as alignment pins, remove them after it cures.
+7. Thread the line from the spool down through the fairlead, then slide it into the flap's slot from the free end. Bead, swivel, spider below as before.
+
+## Wiring
+
+Bare KW12-3, three legs: COM to GND, NO to GPIO32, NC unused. Firmware pull-up: open = HIGH, pressed = LOW. Check with the web page; `liminv` if backwards.
+
+## Known effects on other items
+
+- **V14, answered by the geometry:** after the lock seat move lets the spool down up to 1/12 turn (about 13 mm of line), the bead drops off the flap and the switch reads **open** at rest. The firmware must not treat "open at rest" as "spider not home". Suggested rule: the last cycle ended with a switch stop, then a seat move, then idle = home.
+- The device now hangs about 36 mm lower (switch at y 112 vs old guide at y 76). Still hidden above the door head per doc 06 at 8 ft ceilings.
+- Spider legs wider than about 50 mm may touch the switch at the top. Trim legs or angle them down.
+
+## Unverified
+
+- The KW12-3's operating point is taken from the owner's datasheet (2.6 mm pre-travel, 0.8 mm overtravel, 0.7 N). The slotted holes cover about plus or minus 2.5 mm of error.
+- The filament hinge pin's wear over a season. Spare pins are free.
+- Braid wear in the PLA fairlead. Swap for a new print if a groove appears.

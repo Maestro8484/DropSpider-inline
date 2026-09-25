@@ -1,38 +1,56 @@
 # 03 - Sensor
 
-## Choice: LD2410C mmWave radar (primary), AM312 mini PIR (fallback)
+Rev C.1. Decision date 2026-09-24. Details and sources in `handoff_sensor_bearings.md`.
 
-| | LD2410C (installed) | AM312 PIR (fallback) |
-|---|---|---|
-| How it sees | 24 GHz radar, motion and breathing | body heat moving across its view |
-| Range control | yes, in 0.75 m steps ("gates") set from a phone app | no, only by masking the lens |
-| Fires on a slow or still person | yes | no |
-| False triggers | sees through thin doors and drywall, so range must be limited | sunlight, HVAC vents |
-| Wiring | VCC 5 V, GND, OUT to GPIO33 | VCC 3.3 V to 5 V, GND, OUT to GPIO33 |
+## Choice: HLK-LD2450 (primary), HLK-LD2410C (fallback), both already owned
 
-Firmware is identical for both: it only watches GPIO33 for a rising edge (LOW to HIGH).
+| | LD2450 (primary) | LD2410C (fallback) | PIR, e.g. AM312 (not owned) | Ultrasonic HC-SR04 (not owned) |
+|---|---|---|---|---|
+| What it reports | X and Y position and speed of up to 3 moving people, about 10 times a second | one yes/no presence line, plus distance over serial | yes/no when a warm body moves across its view | distance to whatever is straight ahead |
+| Can it tell approaching from leaving or passing | **yes** | no | no | only by watching distance shrink |
+| Can it time the drop to the person's arrival | **yes** (distance divided by speed) | no, fixed trigger distance | no | roughly |
+| Setup | none required; optional app for a live map and firmware update | range zones ("gates") set in the app | aim it | aim it, set one distance |
+| Wiring | 4 pins: 5 V, GND, TX, RX. **No OUT pin** | 5 pins incl. OUT | 3 pins | 4 pins, 5 V echo needs a resistor divider |
+| Connector | 4-pin, 1.25 mm pitch plug | 2.54 mm header | | |
+| Weakness | poor at people standing still (irrelevant here) | fires on anyone moving in range, both directions | pets, heat vents, passers-by | narrow beam, soft clothing |
 
-## Placement (see `06_installation.md` picture)
+## Wiring
 
-- Top center of the door opening, on the **hallway side** of the header, 1 m lead back to the controller.
-- Aim down about 45 degrees, toward where people approach.
-- Goal: fire when the person is 0.75 to 1.5 m from the door. At walking pace (about 1.2 m/s) and a drop of about 0.5 s, the spider arrives as they reach the doorway.
+| Sensor pin | ESP32 |
+|---|---|
+| LD2450 5V | 5 V rail |
+| LD2450 GND | GND |
+| LD2450 TX | GPIO16 (UART2 RX) |
+| LD2450 RX | GPIO17 (UART2 TX) |
+| LD2410C OUT (fallback, may stay connected) | GPIO33 |
 
-## LD2410C setup (one time, phone app)
+UART2 at 256000 baud, 8N1. Hardware UART only.
 
-The LD2410C has Bluetooth. Install **HLKRadarTool** (Android/iOS), power the sensor, connect.
+## Placement
 
-1. **Max moving distance gate: 2** (about 1.5 m). This is the trigger range.
-2. **Max static distance gate: 1**. Stops a person standing in the hallway from holding OUT high.
-3. **No-one duration (unmanned delay): 1 s**, the shortest. OUT drops soon after the doorway clears.
-4. Leave gate sensitivities at default first. Raise the gate 0 and 1 thresholds if it fires on people on the other side of the wall.
-5. Turn Bluetooth off in the app when done if the option is present.
+- Flat on the wall above the door, **hallway side**, facing straight out down the approach. Not tilted down: the LD2450 is built to look straight out (about 120 degrees wide, 70 degrees tall).
+- Its X axis is left-right across the doorway, Y is distance out into the hallway.
+- Keep ceiling fans and moving curtains out of its view; they show up as targets.
 
-## Firmware behavior around the sensor
+## Trigger rule (firmware)
 
-- Trigger = OUT goes HIGH and stays HIGH for 60 ms, only while armed and idle.
-- After each scare: lockout (default 20 s), then the sensor must read LOW for 2 s before it re-arms. A group lingering in the doorway gets one scare, not a loop.
+Fire when any target:
+1. is inside the door width: |X| under `doorwidth`/2 (default 500 mm each side),
+2. is approaching: speed toward the sensor above `approach` (default 0.3 m/s; sign convention confirmed on the bench),
+3. will arrive soon: Y divided by speed under `leadms` (default 750 ms, about release plus drop time),
+4. for 2 frames in a row.
 
-## Fallback: AM312
+Re-arm: existing lockout, then no target inside the window for 2 s.
 
-If the radar misbehaves, swap in an AM312 (same three wires). Put it in a 20 mm long tube (a drinking straw piece or printed sleeve) to narrow its view to the approach. It has a fixed 2 s hold, fine for this use.
+Why lead time instead of a fixed distance: a fast walker triggers earlier, a slow one later, so the spider lands at the doorway for both.
+
+## One-time app check (HLKRadarTool, optional but recommended)
+
+1. Power the LD2450 from 5 V only. Open HLKRadarTool within arm's length; its Bluetooth range is very short.
+2. Check the firmware version. Update in the app if older than V2.02.23090617 (the version ESPHome requires; a safe floor for any library).
+3. Walk toward the doorway and watch your dot. It should track smoothly through the door frame.
+4. **Leave the app's area detection / zones OFF.** The firmware does the window logic; zones inside the sensor would silently hide targets from it.
+
+## Fallback: LD2410C
+
+Setting `sensor 2410` switches the trigger back to GPIO33. Its app setup (gates) is in git history of this file; summary: max moving gate 2, max static gate 1, no-one duration 1 s, aim down 45 degrees.

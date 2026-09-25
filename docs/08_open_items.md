@@ -6,7 +6,8 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 | ID | Item | Why it matters | How to settle it |
 |---|---|---|---|
-| M1 | A one-way clutch can only let the spool spin free in the same direction the motor drives it | The motor has to drive the spool in the wind-up direction. The spider falls in the opposite direction. A one-way bearing locks in one relative direction and slips in the other, so the direction the motor can drive is exactly the direction the spool can NOT free-spin with the rod still. Same as a bicycle: the pedals drive the wheel forward and the wheel coasts forward, but push the bike backward and the pedals turn. Read that way, either the spool free-falls (commissioning step 7 passes) and then the motor cannot wind it up in either `dir` (step 8 fails both ways), or the motor winds it up and the drop back-drives the motor, which the hard constraints forbid. Reasoned from doc 01, **not tested on hardware** | One minute by hand once the spool is on the rod: hold the rod still and find the direction the spool spins free (the drop direction). Then hold the spool still and turn the rod the other way (the wind-up direction). If the rod slips there too, the clutch cannot wind the spool and doc 01 needs the mechanical owner |
+| M1 | **Confirmed, fixed on paper in Rev C.1, not yet tested.** Mechanical owner agrees: design error. Fix: HF0612 flipped, motor-led drop. See `M1_fix_handoff.md`. Original finding below. A one-way clutch can only let the spool spin free in the same direction the motor drives it | The motor has to drive the spool in the wind-up direction. The spider falls in the opposite direction. A one-way bearing locks in one relative direction and slips in the other, so the direction the motor can drive is exactly the direction the spool can NOT free-spin with the rod still. Same as a bicycle: the pedals drive the wheel forward and the wheel coasts forward, but push the bike backward and the pedals turn. Read that way, either the spool free-falls (commissioning step 7 passes) and then the motor cannot wind it up in either `dir` (step 8 fails both ways), or the motor winds it up and the drop back-drives the motor, which the hard constraints forbid. Reasoned from doc 01, **not tested on hardware** | One minute by hand once the spool is on the rod: hold the rod still and find the direction the spool spins free (the drop direction). Then hold the spool still and turn the rod the other way (the wind-up direction). If the rod slips there too, the clutch cannot wind the spool and doc 01 needs the mechanical owner |
+| M2 | Finger cannot release while the spider hangs. Found by the mechanical owner during the M1 rework, **not tested** | The release swing drives the finger tip into the loaded tooth's steep face, so the servo fights the tooth | Rev C.1 release winds the spool CCW about 1/12 turn while the finger swings out. Test T3 in `M1_fix_handoff.md` |
 
 ## Verified (in the design package)
 
@@ -28,10 +29,13 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V4 | Snubber stiffness: 150 mm of 2 mm elastic stops a 100 g spider in about 150 mm | step 7 | double the elastic, or shorten it |
 | V5 | Motor skipping at the bead stop is short and harmless | step 9 | lower `rpm`, trim overshoot in `config.h`. With the limit switch on, the motor stops at the switch and should not skip at all |
 | V6 | Finger lifetime in PLA | step 14 | PETG finger |
-| V7 | LD2410C range and through-wall behavior in this house | step 12 | tune gates; AM312 fallback |
+| V7 | LD2410C range and through-wall behavior in this house (fallback sensor only since Rev C.1) | step 12 with `sensor 2410` | tune gates; AM312 fallback |
 | V9 | Limit switch reads right and stops the rewind at the bead | steps 3b and 9 | `liminv`; move the switch; route its lead away from the motor wires |
-| V10 | Limit switch mount at the eyelet | not in `cad/generate.py`. Geometry changes need the owner's approval | temporary mount (tape or a clip) for the bench; a printed mount is a Rev D item |
+| V10 | Limit switch mount. **Designed in Rev C.1:** KW12-3 in the fairlead with a hinged flap (doc 09, `cad/fairlead.py`). CAD-checked: 4.0 mm roller push against 3.4 mm needed, hard stop takes the motor's pull. Not yet built | doc 09 assembly step 5 by hand, then commissioning step 9 | slide the switch in its slots; reprint the flap |
 | V11 | Board joins the home network, page loads, network update works | step 3a, then one `tools\flash_ota.bat` | USB console `wifi`; own network DropSpider-setup at 192.168.4.1 |
+| V13 | Top drop speed and stopping ability of the NEMA 11 at 12 V, 0.6 A, with the real spider (estimate: about 500 rpm, stops 60 g or less cleanly) | T4, T5, T7 in `M1_fix_handoff.md` | lower `droprpm` / `dropdec`; lighter spider |
+| V14 | **Answered by the fairlead geometry:** after the lock seat the bead drops off the flap, so the switch reads OPEN at rest. Firmware must infer home from the last cycle (switch stop, then seat move), not from the boot reading | commissioning step 10; boot with the spider home | firmware rule, not hardware |
+| V15 | LD2450 as the trigger: tracking through the door frame, speed sign, approach-only firing, arrival timing | S1 to S5 in `handoff_sensor_bearings.md` | widen or narrow `doorwidth`, tune `leadms`; `sensor 2410` fallback |
 | V12 | Board on COM13 is the 38-pin ESP32-S NodeMCU (ESP32, 4 MB flash) | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
 
 ## Closed
@@ -40,7 +44,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 |---|---|---|
 | V8 | Firmware on PlatformIO's current esp32 core (3.x) | Closed by pinning, not by testing 3.x: `platform = espressif32@6.7.0` (Arduino core 2.0.16) builds clean, 2026-09-24. Moving to core 3.x is a deliberate future change, not an accident of a fresh install |
 
-## Known limits of Rev C
+## Known limits of Rev C.1
 
 - Ceiling mount only.
 - No stall sensing; the carrier hides the TMC2209 UART pin.
@@ -54,7 +58,5 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 ## Candidate Rev D items (not started)
 
-- Wall-mount variant with a relocated line guide.
-- Radar distance read over UART instead of the OUT pin, for a tighter trigger window.
+- Wall-mount variant with a relocated fairlead.
 - Enclosure for the controller board.
-- Printed limit switch mount at the eyelet (V10).

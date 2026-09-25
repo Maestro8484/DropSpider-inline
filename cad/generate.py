@@ -41,7 +41,7 @@ BARREL_D = 50.0                 # line winds on this diameter
 TOOTH_TIP_R, TOOTH_ROOT_R, TEETH = 33.0, 29.0, 12
 HF0612_BORE = 9.9               # 10.0 OD one-way bearing, 0.1 press
 BEARING_606 = 16.8              # 17.0 OD 606ZZ, 0.2 press (PLA)
-Z_RATCHET = 36.0                # ratchet disk motor-side face; finger plane is z 36..39
+Z_RATCHET = 36.0                # ratchet disk motor-side face; finger plane is z 36..41
 SERVO_SHAFT_X = 49.7            # SG90 output spline, spline end of servo toward the spool
 BOLT_R = 21.0
 BOLTS = [(BOLT_R * math.cos(a), BOLT_R * math.sin(a)) for a in (0, 2 * math.pi / 3, 4 * math.pi / 3)]
@@ -115,20 +115,42 @@ def line_guide_print():
 
 # ---------------- small parts ----------------
 def finger():
-    L = 20.5
-    f = U(bx(-3, L, -3, 3, 0, 3), cyl(5, 3, 0))
-    # tip taper: the half that faces the ramp is cut back so the tip seats deeper against the steep face
-    taper = extrude_polygon(Polygon([(13, 3.01), (L + 0.1, 3.01), (L + 0.1, 0)]), 5.0); taper.apply_translation([0, 0, -1])
-    return D(f, cyl(1.3, 10, -1), cyl(3.7, 1.6, -0.1), bx(0, 8, -2.1, 2.1, -0.1, 1.5), taper)
+    """Rev C.1 finger: 5 mm thick, 7 mm wide. Tip face beveled 20 degrees so the ramp-side corner sits
+    2.5 mm back: the tip seats fully against a tooth's steep face (checked: 5 degrees of seating window).
+    Installed coords: bottom face z 0 sits on the SG90 horn (recess for its hub and arm), z 5 is the top."""
+    L, W, T = 20.5, 7.0, 5.0
+    f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0))
+    dx = W * math.tan(math.radians(20))
+    bevel = extrude_polygon(Polygon([(L - dx, W / 2 + 0.01), (L + 0.1, W / 2 + 0.01), (L + 0.1, -W / 2)]), T + 2)
+    bevel.apply_translation([0, 0, -1])
+    return D(f, cyl(2.2, T + 2, -1),                       # through hole: horn screw head passes to the horn
+             cyl(3.7, 1.6, -0.1),                           # SG90 horn hub recess
+             bx(0, 8.5, -2.1, 2.1, -0.1, 1.5),              # single-arm horn recess
+             bevel)
+
+def finger_print():
+    m = finger(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0]))
+    m.apply_translation(-m.bounds[0]); return m        # flat top face down: recesses face up, no floating regions
 
 def tube(L): return D(cyl(5, L, 0), cyl(3.25, L + 2, -1))
 
+def fairlead_body_print():
+    import fairlead as F
+    m = F.fairlead_body(); m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [0, 1, 0]))
+    m.apply_translation(-m.bounds[0]); return m
+
+def fairlead_flap_print():
+    import fairlead as F
+    m = F.fairlead_flap(); m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))
+    m.apply_translation(-m.bounds[0]); return m
+
 PARTS = {
+    "fairlead_body": fairlead_body_print,
+    "fairlead_flap": fairlead_flap_print,
     "spool_body": spool_body_print,
     "spool_ratchet": spool_ratchet,
     "bracket": bracket,
-    "line_guide": line_guide_print,
-    "finger": finger,
+    "finger": finger_print,
     "spacer_A_6mm": lambda: tube(6),
     "spacer_B_50mm": lambda: tube(50),
     "shim_1mm": lambda: tube(1),
@@ -141,7 +163,8 @@ def assembly():
     A["bracket"] = bracket()
     r = spool_ratchet(); r.apply_translation([0, AXIS_Y, Z_RATCHET]); A["spool_ratchet"] = r
     b = spool_body(); b.apply_translation([0, AXIS_Y, Z_RATCHET]); A["spool_body"] = b
-    A["line_guide"] = line_guide()
+    import fairlead as F
+    A["fairlead_body"] = F.fairlead_body(); A["fairlead_flap"] = F.fairlead_flap(); A["switch_kw12"] = F.switch_model()
     f = finger(); f.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1]))
     f.apply_translation([SERVO_SHAFT_X, AXIS_Y, Z_RATCHET]); A["finger"] = f
     A["rod_6mm"] = cyl(3, 100, 20, 0, AXIS_Y)
@@ -161,14 +184,21 @@ if __name__ == "__main__":
     A = assembly()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
     pairs = [(m, f) for m in ("spool_ratchet", "spool_body", "finger")
-             for f in ("bracket", "line_guide", "servo_sg90", "motor_nema11", "coupler")]
+             for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler")]
     for m, f in pairs:
         v = I(A[m], A[f]).volume
         if v > 0.5: print(f"CLASH {m} x {f}: {v:.1f}")
     tip = A["finger"].vertices[:, 0].min()
     print(f"finger tip x = {tip:.1f}  (engaged if between root {TOOTH_ROOT_R} and tip {TOOTH_TIP_R}):",
           TOOTH_ROOT_R - 0.5 < tip < TOOTH_TIP_R)
+    seat = []
+    for deg in np.arange(0, 360 / TEETH, 0.25):     # one tooth pitch is enough: the teeth repeat
+        rr = A["spool_ratchet"].copy()
+        rr.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, AXIS_Y, 0]))
+        if I(A["finger"], rr).volume < 0.05: seat.append(deg)
+    print("finger seats in a tooth gap:", bool(seat),
+          f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle: finger or teeth changed badly)")
     ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=16)
     ring.apply_translation([0, AXIS_Y, 43])   # spool spans z 36..50
-    for k in ("bracket", "line_guide", "servo_sg90"):
+    for k in ("bracket", "fairlead_body", "servo_sg90"):
         print(f"2 mm swept clearance, spool vs {k}: {I(ring, A[k]).volume:.1f} mm3 overlap")
