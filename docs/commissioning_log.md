@@ -15,3 +15,4 @@ Every bench and install result, in order. One row per attempt, failures included
 | 2026-09-25 | first new board | FAIL | - | First replacement board on COM13 (probably the same 30-pin model, not confirmed): USB chip seen, ESP32 silent on every try (no boot message on EN, no flash-mode reply). Set aside; likely faulty |
 | 2026-09-25 | board swap to 30-pin DevKit V1 (V12) | PASS | - | esptool: ESP32-D0WD-V3 rev 3.0, 4 MB flash, MAC 3c:e9:0e:88:82:b8. Enters flash mode by itself: plain `pio run -t upload` and `scripts/update_firmware.bat usb` both flashed it, hash verified. Pin names checked against Joe's photo |
 | 2026-09-25 | 3, 3a | PASS | DHCP | `status` over USB: ready. Joined MAINFRAME007 at 192.168.1.138; dropspider.local answers |
+| 2026-09-25 | V11 on the 30-pin board | PASS | - | `scripts/update_firmware.bat wifi`: first try, "Result: OK" in 30 s; back on the network at 192.168.1.138, uptime reset, state ready |
