@@ -11,9 +11,9 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 |---|---|---|---|
 | VIN | buck OUT+ (5.0 V) | power in | Do not feed 12 V here |
 | GND (any) | common ground | - | All grounds tie together |
-| GPIO25 | carrier STEP | out | One pulse = 1/8 motor step |
-| GPIO26 | carrier DIR | out | Rewind direction set in firmware |
-| GPIO27 | carrier EN | out | LOW = motor powered, HIGH = coils off (free) |
+| GPIO25 | expansion board STEP | out | One pulse = 1/8 motor step |
+| GPIO26 | expansion board DIR | out | Rewind direction set in firmware |
+| GPIO27 | expansion board EN | out | LOW = motor powered, HIGH = coils off (free) |
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | LD2410C OUT (fallback only) | in | HIGH = someone present. Firmware adds a pull-down. Used only with `sensor 2410` |
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
@@ -22,12 +22,12 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
-## Driver: BIGTREETECH TMC2209 V1.3 on the A4988/DRV8825 carrier
+## Driver: BIGTREETECH TMC2209 V1.3 on the A4988/DRV8825 expansion board
 
-- Plug the driver in with its **EN** pin on the carrier's **EN** position. Backwards destroys it on power-up.
+- Plug the driver in with its **EN** pin on the expansion board's **EN** position. Backwards destroys it on power-up.
 - DIP switches 1, 2, 3 all **OFF**. On a TMC2209 that is 1/8 microstep (each STEP pulse moves 1/8 of a full step) and leaves the UART pin (the driver's serial setup line, unused here) alone.
 - Current: turn the driver's pot until the voltage from the pot's metal top to GND reads **0.85 V** (= 0.6 A, 90 percent of the motor's 0.67 A). Do this with 12 V on and the **motor unplugged**. Factory default is about 1.2 V, too high for this motor.
-- STEP/DIR/EN only. UART is not wired; the carrier does not bring that pin out.
+- STEP/DIR/EN only. UART is not wired; the expansion board does not bring that pin out.
 
 ## Power
 
@@ -43,11 +43,11 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 
 ## Logic-level check (V1, required before first motor run)
 
-The carrier powers the driver's logic side from its own 5 V regulator, and the ESP32 drives STEP/DIR/EN at 3.3 V. Most TMC2209 boards accept that, but it is not guaranteed.
+The expansion board powers the driver's logic side from its own 5 V regulator, and the ESP32 drives STEP/DIR/EN at 3.3 V. Most TMC2209 boards accept that, but it is not guaranteed.
 
 Test: with the motor connected, run `jog 1600` from the console. The motor must make exactly one smooth turn. Then `jog -1600`, one turn back.
 
-If it stutters, misses, or does nothing while the driver clearly holds (shaft stiff): add a 74AHCT125 (or any 5 V buffer with 3.3 V-compatible inputs) powered from the 5 V rail between ESP32 and carrier on STEP, DIR, EN. Wiring: ESP32 pin to buffer input, buffer output to carrier, buffer enable pins to GND.
+If it stutters, misses, or does nothing while the driver clearly holds (shaft stiff): add a 74AHCT125 (or any 5 V buffer with 3.3 V-compatible inputs) powered from the 5 V rail between ESP32 and expansion board on STEP, DIR, EN. Wiring: ESP32 pin to buffer input, buffer output to expansion board, buffer enable pins to GND.
 
 ## Motor wiring
 

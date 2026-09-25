@@ -11,9 +11,9 @@
 // GPIO2 (the LED), which are used for exactly those things.
 
 // ---------- pins ----------
-#define PIN_STEP        25   // -> carrier STEP
-#define PIN_DIR         26   // -> carrier DIR
-#define PIN_EN          27   // -> carrier EN   (LOW = driver on, HIGH = coils off)
+#define PIN_STEP        25   // -> expansion board STEP
+#define PIN_DIR         26   // -> expansion board DIR
+#define PIN_EN          27   // -> expansion board EN   (LOW = driver on, HIGH = coils off)
 #define PIN_SERVO       13   // -> SG90 orange. Not GPIO14: 14 pulses at boot and would twitch the finger.
 #define PIN_SENSOR      33   // <- LD2410C OUT (HIGH = presence). Or AM312 PIR OUT.
 #define PIN_LIMIT       32   // <- limit switch (3-pin endstop) at the eyelet: pressed = spider home
@@ -24,7 +24,7 @@
 
 // ---------- mechanics (fixed by the printed parts) ----------
 #define MOTOR_FULL_STEPS    200
-#define MICROSTEPS          8      // carrier DIP switches all OFF on a TMC2209 = 1/8
+#define MICROSTEPS          8      // expansion board DIP switches all OFF on a TMC2209 = 1/8
 #define STEPS_PER_TURN      (MOTOR_FULL_STEPS * MICROSTEPS)
 #define BARREL_DIA_MM       50.0f
 #define SPOOL_TO_EYELET_MM  40.0f  // braid that stays between spool and eyelet when fully up

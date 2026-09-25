@@ -32,7 +32,7 @@ def wiring():
     for a in (a1, a2): a.set_xlim(0, 15); a.axis("off")
     a1.set_ylim(-1.4, 8.2); a2.set_ylim(-0.2, 7.0)
     a1.set_title("1. SIGNAL WIRING (thin jumper wires)", fontsize=14, weight="bold", loc="left")
-    drv = pins_box(a1, 0.4, 7.0, 3.2, "Driver carrier + TMC2209", right=["STEP", "DIR", "EN", "GND"], color="#fff8c5")
+    drv = pins_box(a1, 0.4, 7.0, 3.2, "Expansion board + TMC2209", right=["STEP", "DIR", "EN", "GND"], color="#fff8c5")
     esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 DevKit V1 (30-pin)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
                    right=["GPIO13", "GPIO16 (RX2)", "GPIO17 (TX2)", "GPIO32", "GND ", "GPIO33"], color="#ddf4ff")
     srv = pins_box(a1, 11.4, 7.4, 3.2, "SG90 servo", left=["orange = signal"], color="#dafbe1")
@@ -48,15 +48,15 @@ def wiring():
     line(a1, esp["GND "], lim["COM"], BLK, None, mid=10.65)
     line(a1, esp["GPIO33"], old["OUT"], GRY, "fallback", mid=10.95)
     mot = pins_box(a1, 0.4, 2.4, 3.2, "NEMA 11 motor, 4 wires", right=["black", "green", "red", "blue"], color="#eaeef2")
-    ter = pins_box(a1, 5.9, 2.4, 3.2, "Carrier motor terminal", left=["1A", "1B", "2A", "2B"], color="#fff8c5")
+    ter = pins_box(a1, 5.9, 2.4, 3.2, "Expansion board motor terminal", left=["1A", "1B", "2A", "2B"], color="#fff8c5")
     for p, q, c in [("black", "1A", BLK), ("green", "1B", GRN), ("red", "2A", RED), ("blue", "2B", BLU)]: line(a1, mot[p], ter[q], c)
-    a1.text(0.4, -1.35, "Carrier setup before anything else:\nDIP switches 1, 2, 3 all OFF (1/8 step).  TMC2209 pot to Vref 0.85 V (= 0.6 A) with the motor UNPLUGGED.\nDriver's EN pin on the carrier's EN.  Motor buzzes but won't turn: swap black and green.  Never unplug the motor with 12 V on.",
+    a1.text(0.4, -1.35, "Expansion board setup before anything else:\nDIP switches 1, 2, 3 all OFF (1/8 step).  TMC2209 pot to Vref 0.85 V (= 0.6 A) with the motor UNPLUGGED.\nDriver's EN pin on the expansion board's EN.  Motor buzzes but won't turn: swap black and green.  Never unplug the motor with 12 V on.",
             fontsize=10, va="bottom", bbox=dict(fc="#fff8c5", ec="0.6"))
     a1.text(7.5, 7.75, "Same GPIO numbers on the 38-pin NodeMCU-32S. BOOT button (GPIO0) = manual test drop. KW12-3 NC leg unused.", fontsize=9.5, ha="center")
 
     a2.set_title("2. POWER WIRING (thicker wire for the 12 V run, 22 AWG is fine)", fontsize=14, weight="bold", loc="left")
     psu = pins_box(a2, 0.4, 6.3, 3.2, "12 V 2 A adapter + jack", right=["+12 V", "GND"], color="#ffebe9")
-    drvp = pins_box(a2, 5.9, 6.3, 3.2, "Driver carrier power", left=["VMOT (+12 V)", "GND"], color="#fff8c5")
+    drvp = pins_box(a2, 5.9, 6.3, 3.2, "Expansion board power", left=["VMOT (+12 V)", "GND"], color="#fff8c5")
     buck = pins_box(a2, 5.9, 4.3, 3.2, "LM2596 buck (set 5.0 V first!)", left=["IN+", "IN-"], right=["OUT+", "OUT-"], color="#ffebe9")
     e5 = pins_box(a2, 11.4, 6.3, 3.2, "ESP32", left=["VIN", "GND"], color="#ddf4ff")
     s5 = pins_box(a2, 11.4, 4.6, 3.2, "SG90 servo", left=["red (5 V)", "brown (GND)"], color="#dafbe1")
@@ -68,7 +68,7 @@ def wiring():
     for dst, bx in [((e5["VIN"]), 10.0), ((s5["red (5 V)"]), 10.3), ((r5["VCC (5 V)"]), 10.6)]: line(a2, buck["OUT+"], dst, ORG, None, mid=bx)
     for dst, bx in [((e5["GND"]), 9.6), ((s5["brown (GND)"]), 9.8), ((r5["GND"]), 10.9)]: line(a2, buck["OUT-"], dst, BLK, None, mid=bx)
     a2.add_patch(Circle((11.0, 4.37), 0.16, fc="white", ec=ORG, lw=2, ls="--"))
-    a2.text(7.3, 0.35, "Dashed circle: 470 uF capacitor at the servo, ONLY if the ESP32 restarts when the finger moves.\nAll grounds tie together: adapter, carrier, buck, ESP32, servo, radar, switch COM.\nUSB can stay plugged in for the serial console while 12 V is on.",
+    a2.text(7.3, 0.35, "Dashed circle: 470 uF capacitor at the servo, ONLY if the ESP32 restarts when the finger moves.\nAll grounds tie together: adapter, expansion board, buck, ESP32, servo, radar, switch COM.\nUSB can stay plugged in for the serial console while 12 V is on.",
             fontsize=10, ha="center", bbox=dict(fc="white", ec="0.6"))
     fig.savefig(os.path.join(IMG, "wiring.png"), dpi=100, bbox_inches="tight"); plt.close(fig)
 

@@ -141,7 +141,7 @@ Speed ramps up over 600 steps and down at the end of a counted move. A stop by t
 
 ## Known limits
 
-- No stall detection: needs the driver's UART line, which the carrier does not expose.
+- No stall detection: needs the driver's UART line, which the expansion board does not expose.
 - Radar UART pins (GPIO16, 17) are wired but unused. Future: read target distance directly instead of OUT.
 - The update page and network upload use one shared password from `secrets.ini`. Fine on a home network; not for anything public.
 - Static IP address: not yet.

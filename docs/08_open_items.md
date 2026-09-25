@@ -23,7 +23,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 | ID | Item | Test | If it fails |
 |---|---|---|---|
-| V1 | ESP32 3.3 V signals drive the carrier's 5 V driver logic | commissioning step 4 | 74AHCT125 buffer |
+| V1 | ESP32 3.3 V signals drive the expansion board's 5 V driver logic | commissioning step 4 | 74AHCT125 buffer |
 | V2 | Servo angle direction (release = smaller angle) | step 5 | swap `setlock`/`setrel` values |
 | V3 | HF0612 press fit in PLA holds without creeping | step 11, then after 20 cycles | CA on the outer ring |
 | V4 | Snubber stiffness: 150 mm of 2 mm elastic stops a 100 g spider in about 150 mm | step 7 | double the elastic, or shorten it |
@@ -47,7 +47,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 ## Known limits of Rev C.1
 
 - Ceiling mount only.
-- No stall sensing; the carrier hides the TMC2209 UART pin.
+- No stall sensing; the expansion board hides the TMC2209 UART pin.
 - Static IP address not set yet; DHCP only.
 - One shared update password, from `secrets.ini`. Fine on a home network.
 

@@ -30,10 +30,10 @@
 <th style="border:1px solid #3b2a6b;text-align:left">ESP32 pin</th><th style="border:1px solid #3b2a6b;text-align:left">Wire goes to</th><th style="border:1px solid #3b2a6b;text-align:left">What it does</th><th style="border:1px solid #3b2a6b;text-align:left">Watch out</th>
 </tr>
 <tr><td style="border:1px solid #cccccc"><b>VIN</b></td><td style="border:1px solid #cccccc">buck converter OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">powers the board</td><td style="border:1px solid #cccccc">never 12 V here</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GND</b> (any)</td><td style="border:1px solid #cccccc">common ground</td><td style="border:1px solid #cccccc">every ground ties together</td><td style="border:1px solid #cccccc">adapter, carrier, buck, ESP32, servo, radar, switch</td></tr>
-<tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">driver carrier STEP</td><td style="border:1px solid #cccccc">one pulse = 1/8 motor step</td><td style="border:1px solid #cccccc"></td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO26</b></td><td style="border:1px solid #cccccc">driver carrier DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
-<tr><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">driver carrier EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GND</b> (any)</td><td style="border:1px solid #cccccc">common ground</td><td style="border:1px solid #cccccc">every ground ties together</td><td style="border:1px solid #cccccc">adapter, expansion board, buck, ESP32, servo, radar, switch</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">expansion board STEP</td><td style="border:1px solid #cccccc">one pulse = 1/8 motor step</td><td style="border:1px solid #cccccc"></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO26</b></td><td style="border:1px solid #cccccc">expansion board DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">expansion board EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO13</b></td><td style="border:1px solid #cccccc">servo signal (orange)</td><td style="border:1px solid #cccccc">finger lock and release</td><td style="border:1px solid #cccccc"><b>not GPIO14</b>: 14 pulses at boot and would drop the spider</td></tr>
 <tr><td style="border:1px solid #cccccc"><b>GPIO16</b> (RX2)</td><td style="border:1px solid #cccccc">LD2450 TX</td><td style="border:1px solid #cccccc">radar data in</td><td style="border:1px solid #cccccc">TX crosses to RX</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO17</b> (TX2)</td><td style="border:1px solid #cccccc">LD2450 RX</td><td style="border:1px solid #cccccc">radar data out</td><td style="border:1px solid #cccccc">RX crosses to TX</td></tr>
@@ -49,8 +49,8 @@
 <tr style="background:#3b2a6b;color:#ffffff">
 <th style="border:1px solid #3b2a6b;text-align:left">From</th><th style="border:1px solid #3b2a6b;text-align:left">To</th><th style="border:1px solid #3b2a6b;text-align:left">Notes</th>
 </tr>
-<tr><td style="border:1px solid #cccccc">12 V adapter +</td><td style="border:1px solid #cccccc">carrier VMOT, and buck IN+</td><td style="border:1px solid #cccccc">motor draws about 0.6 A while moving</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">12 V adapter -</td><td style="border:1px solid #cccccc">carrier GND, and buck IN-</td><td style="border:1px solid #cccccc"></td></tr>
+<tr><td style="border:1px solid #cccccc">12 V adapter +</td><td style="border:1px solid #cccccc">expansion board VMOT, and buck IN+</td><td style="border:1px solid #cccccc">motor draws about 0.6 A while moving</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">12 V adapter -</td><td style="border:1px solid #cccccc">expansion board GND, and buck IN-</td><td style="border:1px solid #cccccc"></td></tr>
 <tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, LD2450 5V, LD2410C VCC if fitted</td><td style="border:1px solid #cccccc"><b>set 5.0 V with a meter before connecting anything</b></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">buck OUT-</td><td style="border:1px solid #cccccc">ESP32 GND, servo brown, radar GND, switch COM</td><td style="border:1px solid #cccccc">one common ground</td></tr>
 </table>
@@ -62,16 +62,16 @@
 
 <h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">3. Each part, wire by wire</h2>
 
-<h3 style="font-size:12pt;margin:12px 0 4px 0">Stepper driver: TMC2209 on the carrier board</h3>
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Stepper driver: TMC2209 on the expansion board</h3>
 <table style="border-collapse:collapse;width:100%" cellpadding="6">
 <tr><td style="border:1px solid #cccccc;width:30%">STEP, DIR, EN</td><td style="border:1px solid #cccccc">GPIO25, GPIO26, GPIO27</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">VMOT, GND</td><td style="border:1px solid #cccccc">12 V adapter</td></tr>
 <tr><td style="border:1px solid #cccccc">DIP switches 1, 2, 3</td><td style="border:1px solid #cccccc">all OFF (1/8 step)</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Current pot</td><td style="border:1px solid #cccccc"><b>0.85 V</b> pot top to GND, 12 V on, <b>motor unplugged</b> (= 0.6 A)</td></tr>
-<tr><td style="border:1px solid #cccccc">Orientation</td><td style="border:1px solid #cccccc">driver's EN pin on the carrier's EN position. Backwards destroys it</td></tr>
+<tr><td style="border:1px solid #cccccc">Orientation</td><td style="border:1px solid #cccccc">driver's EN pin on the expansion board's EN position. Backwards destroys it</td></tr>
 </table>
 
-<h3 style="font-size:12pt;margin:12px 0 4px 0">Motor: NEMA 11, 4 wires, into the carrier terminal</h3>
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Motor: NEMA 11, 4 wires, into the expansion board terminal</h3>
 <table style="border-collapse:collapse;width:100%" cellpadding="6">
 <tr><td style="border:1px solid #cccccc;width:30%">black / green</td><td style="border:1px solid #cccccc">1A / 1B</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">red / blue</td><td style="border:1px solid #cccccc">2A / 2B</td></tr>
@@ -138,7 +138,7 @@
 <tr>
 <td style="border:1px solid #cccccc">Capacitor at the driver's 12 V input</td>
 <td style="border:1px solid #cccccc;background:#d9f2e3;color:#16633a;font-weight:bold">NEEDED</td>
-<td style="border:1px solid #cccccc">Not over-engineering: a stepper driver can be killed by a voltage spike on 12 V without one. Most carrier boards already have one (a round can near the power terminal). Look for it; if yours has one, nothing to add. <i>Not checked on this carrier.</i></td>
+<td style="border:1px solid #cccccc">Not over-engineering: a stepper driver can be killed by a voltage spike on 12 V without one. Most expansion boards already have one (a round can near the power terminal). Look for it; if yours has one, nothing to add. <i>Not checked on this expansion board.</i></td>
 </tr>
 <tr>
 <td style="border:1px solid #cccccc">Setting the buck to 5.0 V and the driver to 0.85 V first</td>

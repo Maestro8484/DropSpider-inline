@@ -1,5 +1,5 @@
 // DropSpider - Mechanism A (In-Line Single-Axle Clutch Spool) - Rev C firmware
-// Board: 38-pin ESP32-S NodeMCU. Driver: TMC2209 in STEP/DIR/EN standalone mode on an A4988-style carrier.
+// Board: 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works). Driver: TMC2209 in STEP/DIR/EN standalone mode on an A4988/DRV8825 expansion board.
 // Cycle: sensor edge -> finger out (free-fall) -> settle -> rewind (stops at the limit switch) -> finger in
 //        -> driver off -> lockout -> wait for the doorway to clear.
 // Holding at the top costs zero power: the finger and ratchet hold, driver and servo are both off.
