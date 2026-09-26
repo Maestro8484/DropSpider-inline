@@ -1,7 +1,7 @@
 """
 DropSpider Rev C.1 - LD2450 radar holder, glued under the bracket's servo end (+x).
 
-The radar looks into the room, toward the people walking to the doorway (+x),
+The radar looks out from under the porch ceiling, toward people walking in (+x),
 standing upright as Hi-Link's manual figure 6 shows (44 mm edge vertical,
 antennas out) and tilted TILT_DEG down so the beam meets people 1 to 3 m away
 from about 2.3 m up. The board slides up into two edge grooves from the open
@@ -57,7 +57,7 @@ def _place(m):
     """Local (u, v, w) to installed (x, y, z): u runs down the tilted board, w is the beam direction."""
     t = math.radians(TILT_DEG)
     a = np.array([-math.sin(t), math.cos(t), 0.0])     # down the board
-    n = np.array([math.cos(t), math.sin(t), 0.0])      # beam: into the room and down
+    n = np.array([math.cos(t), math.sin(t), 0.0])      # beam: out toward the approach and down
     v = np.array([0.0, 0.0, 1.0])
     M = np.eye(4)
     M[:3, 0], M[:3, 1], M[:3, 2] = a, v, n
