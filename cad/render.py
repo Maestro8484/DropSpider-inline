@@ -9,12 +9,14 @@ IMG = os.path.join(G.HERE, "..", "docs", "img"); os.makedirs(IMG, exist_ok=True)
 COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff",
        "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "switch_kw12": "#111111",
        "finger": "#e5534b", "rod_6mm": "#444", "coupler": "#d4a72c", "spacer_A": "#2da44e", "spacer_B": "#2da44e",
-       "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da"}
+       "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
+       "ld2450_holder": "#f97316", "ld2450_radar": "#1d4f38"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on SG90 horn", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
-         "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo"}
+         "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
+         "ld2450_holder": "ld2450_holder.stl", "ld2450_radar": "LD2450 radar"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
@@ -46,7 +48,8 @@ def exploded_png():
            "motor_nema11": (0, 90, -95), "coupler": (0, 90, -45), "spacer_A": (0, 90, -8),
            "spool_ratchet": (0, 90, 20), "spool_body": (0, 90, 55), "spacer_B": (0, 90, 95),
            "bearing_606": (0, 90, 150), "rod_6mm": (0, 150, 20),
-           "fairlead_body": (-110, 40, -40), "fairlead_flap": (-110, 40, -40), "switch_kw12": (-110, 40, -40)}
+           "fairlead_body": (-110, 40, -40), "fairlead_flap": (-110, 40, -40), "switch_kw12": (-110, 40, -40),
+           "ld2450_holder": (60, 60, 20), "ld2450_radar": (95, 75, 20)}
     items = []
     for k, m in A.items():
         mm = m.copy(); mm.apply_translation(off.get(k, (0, 0, 0))); items.append((rview(mm), COL[k]))
@@ -104,12 +107,14 @@ def steps_png():
     A = G.assembly()
     base = ["bracket"]
     fl = ("fairlead_body", "fairlead_flap", "switch_kw12")
+    rd = ("ld2450_holder", "ld2450_radar")
     steps = [("Step 1: press 606ZZ into the end plate, motor onto the motor plate", base, ["bearing_606", "motor_nema11"]),
              ("Step 2: coupler onto the motor shaft (set screw on the 5 mm side)", base + ["bearing_606", "motor_nema11"], ["coupler"]),
              ("Step 3: hold spacer A, spool, spacer B in the gap, disk toward the motor", base + ["bearing_606", "motor_nema11", "coupler"], ["spacer_A", "spool_ratchet", "spool_body", "spacer_B"]),
              ("Step 4: push the rod in from the 606ZZ end, through everything, into the coupler", base + ["bearing_606", "motor_nema11", "coupler", "spacer_A", "spool_ratchet", "spool_body", "spacer_B"], ["rod_6mm"]),
-             ("Step 5: SG90 into the tower, finger on its horn", [k for k in A if k not in ("servo_sg90", "finger") + fl], ["servo_sg90", "finger"]),
-             ("Step 6: fairlead with flap and limit switch, glued to the pad", [k for k in A if k not in fl], list(fl))]
+             ("Step 5: SG90 into the tower, finger on its horn", [k for k in A if k not in ("servo_sg90", "finger") + fl + rd], ["servo_sg90", "finger"]),
+             ("Step 6: fairlead with flap and limit switch, glued to the pad", [k for k in A if k not in fl + rd], list(fl)),
+             ("Step 7: LD2450 holder glued under the servo end, radar slid up into it", [k for k in A if k not in rd], list(rd))]
     for i, (title, old, new) in enumerate(steps, 1):
         items = [(rview(A[k]), tuple(0.55 + 0.45 * np.array(mc.to_rgb(COL[k])))) for k in old]
         items += [(rview(A[k]), COL[k]) for k in new]

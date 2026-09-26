@@ -28,12 +28,12 @@ UART2 at 256000 baud, 8N1. Hardware UART only.
 
 ## Placement
 
-- Flat on the wall above the door, **hallway side**, facing straight out down the approach. Not tilted down: the LD2450 is built to look straight out (about 120 degrees wide, 70 degrees tall).
-- Its X axis is left-right across the doorway, Y is distance out into the hallway.
+- **On the device**, in `ld2450_holder.stl`, glued under the bracket's servo end (+x). People walk toward the doorway from the room side, where the device hangs, so the radar looks back into the room at them. Ruled by the owner 2026-09-26; the earlier plan (on the wall above the door, far side) applied only to people coming from the other side.
+- **Orientation, from Hi-Link's manual (section 7, figure 6):** module standing upright, long edge vertical, antenna face toward the room. The holder sets this. Its left-right reading (X) then runs across the path to the door, its distance reading (Y) back into the room. Confirm on the bench: walk left to right in front of it; X must change, Y stay steady. If Y changes instead, the board is in sideways.
+- **Tilt:** 20 degrees down from horizontal (`TILT_DEG` in `cad/sensor_mount.py`). The device holds it about 2.3 m up, over Hi-Link's recommended 1.5 to 2 m, so the tilt aims the beam at people 1 to 3 m away. Estimate, checked only by test S3 with the live readout. Y is then the slanted distance, a little longer than the floor distance; the arrival timing (`leadms`) absorbs that.
+- **Which way up:** the board slides up into the holder's grooves from the open bottom end and stops against the top block; a dab of hot glue holds it. The back plate has windows at both ends for the 1.25 mm plug, whichever end it is on.
+- **Back of the sensor:** the manual warns it also sees a little through its back. The dropping spider hangs about 95 mm behind it (line at x = -25, radar near x = 70). The firmware lockout after a scare covers that; if the falling spider ever retriggers it, a piece of kitchen foil on the holder's back plate (not touching the pins) cuts it down.
 - Keep ceiling fans and moving curtains out of its view; they show up as targets.
-- **Orientation, from Hi-Link's manual (section 7, figure 6):** module standing upright, long edge vertical, the end marked **Up** in the manual's figure at the top, antenna face toward the hallway. Mounted this way its left-right reading is the X axis across the doorway. Confirm on the bench: walk left to right in front of it; X must change, Y stay steady. If Y changes instead, it is on its side: turn it 90 degrees.
-- **Height:** Hi-Link recommends 1.5 to 2 m. Above a 6 ft 8 in door the wall is about 2.05 to 2.1 m, just over; that is fine for walkers, not tilted. If it misses people close to the door, mount it beside the door frame at about 1.8 m instead.
-- **Back of the sensor:** the manual warns it also sees a little through its back. The dropping spider is on the room side, behind it. A piece of kitchen foil on the wall behind the sensor (not touching its pins) cuts that down; the firmware lockout covers the rest.
 
 ## Trigger rule (firmware)
 

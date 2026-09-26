@@ -29,4 +29,4 @@ N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
 N11,soft foam spider <=60 g,1,any,,TO BUY,Rev C.1: motor must stop it
 N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
-PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
+PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_holder / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete

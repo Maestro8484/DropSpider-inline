@@ -77,9 +77,9 @@ def install():
     fig, ax = plt.subplots(figsize=(15, 10))
     ceil, head = 96 * IN, 80 * IN
     wall_x0, wall_x1 = 0, 120          # 4.75 in wall
-    ax.add_patch(Rectangle((-2200, ceil), 4100, 60, color="#d0d7de")); ax.text(-2150, ceil + 20, "ceiling (96 in / 2440 mm shown)")
+    ax.add_patch(Rectangle((-2200, ceil), 4900, 60, color="#d0d7de")); ax.text(-2150, ceil + 20, "ceiling (96 in / 2440 mm shown)")
     ax.add_patch(Rectangle((wall_x0, head), wall_x1 - wall_x0, ceil - head, color="#d0d7de"))
-    ax.add_patch(Rectangle((-2200, -40), 4100, 40, color="#d0d7de")); ax.text(-2150, -30, "floor", va="top")
+    ax.add_patch(Rectangle((-2200, -40), 4900, 40, color="#d0d7de")); ax.text(-2150, -30, "floor", va="top")
     ax.plot([wall_x0, wall_x0], [0, head], "k:", lw=1); ax.plot([wall_x1, wall_x1], [0, head], "k:", lw=1)
     ax.text(15, head / 2, "door opening\n80 in (2030 mm)", rotation=90, va="center", fontsize=9)
     # device on ceiling
@@ -92,25 +92,23 @@ def install():
     ax.add_patch(Circle((dx, 1550 + 50), 55, fc="#222")); ax.text(dx + 70, 1600, "stops at 1550 mm (61 in); the motor sets this height", fontsize=9)
     ax.add_patch(Circle((dx, 1450 + 50), 55, fc="none", ec="#cf222e", ls="--")); ax.text(dx + 70, 1450, "only if the motor loses grip: snubber catches ~1450 mm (57 in)", color="#cf222e", fontsize=9)
     # person
-    px = -1400
+    # person walks toward the doorway from the room side (ruled by the owner 2026-09-26)
+    px = 2150
     ax.add_patch(Circle((px, 1600), 110, fc="#fff", ec="k")); ax.plot([px, px], [1490, 850], "k", lw=3)
     ax.plot([px, px - 150], [850, 0], "k", lw=3); ax.plot([px, px + 150], [850, 0], "k", lw=3)
-    ax.annotate("", xy=(px + 500, 900), xytext=(px + 150, 900), arrowprops=dict(arrowstyle="->", lw=2))
-    ax.text(px - 250, 1780, "approaching, about 1.2 m/s", fontsize=9)
-    # sightline
-    eye = (px + 60, 1600)
-    ax.plot([eye[0], wall_x1 + 700], [eye[1], eye[1] + (head - eye[1]) * (wall_x1 + 700 - eye[0]) / (wall_x1 - eye[0])], color="#bc4c00", ls="--", lw=1)
-    ax.text(-2150, 2330, "sight line under the door head: the retracted spider stays\nabove it until the person is about 0.6 m from the wall", color="#bc4c00", fontsize=9)
-    # sensor
-    sy = head + 120
-    ax.add_patch(Rectangle((wall_x0 - 12, sy - 20), 12, 40, color="#1a7f37"))
-    ax.text(-2150, 1150, "LD2450 flat on the wall above the door, hallway side,\nfacing straight out (not tilted). Fires only on someone\nwalking toward the door, timed so the spider arrives\nas they reach the doorway", color="#1a7f37", fontsize=9)
-    for ang in (-35, 35):
-        ax.plot([wall_x0 - 12, wall_x0 - 12 - 1800], [sy, sy + 1800 * math.tan(math.radians(ang))], color="#1a7f37", lw=1, alpha=0.6)
+    ax.annotate("", xy=(px - 500, 900), xytext=(px - 150, 900), arrowprops=dict(arrowstyle="->", lw=2))
+    ax.text(px - 450, 1780, "approaching from the room, about 1.2 m/s", fontsize=9)
+    ax.text(-2150, 2330, "From the room side no door head hides the device:\nthe retracted spider is in view as people approach", color="#bc4c00", fontsize=9)
+    # sensor on the device, servo end, tilted 20 degrees down into the room
+    sx, sy = dx + 95, ceil - 30
+    ax.add_patch(Rectangle((sx - 6, sy - 22), 12, 44, color="#1a7f37"))
+    ax.text(-2150, 1400, "Green: LD2450 in its holder on the device (top, right of the\nbox), looking into the room, tilted 20 degrees down. Fires\nonly on someone walking toward the doorway, timed so the\nspider arrives as they reach it", color="#1a7f37", fontsize=9)
+    for ang in (-55, 15):
+        ax.plot([sx, sx + 1900 * math.cos(math.radians(ang))], [sy, sy + 1900 * math.sin(math.radians(ang))], color="#1a7f37", lw=1, alpha=0.6)
     # dims
     ax.annotate("", xy=(dx + 600, ceil - 130), xytext=(dx + 600, 1650), arrowprops=dict(arrowstyle="<->"))
     ax.text(dx + 620, (ceil + 1650) / 2, "drop ~ 700 mm (28 in)", fontsize=9)
-    ax.set_xlim(-2200, 1900); ax.set_ylim(-60, ceil + 100); ax.set_aspect("equal"); ax.axis("off")
+    ax.set_xlim(-2200, 2700); ax.set_ylim(-60, ceil + 100); ax.set_aspect("equal"); ax.axis("off")
     ax.set_title("Installation, side section through the doorway (8 ft ceiling, 6 ft 8 in door)", fontsize=13)
     fig.savefig(os.path.join(IMG, "install.png"), dpi=110, bbox_inches="tight"); plt.close(fig)
 
