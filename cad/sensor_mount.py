@@ -45,9 +45,10 @@ LEN = BOARD_L + 2.0
 PIVOT_U, PIVOT_W = -12.0, -2.6 # pivot position in the cradle's local frame
 
 # fork
-EAR_T = 3.0
-KNUCKLE_HALF = RAIL_OUT - EAR_T - 0.3     # knuckle fits between the ears with 0.3 mm each side
-EAR_R = 6.0
+KNUCKLE_HALF = 6.4             # cradle knuckle half width (unchanged); ears sit 0.3 mm outside it
+EAR_T = 2.0                    # lightened 2026-09-26 (was 3.0): a 5 g radar needs very little
+EAR_R = 4.5                    # was 6.0
+PLATE_T = 2.0                  # was 3.0
 
 
 def _along_v(m):
@@ -103,10 +104,11 @@ def ld2450_board(tilt_deg=TILT_DEG):
 def ld2450_fork():
     """Glued flat to the bracket underside (y = 4). Two round ears carry the M3 pivot."""
     px, py = PIVOT
-    plate = G.bx(58, 75, 4, 7, Z_CENTER - RAIL_OUT, Z_CENTER + RAIL_OUT)
+    z_in = KNUCKLE_HALF + 0.3                      # ears' inner faces, same place as before
+    plate = G.bx(62, 74, 4, 4 + PLATE_T, Z_CENTER - z_in - EAR_T, Z_CENTER + z_in + EAR_T)
     ears = []
-    for z0 in (Z_CENTER - RAIL_OUT, Z_CENTER + RAIL_OUT - EAR_T):
-        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 5, py, z0, z0 + EAR_T)))
+    for z0 in (Z_CENTER - z_in - EAR_T, Z_CENTER + z_in):
+        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 4 + PLATE_T - 0.5, py, z0, z0 + EAR_T)))
     return G.D(G.U(plate, *ears), G.cyl(M3_CLEAR, 40, Z_CENTER - 20, px, py))
 
 
