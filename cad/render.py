@@ -13,7 +13,7 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
-         "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on SG90 horn", "rod_6mm": "6 mm rod, 100 mm",
+         "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
          "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
          "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar"}
@@ -112,7 +112,7 @@ def steps_png():
              ("Step 2: coupler onto the motor shaft (set screw on the 5 mm side)", base + ["bearing_606", "motor_nema11"], ["coupler"]),
              ("Step 3: hold spacer A, spool, spacer B in the gap, disk toward the motor", base + ["bearing_606", "motor_nema11", "coupler"], ["spacer_A", "spool_ratchet", "spool_body", "spacer_B"]),
              ("Step 4: push the rod in from the 606ZZ end, through everything, into the coupler", base + ["bearing_606", "motor_nema11", "coupler", "spacer_A", "spool_ratchet", "spool_body", "spacer_B"], ["rod_6mm"]),
-             ("Step 5: SG90 into the tower, finger on its horn", [k for k in A if k not in ("servo_sg90", "finger") + fl + rd], ["servo_sg90", "finger"]),
+             ("Step 5: SG90 into the tower, finger pressed onto its spline", [k for k in A if k not in ("servo_sg90", "finger") + fl + rd], ["servo_sg90", "finger"]),
              ("Step 6: fairlead with flap and limit switch, glued to the pad", [k for k in A if k not in fl + rd], list(fl)),
              ("Step 7: radar fork glued under the servo end, cradle on one M3 bolt, radar slid in", [k for k in A if k not in rd], list(rd))]
     for i, (title, old, new) in enumerate(steps, 1):

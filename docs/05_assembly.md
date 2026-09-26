@@ -41,8 +41,8 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 ![Step 5](img/step5.png)
 
 12. Drop the **SG90** into the tower pocket from the 606ZZ side, output spline toward the spool, wires out the far end. Two tab screws.
-13. Power the servo (or do this at commissioning): send it to 90 degrees. Press the single-arm horn on, pointing at the rod, and fit the horn screw.
-14. Set a **finger** over the horn: horn hub in the round recess, horn arm in the slot (both on the finger's underside). The finger lies level, pointing at the rod, resting just above the ledge, tip in the teeth. Glue with CA. The 4.4 mm hole in the finger's hub lets a screwdriver reach the horn screw later.
+13. Power the servo (or do this at commissioning): send it to 90 degrees. No horn is used.
+14. Press the **finger** straight onto the servo spline (the round socket on its underside), pointing at the rod, level, resting just above the ledge, tip in the teeth. The socket is round, so it goes on at any angle. Push until the spline bottoms in the socket, then drive the horn screw in through the small hole on top. If it is loose on the spline, a drop of CA in the socket; if too tight to push on, run a 4.8 mm drill through the socket by hand. Check: the 5 mm finger lines up with the 6 mm ratchet disk edge-on; if not, move the disk with spacer A and the shims (step 8).
 
 ![Lock detail](img/lock_detail.png)
 

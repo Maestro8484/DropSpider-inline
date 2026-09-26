@@ -43,7 +43,7 @@ A foam spider hangs on braided fishing line wound on a spool. The spool sits on 
 - Finger locked = level, pointing at the rod (default servo 90). Released = swung toward the floor by 60 degrees (default servo 30). Both are set at commissioning.
 - Lock sequence (firmware does this): motor holds the spool, finger goes in, motor eases the spool down (clockwise) up to 1/12 turn until a tooth lands on the finger, the clutch then slips so the motor runs on alone, motor off, servo lets go.
 - Release sequence (M2): with the spider hanging, the tooth pins the finger. The motor winds the spool counterclockwise about 1/12 turn while the finger swings out, so the finger rides up the tooth's ramp. Never release with the motor off.
-- The finger (Rev C.1) is 5 mm thick and 7 mm wide. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. Print it flat top face down (as exported); the horn recesses face up.
+- The finger (Rev C.1) is 5 mm thick and 7 mm wide. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. No horn: it presses straight onto the SG90 output spline (4.8 mm across the teeth, measured by the owner) through a 4.8 mm socket 3 mm deep in its underside, and the horn screw goes in through a 2.3 mm hole from the top. Print it flat top face down (as exported); the socket faces up.
 
 ## Direction rules (the only things that can be assembled backwards)
 

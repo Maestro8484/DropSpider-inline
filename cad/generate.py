@@ -114,18 +114,21 @@ def line_guide_print():
     g.apply_translation(-g.bounds[0]); return g
 
 # ---------------- small parts ----------------
+SPLINE_D = 4.8        # SG90 output spline across the teeth; printed holes come out a little small, so the teeth bite: press fit
+SPLINE_DEPTH = 3.0    # spline length; the spline end bottoms on the 2 mm floor, so the finger never rubs the servo case
 def finger():
     """Rev C.1 finger: 5 mm thick, 7 mm wide. Tip face beveled 20 degrees so the ramp-side corner sits
     2.5 mm back: the tip seats fully against a tooth's steep face (checked: 5 degrees of seating window).
-    Installed coords: bottom face z 0 sits on the SG90 horn (recess for its hub and arm), z 5 is the top."""
+    Installed coords: bottom face z 0 faces the servo, z 5 is the top. No horn: the finger presses
+    straight onto the SG90 output spline (owner measured 4.8 mm across the teeth, 2026-09-26); the
+    round socket lets it go on at any angle, and the horn screw holds it."""
     L, W, T = 20.5, 7.0, 5.0
     f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0))
     dx = W * math.tan(math.radians(20))
     bevel = extrude_polygon(Polygon([(L - dx, W / 2 + 0.01), (L + 0.1, W / 2 + 0.01), (L + 0.1, -W / 2)]), T + 2)
     bevel.apply_translation([0, 0, -1])
-    return D(f, cyl(2.2, T + 2, -1),                       # through hole: horn screw head passes to the horn
-             cyl(3.7, 1.6, -0.1),                           # SG90 horn hub recess
-             bx(0, 8.5, -2.1, 2.1, -0.1, 1.5),              # single-arm horn recess
+    return D(f, cyl(SPLINE_D / 2, SPLINE_DEPTH + 0.1, -0.1),   # spline socket from the servo side
+             cyl(1.15, T + 2, -1),                          # 2.3 mm hole for the horn screw
              bevel)
 
 def finger_print():
