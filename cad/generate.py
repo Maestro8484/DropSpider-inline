@@ -119,7 +119,9 @@ def line_guide_print():
     g.apply_translation(-g.bounds[0]); return g
 
 # ---------------- small parts ----------------
-SPLINE_D = 4.8        # SG90 output spline across the teeth (owner, 2026-09-26); printed holes come out a little small, so the teeth bite
+SPLINE_D = 4.8        # SG90 output spline across the teeth (owner, 2026-09-26)
+SOCKET_D = 5.0        # drawn socket: the owner's 4.8 printed as 4.5, so 5.0 prints about 4.7, a light press on the spline
+HEAD_D = 7.4          # drawn screw-head recess: owner needs at least 7 mm printed
 SPLINE_LEN = 3.4      # spline height above the servo case top (owner, 2026-09-26)
 SPLINE_TIP_Z = 33.0   # installed z of the spline tip: owner saw it about 2 mm short of the ledge (z 35) with the servo in the tower
 FINGER_Z0 = 35.0      # finger plate z 35..42, level with the ledge it rests on; the ratchet disk is z 36..42
@@ -133,13 +135,13 @@ def finger():
     L, W, T = 20.5, 7.0, 7.0
     tip = SPLINE_TIP_Z - FINGER_Z0                      # -2.0: spline tip, local
     hub_bot = tip - SPLINE_LEN + 0.8                    # 0.8 mm clear of the servo case top
-    f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0), cyl(4.0, -hub_bot, hub_bot))
+    f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0), cyl(5.5, -hub_bot, hub_bot))   # hub 11 mm: 1.8 mm wall round the head recess
     dx = W * math.tan(math.radians(20))
     bevel = extrude_polygon(Polygon([(L - dx, W / 2 + 0.01), (L + 0.1, W / 2 + 0.01), (L + 0.1, -W / 2)]), T + 2)
     bevel.apply_translation([0, 0, -1])
-    return D(f, cyl(SPLINE_D / 2, tip - hub_bot + 0.1, hub_bot - 0.1),   # spline socket, floor at the spline tip
+    return D(f, cyl(SOCKET_D / 2, tip - hub_bot + 0.1, hub_bot - 0.1),   # spline socket, floor at the spline tip
              cyl(1.25, 3, tip - 1),                                         # 2.5 mm screw hole through the 1.5 mm floor
-             cyl(2.3, T - (tip + 1.5) + 1, tip + 1.5),                      # 4.6 mm recess from the top for the screw head
+             cyl(HEAD_D / 2, T - (tip + 1.5) + 1, tip + 1.5),               # screw-head recess from the top
              bevel)
 
 def finger_print():
