@@ -7,6 +7,7 @@ C2,ESP32-S NodeMCU 38-pin (ESP-WROOM-32 CP2102),1,any,,have,board in use on the 
 S3,KW12-3 micro switch with roller lever (SPDT),1,any,,have,in the fairlead (doc 09); COM to GND and NO to GPIO32
 H5,M2 x 12 screws + M2 nuts,2,any,,have?,KW12-3 to the fairlead switch plate
 H6,1.75 mm filament (30 mm piece),1,any,,have,fairlead flap hinge pin
+H7,M3 bolt 20 to 25 mm + M3 nut (nylon-insert if you have one),1,any,,have?,radar cradle tilt pivot
 S4,HLK-LD2450 mmWave tracking radar,1,any,,have,PRIMARY trigger (Rev C.1); UART2 GPIO16/17; 4-pin 1.25 mm cable
 S1,HLK-LD2410C mmWave radar,1,amazon.com,B0BXDLHHH2,ordered,fallback trigger on GPIO33
 S2,SG90 micro servo,1,amazon.com,B072V529YD,ordered,
@@ -29,4 +30,4 @@ N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
 N11,soft foam spider <=60 g,1,any,,TO BUY,Rev C.1: motor must stop it
 N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
-PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_holder / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
+PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete

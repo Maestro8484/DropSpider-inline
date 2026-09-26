@@ -1,19 +1,24 @@
 """
-DropSpider Rev C.1 - LD2450 radar holder, glued under the bracket's servo end (+x).
+DropSpider Rev C.1 - LD2450 radar mount: a fork glued under the bracket's servo end,
+and a cradle that tilts between the fork's ears on one M3 bolt.
 
-The radar looks out from under the porch ceiling, toward people walking in (+x),
-standing upright as Hi-Link's manual figure 6 shows (44 mm edge vertical,
-antennas out) and tilted TILT_DEG down so the beam meets people 1 to 3 m away
-from about 2.3 m up. The board slides up into two edge grooves from the open
-bottom end and stops against the top block; a dab of hot glue keeps it there.
-Windows in the back plate leave room for the 1.25 mm plug at either end.
+The radar looks out from under the porch ceiling toward people walking in (+x),
+standing upright as Hi-Link's manual figure 6 shows (44 mm edge vertical, antennas
+out). The tilt is set on site: loosen the nut, swing the cradle, tighten. Any angle
+from TILT_MIN to TILT_MAX clears the bracket and every other part (checked below).
+The board slides up into the cradle's edge grooves from the open bottom end and
+stops against the top block; a dab of hot glue keeps it there. Windows in the back
+plate leave room for the 1.25 mm plug at either end.
+
+Hardware: one M3 bolt 20 to 25 mm long and a nut (a nylon-insert nut holds the
+angle best).
 
 Installed coordinates use the assembly frame in generate.py:
   y = 0 ceiling face (+y down), z along the rod, servo tower on +x.
-The holder's plate glues to the bracket underside (y = 4) at x 58..75, z 52..72,
-clear of the servo, the ceiling screws at x 65 z 20/90, and the spool.
+Everything sits in the slab z 52.3..71.7, which below the bracket holds nothing
+else: the spool ends at z 50, the servo at z 35, the 606ZZ plate starts at z 100.
 
-Run on its own for the numbers: python sensor_mount.py
+Run on its own for the fit report: python sensor_mount.py
 """
 import math
 import numpy as np
@@ -23,74 +28,114 @@ import generate as G
 
 # LD2450 board, Hi-Link manual figure 3
 BOARD_L, BOARD_W, BOARD_T = 44.0, 15.0, 1.6
-TILT_DEG = 20.0               # beam tilted down from horizontal
-Z_CENTER = 62.0               # holder centre along the rod
-TOP_POINT = (70.0, 9.2)       # (x, y) of the board's top back corner line, installed
+TILT_DEG = 20.0                # tilt used for the assembly model and pictures
+TILT_MIN, TILT_MAX = 0.0, 50.0 # checked range
+Z_CENTER = 62.0
+PIVOT = (68.0, 13.0)           # (x, y) of the M3 pivot axis, installed; the axis runs along z
+M3_CLEAR = 1.7                 # 3.4 mm hole
 
-# holder section, local coordinates: u down the board (0 = top), v across, w out of the antennas
-LIP = 1.0                     # how far the grooves overlap the board edge, front and back
+# cradle section, local coordinates: u down the board (0 = board top), v across (= z), w out of the antennas
+LIP = 1.0
 EDGE = BOARD_W / 2
-RAIL_OUT = EDGE + 2.2
-BACK_W = -8.0                 # back plate outer face
+RAIL_OUT = EDGE + 2.2          # 9.7: cradle half width
+BACK_W = -8.0
 BACK_T = 2.0
 FRONT_W = BOARD_T + 1.2
 LEN = BOARD_L + 2.0
+PIVOT_U, PIVOT_W = -12.0, -2.6 # pivot position in the cradle's local frame
+
+# fork
+EAR_T = 3.0
+KNUCKLE_HALF = RAIL_OUT - EAR_T - 0.3     # knuckle fits between the ears with 0.3 mm each side
+EAR_R = 6.0
 
 
-def _local():
+def _along_v(m):
+    """Turn a z-axis cylinder so it runs along local v (the local y axis)."""
+    m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0])); return m
+
+
+def _cradle_local():
     bx = G.bx
     rails = []
     for s in (1, -1):
         lo, hi = sorted((s * (EDGE - LIP), s * RAIL_OUT))
-        rail = bx(0, LEN, lo, hi, BACK_W, FRONT_W)                      # u, v, w as x, y, z
+        rail = bx(0, LEN, lo, hi, BACK_W, FRONT_W)                       # u, v, w as x, y, z
         slot_lo, slot_hi = sorted((s * (EDGE - LIP - 0.1), s * (EDGE + 0.3)))
-        rail = G.D(rail, bx(-1, LEN + 1, slot_lo, slot_hi, -0.2, BOARD_T + 0.2))   # board edge groove: 1 mm lip front and back
-        rails.append(rail)
+        rails.append(G.D(rail, bx(-1, LEN + 1, slot_lo, slot_hi, -0.2, BOARD_T + 0.2)))   # 1 mm lip front and back
     back = bx(0, LEN, -RAIL_OUT, RAIL_OUT, BACK_W, BACK_W + BACK_T)
     back = G.D(back, bx(1.5, 13, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1),   # plug window, top end
                bx(LEN - 13, LEN + 1, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))  # plug window, bottom end
     top = bx(-2.5, 0, -RAIL_OUT, RAIL_OUT, BACK_W, FRONT_W)
-    return G.U(*rails, back, top)
+    # knuckle: a round boss on the pivot, joined to the top block, narrow enough to sit between the ears
+    boss = _along_v(G.cyl(5.0, 2 * KNUCKLE_HALF, -KNUCKLE_HALF))
+    boss.apply_translation([PIVOT_U, 0, PIVOT_W])
+    neck = bx(PIVOT_U, -2.0, -KNUCKLE_HALF, KNUCKLE_HALF, PIVOT_W - 5.0, PIVOT_W + 5.0)
+    body = G.U(*rails, back, top, boss, neck)
+    hole = _along_v(G.cyl(M3_CLEAR, 40, -20)); hole.apply_translation([PIVOT_U, 0, PIVOT_W])
+    clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # antennas and back parts stay clear
+    edges = bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.2, BOARD_T + 0.2)
+    return G.D(body, hole, clear, edges)
 
 
-def _place(m):
-    """Local (u, v, w) to installed (x, y, z): u runs down the tilted board, w is the beam direction."""
-    t = math.radians(TILT_DEG)
+def _place(m, tilt_deg):
+    """Local (u, v, w) to installed (x, y, z), rotated about the pivot by the tilt."""
+    t = math.radians(tilt_deg)
     a = np.array([-math.sin(t), math.cos(t), 0.0])     # down the board
-    n = np.array([math.cos(t), math.sin(t), 0.0])      # beam: out toward the approach and down
+    n = np.array([math.cos(t), math.sin(t), 0.0])      # beam: out toward the approach, and down
     v = np.array([0.0, 0.0, 1.0])
     M = np.eye(4)
     M[:3, 0], M[:3, 1], M[:3, 2] = a, v, n
-    M[:3, 3] = [TOP_POINT[0], TOP_POINT[1], Z_CENTER]
+    p = np.array([PIVOT[0], PIVOT[1], Z_CENTER])
+    M[:3, 3] = p - (PIVOT_U * a + PIVOT_W * n)          # local pivot point lands on the installed pivot
     m = m.copy(); m.apply_transform(M); return m
 
 
-def ld2450_holder():
-    frame = _place(_local())
-    plate = G.bx(58, 75, 4, 7, Z_CENTER - RAIL_OUT, Z_CENTER + RAIL_OUT)
-    top = _place(G.bx(-2.5, 0, -RAIL_OUT, RAIL_OUT, BACK_W, FRONT_W))
-    web = trimesh.convex.convex_hull(np.vstack([plate.vertices, top.vertices]))
-    # keep the space in front of the antennas and behind the board's parts clear of the web
-    clear = _place(G.bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40))
-    edges = _place(G.bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.2, BOARD_T + 0.2))
-    return G.D(G.U(frame, plate, web), clear, edges)
+def ld2450_cradle(tilt_deg=TILT_DEG):
+    return _place(_cradle_local(), tilt_deg)
 
 
-def ld2450_board():
+def ld2450_board(tilt_deg=TILT_DEG):
     """The radar itself, for clash checks and pictures."""
-    return _place(G.bx(0, BOARD_L, -EDGE, EDGE, 0, BOARD_T))
+    return _place(G.bx(0, BOARD_L, -EDGE, EDGE, 0, BOARD_T), tilt_deg)
 
 
-def ld2450_holder_print():
-    """Lies on its side (the z face): rails, grooves and windows print with no supports."""
-    m = ld2450_holder()
+def ld2450_fork():
+    """Glued flat to the bracket underside (y = 4). Two round ears carry the M3 pivot."""
+    px, py = PIVOT
+    plate = G.bx(58, 75, 4, 7, Z_CENTER - RAIL_OUT, Z_CENTER + RAIL_OUT)
+    ears = []
+    for z0 in (Z_CENTER - RAIL_OUT, Z_CENTER + RAIL_OUT - EAR_T):
+        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 5, py, z0, z0 + EAR_T)))
+    return G.D(G.U(plate, *ears), G.cyl(M3_CLEAR, 40, Z_CENTER - 20, px, py))
+
+
+def ld2450_fork_print():
+    """Glue face down: the ears stand up as walls, the bolt hole runs sideways."""
+    m = ld2450_fork()
+    m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))   # y = 4 face to the bed
+    m.apply_translation(-m.bounds[0]); return m
+
+
+def ld2450_cradle_print():
+    """Lies on its side: rails, grooves, windows and the pivot hole print with no supports."""
+    m = ld2450_cradle(0.0)
     m.apply_translation(-m.bounds[0]); return m
 
 
 if __name__ == "__main__":
-    h, b = ld2450_holder(), ld2450_board()
-    print(f"holder watertight={h.is_watertight} size={np.round(h.extents, 1).tolist()} vol={h.volume / 1000:.1f}cm3")
-    print("holder bounds x y z:", np.round(h.bounds, 1).tolist())
-    print("board bounds  x y z:", np.round(b.bounds, 1).tolist())
-    print("board overlaps holder (should be 0):", round(G.I(h, b).volume, 2))
-    print("highest point y (must stay >= 4, nothing above the bracket underside):", round(h.bounds[0][1], 2))
+    f = ld2450_fork()
+    print(f"fork   watertight={f.is_watertight} size={np.round(f.extents, 1).tolist()} vol={f.volume / 1000:.1f}cm3")
+    c0 = ld2450_cradle(0.0)
+    print(f"cradle watertight={c0.is_watertight} size={np.round(c0.extents, 1).tolist()} vol={c0.volume / 1000:.1f}cm3")
+    fp = ld2450_fork_print()
+    print("fork print: lowest face is the glue face:", round(fp.bounds[0][2], 2), "height", round(fp.extents[2], 1))
+    A = G.assembly()
+    for t in np.arange(TILT_MIN, TILT_MAX + 0.1, 5.0):
+        c, b = ld2450_cradle(t), ld2450_board(t)
+        hits = {"fork": G.I(c, f).volume, "board in cradle": G.I(c, b).volume, "board vs fork": G.I(b, f).volume}
+        for k in ("bracket", "servo_sg90", "spool_body", "spool_ratchet", "finger", "fairlead_body", "switch_kw12", "motor_nema11"):
+            hits[k] = G.I(c, A[k]).volume + G.I(b, A[k]).volume
+        top = min(c.bounds[0][1], b.bounds[0][1])
+        bad = {k: round(v, 2) for k, v in hits.items() if v > 0.05}
+        print(f"tilt {t:4.0f} deg: highest point y {top:5.2f} (>= 4 ok)  {'clear' if not bad else 'CLASH ' + str(bad)}")

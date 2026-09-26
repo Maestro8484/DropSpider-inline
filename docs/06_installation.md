@@ -32,7 +32,7 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 ## Sensor
 
-- **LD2450** (primary): on the device, in `ld2450_holder.stl` under the servo end, looking out from under the porch toward people walking in, standing upright and tilted 20 degrees down (doc 03). Nothing to mount on the wall.
+- **LD2450** (primary): on the device, in its tilting cradle under the servo end (`ld2450_fork.stl` glued, `ld2450_cradle.stl` on one M3 bolt), looking out from under the porch toward people walking in, standing upright. Set the tilt on site, starting at 20 degrees down (doc 03). Nothing to mount on the wall.
 - Its lead (4 wires, 1.25 mm plug at the sensor) runs about 10 cm across the device to the controller.
 - Setup per `03_sensor.md`: no calibration needed; optional app check for firmware version and tracking; leave the app's zones off.
 - LD2410C (fallback only): top center of the opening, hallway side, aimed about 45 degrees down; settings in `03_sensor.md`.

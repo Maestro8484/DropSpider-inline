@@ -144,9 +144,13 @@ def fairlead_flap_print():
     m = F.fairlead_flap(); m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))
     m.apply_translation(-m.bounds[0]); return m
 
-def ld2450_holder_print():
+def ld2450_fork_print():
     import sensor_mount as S
-    return S.ld2450_holder_print()
+    return S.ld2450_fork_print()
+
+def ld2450_cradle_print():
+    import sensor_mount as S
+    return S.ld2450_cradle_print()
 
 PARTS = {
     "fairlead_body": fairlead_body_print,
@@ -159,7 +163,8 @@ PARTS = {
     "spacer_B_50mm": lambda: tube(50),
     "shim_1mm": lambda: tube(1),
     "shim_2mm": lambda: tube(2),
-    "ld2450_holder": ld2450_holder_print,
+    "ld2450_fork": ld2450_fork_print,
+    "ld2450_cradle": ld2450_cradle_print,
 }
 
 # ---------------- installed assembly ----------------
@@ -171,7 +176,7 @@ def assembly():
     import fairlead as F
     A["fairlead_body"] = F.fairlead_body(); A["fairlead_flap"] = F.fairlead_flap(); A["switch_kw12"] = F.switch_model()
     import sensor_mount as S
-    A["ld2450_holder"] = S.ld2450_holder(); A["ld2450_radar"] = S.ld2450_board()
+    A["ld2450_fork"] = S.ld2450_fork(); A["ld2450_cradle"] = S.ld2450_cradle(); A["ld2450_radar"] = S.ld2450_board()
     f = finger(); f.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1]))
     f.apply_translation([SERVO_SHAFT_X, AXIS_Y, Z_RATCHET]); A["finger"] = f
     A["rod_6mm"] = cyl(3, 100, 20, 0, AXIS_Y)
@@ -191,7 +196,7 @@ if __name__ == "__main__":
     A = assembly()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
     pairs = [(m, f) for m in ("spool_ratchet", "spool_body", "finger")
-             for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_holder")]
+             for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle")]
     for m, f in pairs:
         v = I(A[m], A[f]).volume
         if v > 0.5: print(f"CLASH {m} x {f}: {v:.1f}")
@@ -207,5 +212,5 @@ if __name__ == "__main__":
           f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle: finger or teeth changed badly)")
     ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=16)
     ring.apply_translation([0, AXIS_Y, 43])   # spool spans z 36..50
-    for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_holder"):
+    for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle"):
         print(f"2 mm swept clearance, spool vs {k}: {I(ring, A[k]).volume:.1f} mm3 overlap")
