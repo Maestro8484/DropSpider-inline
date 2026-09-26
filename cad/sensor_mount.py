@@ -83,7 +83,9 @@ def _cradle_local():
     hole = _along_v(G.cyl(M3_CLEAR, 40, -20)); hole.apply_translation([PIVOT_U, 0, PIVOT_W])
     clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # circuit side open for the pin headers
     edges = bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.2, BOARD_T + 0.2)
-    return G.D(body, hole, clear, edges)
+    # flat print: trim the knuckle flush with the face plate's outer face, which goes on the bed
+    bed = bx(-20, LEN + 5, -20, 20, BACK_W - 10, BACK_W)
+    return G.D(body, hole, clear, edges, bed)
 
 
 def _place(m, tilt_deg):
@@ -128,8 +130,10 @@ def ld2450_fork_print():
 
 
 def ld2450_cradle_print():
-    """Lies on its side: rails, grooves, windows and the pivot hole print with no supports."""
-    m = ld2450_cradle(0.0)
+    """Lies flat, face plate on the bed (local w is up). The windows are plain holes, the rails
+    and knuckle stand up from the plate, the pivot hole runs level; only the 1 mm groove lips
+    overhang, by 1.3 mm. No supports."""
+    m = _cradle_local()
     m.apply_translation(-m.bounds[0]); return m
 
 
@@ -140,6 +144,10 @@ if __name__ == "__main__":
     print(f"cradle watertight={c0.is_watertight} size={np.round(c0.extents, 1).tolist()} vol={c0.volume / 1000:.1f}cm3")
     fp = ld2450_fork_print()
     print("fork print: lowest face is the glue face:", round(fp.bounds[0][2], 2), "height", round(fp.extents[2], 1))
+    cp = ld2450_cradle_print()
+    down = (cp.face_normals[:, 2] < -0.999) & (cp.vertices[cp.faces][:, :, 2].max(axis=1) < 1e-6)
+    fl = cp.area_faces[down].sum()
+    print(f"cradle print: size {np.round(cp.extents, 1).tolist()} (x, y, height), area on the bed {fl:.0f} mm2")
     A = G.assembly()
     for t in np.arange(TILT_MIN, TILT_MAX + 0.1, 5.0):
         c, b = ld2450_cradle(t), ld2450_board(t)
