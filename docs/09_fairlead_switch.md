@@ -17,7 +17,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 | Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the line to saw on. Centered on the spool's line channel |
 | `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied |
 | KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
-| Hinge pin | 30 mm piece of 1.75 mm filament |
+| Hinge pin | M2 bolt, 16 to 20 mm: free in the flap, threads itself into the body |
 
 ## How it works
 
@@ -42,7 +42,7 @@ One flap is needed; a second is a spare.
 
 1. Clean the fairlead bore with a 3 mm drill turned by hand. Run a scrap of the line through it; it must slide without catching. Sand the top flare smooth if it feels rough.
 2. Fit the switch to the plate: **roller end toward the fairlead** (toward the spool), body on the side away from the plate's flat back. Two M2 screws through the plate's slots and the switch, nuts on the switch side. Leave them finger-tight.
-3. Push the flap's knuckle into the gap below the fairlead, line up the holes, and push the filament pin in from the flat outer face. It is snug in the body and free in the flap. Trim it flush on the body side; on the flap side leave 1 mm standing and melt it into a small head with a soldering iron tip, so the flap cannot walk off the pin.
+3. Push the flap's knuckle into the gap below the fairlead and line up the holes. Drive an M2 bolt (16 to 20 mm) in from the flap's outer side: free through the flap (2.5 mm hole; drill it by hand if it drags), threading itself into the body. Stop before the head clamps the flap; it must swing down under its own weight.
 4. Flap level on its rest stop: slide the switch up in its slots until the roller just touches the flap tail, then back it off about 0.3 mm (a piece of paper's thickness). Tighten.
 5. Check by hand: lift the flap's free end. Click at about 2 mm; flap stops flat against the fairlead a moment later. Let go: it drops back, switch opens.
 6. Glue the body to the pad exactly as the old line guide: CA or epoxy along the rail, two M3 screws through the rail and the x = -32 pad holes as alignment pins, remove them after it cures.
@@ -61,5 +61,5 @@ Bare KW12-3, three legs: COM to GND, NO to GPIO32, NC unused. Firmware pull-up: 
 ## Unverified
 
 - The KW12-3's operating point is taken from the owner's datasheet (2.6 mm pre-travel, 0.8 mm overtravel, 0.7 N). The slotted holes cover about plus or minus 2.5 mm of error.
-- The filament hinge pin's wear over a season. Spare pins are free.
+- The M2 hinge bolt loosening over a season: a drop of threadlocker or CA on its thread in the body.
 - Line wear in the PLA fairlead. Swap for a new print if a groove appears.

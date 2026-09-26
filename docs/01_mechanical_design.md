@@ -88,7 +88,7 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 - 606ZZ into bracket: 16.8 mm for 17.0 mm. Same method.
 - Spool disk to body: 3x M3x8 self-tapping into 2.5 mm holes.
 - Fairlead body to pad: **glue** (CA with accelerator, or 5-minute epoxy) over the whole rail. Push two M3 screws through the rail and the x = -32 pad holes as alignment pins while it cures, then remove them. Screws cannot stay: a head or nut on the ceiling side would hold the bracket off the ceiling. At home the motor's pull lands on the fairlead's flap stop, about 2 N.
-- KW12-3: 2x M2 x 12 + nuts through the slotted holes. Hinge pin: 30 mm of 1.75 mm filament.
+- KW12-3: 2x M2 x 12 + nuts through the slotted holes. Hinge pin: an M2 bolt, 16 to 20 mm, threaded into the body, free in the flap (filament was too tight, owner 2026-09-26).
 - Motor: 4x M2.5x6.
 - SG90: its own two tab screws.
 

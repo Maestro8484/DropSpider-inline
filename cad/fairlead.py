@@ -6,7 +6,8 @@ Line axis: x = -25, z = 45 (center of the 6 mm line channel), vertical (along y)
 Parts:
   fairlead_body.stl  glues to the pad in the old line guide's spot (rail over the x=-32 holes)
   fairlead_flap.stl  hinged bumper. The stop bead lifts it; its tail presses the KW12-3 roller.
-Hinge pin: a 30 mm length of 1.75 mm filament.
+Hinge pin: an M2 bolt, 16 to 20 mm (owner 2026-09-26; filament was too tight). In from the flap side,
+free in the flap's 2.5 mm hole, threads itself into the body's 1.9 mm hole.
 Switch: KW12-3 roller lever, 2x M2 x 12 screws + nuts through slotted holes (adjust the click point).
 
 Run on its own for the travel and clash report: python fairlead.py
@@ -56,7 +57,7 @@ def fairlead_body():
     b = U(rail, spine, block, rest, swpl)
     cuts = [vcyl(1.7, 10, 0, -32, 28), vcyl(1.7, 10, 0, -32, 83),        # alignment pin holes
             trumpet(),
-            xcyl(0.95, -37, -28, PY, HZ),                                   # 1.9 hinge pin, snug
+            xcyl(0.95, -37, -28, PY, HZ),                                   # 1.9: the M2 hinge bolt threads itself in
             bx(-29.01, -16, HY - 3.6, HY + 3.6, HZ - 3.6, HZ + 3.6)]        # knuckle clearance
     for z in SW_HOLES_Z:                                                    # 2.4 wide slots, +-2.5 mm in y
         cuts += [xcyl(1.2, -37, -27, SW_HOLE_Y - 2.5, z), xcyl(1.2, -37, -27, SW_HOLE_Y + 2.5, z),

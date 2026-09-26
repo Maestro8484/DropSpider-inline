@@ -54,7 +54,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 15a. Clear the fairlead bore with a 3 mm drill turned by hand. A scrap of the line must slide through without catching.
 15b. KW12-3 switch onto the switch plate: roller end toward the fairlead, body on the side away from the flat back. 2x M2 x 12 through the slots, nuts on the switch side, finger-tight.
-15c. Flap knuckle into the gap under the fairlead; push a 30 mm piece of 1.75 mm filament through from the flat outer face as the hinge pin. Trim it flush on the body side; on the flap side leave 1 mm standing and melt it into a small head with a soldering iron tip, so the flap cannot walk off the pin. Check the flap swings down under its own weight.
+15c. Flap knuckle into the gap under the fairlead. Hinge pin: an **M2 bolt, 16 to 20 mm**, in from the flap's outer side: free through the flap (open the flap's hole with a 2.5 mm drill by hand if it drags), then it cuts its own thread into the body's hole. Stop before the head clamps the flap. Check the flap swings down under its own weight.
 15d. Flap level on its rest stop: slide the switch up until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the fairlead.
 
 ![Step 6](img/step6.png)
