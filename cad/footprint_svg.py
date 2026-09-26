@@ -1,6 +1,6 @@
 """
 Bracket footprint for a laser cutter: the ceiling face (y = 0) outline with every hole through it,
-1:1 in millimeters. Writes cad/laser/bracket_footprint.svg.
+1:1 in millimeters. Writes cad/bracket_footprint.svg.
 
 View: from the room, looking up at the ceiling (the way a paper or plywood template held against
 the ceiling reads). x runs left to right; z (along the rod, motor end first) runs top to bottom.
@@ -12,7 +12,7 @@ import os
 import numpy as np
 import generate as G
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "laser", "bracket_footprint.svg")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bracket_footprint.svg")
 MARGIN = 5.0
 
 
