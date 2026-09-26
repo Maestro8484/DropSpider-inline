@@ -6,9 +6,13 @@ The radar looks out from under the porch ceiling toward people walking in (+x),
 standing upright as Hi-Link's manual figure 6 shows (44 mm edge vertical, antennas
 out). The tilt is set on site: loosen the nut, swing the cradle, tighten. Any angle
 from TILT_MIN to TILT_MAX clears the bracket and every other part (checked below).
-The board slides up into the cradle's edge grooves from the open bottom end and
-stops against the top block; a dab of hot glue keeps it there. Windows in the back
-plate leave room for the 1.25 mm plug at either end.
+The board goes in antenna side against the cradle's face plate (two big windows,
+so it looks out mostly through air) with its circuit side and pin headers facing
+back toward the device, open. It slides up into the edge grooves from the open
+bottom end, header end last so the headers sit at the bottom: there the headers
+and their dupont plugs (24 mm deep checked) clear everything at 30 to 60 degrees.
+Header end at the top would hit the bracket above 40 degrees. A dab of hot glue
+keeps the board in.
 
 Hardware: one M3 bolt 20 to 25 mm long and a nut (a nylon-insert nut holds the
 angle best).
@@ -39,10 +43,10 @@ LIP = 1.0
 EDGE = BOARD_W / 2
 RAIL_OUT = EDGE + 1.5          # 9.0: cradle half width (lightened 2026-09-26, was 9.7)
 BACK_T = 1.2                   # was 2.0
-BACK_W = -(4.0 + BACK_T)       # 4 mm behind the board for its parts; was 6
+BACK_W = -(1.5 + BACK_T)       # face plate 1.5 mm in front of the antenna side (flipped 2026-09-26)
 FRONT_W = BOARD_T + 1.2
 LEN = BOARD_L + 2.0
-PIVOT_U, PIVOT_W = -10.5, -1.2 # pivot position in the cradle's local frame (was -12, -2.6)
+PIVOT_U, PIVOT_W = -10.5, 0.0  # pivot position in the cradle's local frame
 
 # fork
 FORK_HALF = 9.7               # fork half width (fork unchanged)
@@ -65,9 +69,10 @@ def _cradle_local():
         slot_lo, slot_hi = sorted((s * (EDGE - LIP - 0.1), s * (EDGE + 0.3)))
         rails.append(G.D(rail, bx(-1, LEN + 1, slot_lo, slot_hi, -0.2, BOARD_T + 0.2)))   # 1 mm lip front and back
     back = bx(0, LEN, -RAIL_OUT, RAIL_OUT, BACK_W, BACK_W + BACK_T)
-    back = G.D(back, bx(1.5, 13, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1),   # plug window, top end
-               bx(LEN - 13, LEN + 1, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))  # plug window, bottom end
-    back = G.D(back, bx(16, LEN - 16, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))   # middle window: the back is a light ladder
+    # face plate over the antenna side: two big windows, so the radar looks out mostly through air;
+    # what plastic is left is 1.2 mm PLA ribs (top, middle, bottom)
+    back = G.D(back, bx(1.0, LEN / 2 - 1.5, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1),
+               bx(LEN / 2 + 1.5, LEN - 1.5, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))
     top = bx(-1.5, 0, -RAIL_OUT, RAIL_OUT, BACK_W, FRONT_W)
     # knuckle: a round boss on the pivot, joined to the top block, narrow enough to sit between the ears
     boss = _along_v(G.cyl(4.0, 2 * KNUCKLE_HALF, -KNUCKLE_HALF))
@@ -75,7 +80,7 @@ def _cradle_local():
     neck = bx(PIVOT_U, -1.0, -KNUCKLE_HALF, KNUCKLE_HALF, PIVOT_W - 3.0, PIVOT_W + 3.0)
     body = G.U(*rails, back, top, boss, neck)
     hole = _along_v(G.cyl(M3_CLEAR, 40, -20)); hole.apply_translation([PIVOT_U, 0, PIVOT_W])
-    clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # antennas and back parts stay clear
+    clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # circuit side open for the pin headers
     edges = bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.2, BOARD_T + 0.2)
     return G.D(body, hole, clear, edges)
 
@@ -85,11 +90,13 @@ def _place(m, tilt_deg):
     t = math.radians(tilt_deg)
     a = np.array([-math.sin(t), math.cos(t), 0.0])     # down the board
     n = np.array([math.cos(t), math.sin(t), 0.0])      # beam: out toward the approach, and down
-    v = np.array([0.0, 0.0, 1.0])
+    # Flipped: the antenna side (local w = 0) faces the face plate (local -w), and the face plate
+    # faces out along n. The circuit side with its pin headers faces back toward the device, open.
+    v = np.array([0.0, 0.0, -1.0])
     M = np.eye(4)
-    M[:3, 0], M[:3, 1], M[:3, 2] = a, v, n
+    M[:3, 0], M[:3, 1], M[:3, 2] = a, v, -n
     p = np.array([PIVOT[0], PIVOT[1], Z_CENTER])
-    M[:3, 3] = p - (PIVOT_U * a + PIVOT_W * n)          # local pivot point lands on the installed pivot
+    M[:3, 3] = p - (PIVOT_U * a - PIVOT_W * n)          # local pivot point lands on the installed pivot
     m = m.copy(); m.apply_transform(M); return m
 
 
