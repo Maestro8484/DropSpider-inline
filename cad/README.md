@@ -29,6 +29,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: fork glued under the servo end, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
 | `render.py` | All 3D pictures. One function per picture |
+| `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `laser/bracket_footprint.svg` |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
 | `retired/` | Obsolete parts kept for reference. Do not print |
