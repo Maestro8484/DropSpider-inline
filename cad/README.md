@@ -52,6 +52,7 @@ Units: millimeters.
 | Finger tip reaches into the tooth root | generate.py | `engaged: True` |
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
+| Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
 
 ## Changing a part: the routine
 

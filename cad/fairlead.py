@@ -43,9 +43,11 @@ def trumpet():
         t = k / 8; prof.append((1.6 + 1.4 * t ** 2, throat + (bot - throat) * t))
     prof.append((0, bot))
     v = revolve(np.array(prof), sections=64)    # axis = z
-    v.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))   # z -> y
-    v.apply_transform(np.diag([1, -1, 1, 1]))   # profile heights came out as -y; flip back
+    v.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))   # z -> +y
     if v.volume < 0: v.invert()
+    # Guard: an extra y flip here once put the bore at y -78, so the cut missed the block and the
+    # fairlead printed solid (found by the owner 2026-09-26). The bore must span the block.
+    assert top - 0.1 < v.bounds[0][1] and v.bounds[1][1] < bot + 0.1, v.bounds
     v.apply_translation([LX, 0, LZ]); return v
 
 def fairlead_body():
@@ -94,6 +96,9 @@ if __name__ == "__main__":
         for n, m in [("body", body), ("flap", flap), ("switch", sw)]:
             v = I(A[k], m).volume
             if v > 0.3: print(f"CLASH {n} x {k}: {v:.1f}")
+    path = vcyl(1.0, 60, 60, LX, LZ)          # 2 mm rod down the line's path, y 60..120
+    lb, lf = I(path, body).volume, I(path, flap).volume
+    print(f"line path clear through the fairlead: {lb < 0.01} ({lb:.2f} mm3), through the flap slot: {lf < 0.01} ({lf:.2f} mm3)")
     print("body x flap at rest:", round(I(body, flap).volume, 2))
     print("switch x body:", round(I(body, sw).volume, 2), " switch x flap:", round(I(sw, flap).volume, 2))
     ring = trimesh.creation.annulus(r_min=33.01, r_max=35, height=16); ring.apply_translation([0, 40, 43])
