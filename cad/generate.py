@@ -132,7 +132,8 @@ def finger_print():
     m = finger(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0]))
     m.apply_translation(-m.bounds[0]); return m        # flat top face down: recesses face up, no floating regions
 
-def tube(L): return D(cyl(5, L, 0), cyl(3.25, L + 2, -1))
+SPACER_R = 4.8   # 9.6 OD: slides into the ratchet disk's 10.2 hole with 0.3 mm a side (10.0 printed too tight, owner 2026-09-26)
+def tube(L): return D(cyl(SPACER_R, L, 0), cyl(3.25, L + 2, -1))
 
 def fairlead_body_print():
     import fairlead as F
@@ -181,8 +182,8 @@ def assembly():
     f.apply_translation([SERVO_SHAFT_X, AXIS_Y, Z_RATCHET]); A["finger"] = f
     A["rod_6mm"] = cyl(3, 100, 20, 0, AXIS_Y)
     A["coupler"] = cyl(6, 20, 10, 0, AXIS_Y)
-    A["spacer_A"] = D(cyl(5, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
-    A["spacer_B"] = D(cyl(5, 50, 50, 0, AXIS_Y), cyl(3.25, 52, 49, 0, AXIS_Y))
+    A["spacer_A"] = D(cyl(SPACER_R, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
+    A["spacer_B"] = D(cyl(SPACER_R, 50, 50, 0, AXIS_Y), cyl(3.25, 52, 49, 0, AXIS_Y))
     A["bearing_606"] = D(cyl(8.5, 6, 100, 0, AXIS_Y), cyl(3, 8, 99, 0, AXIS_Y))
     A["motor_nema11"] = U(bx(-14, 14, AXIS_Y - 14, AXIS_Y + 14, -32, 0), cyl(2.5, 20, 0, 0, AXIS_Y))
     A["servo_sg90"] = U(bx(43.8, 67.2, 34, 46, 13, 29), bx(39.2, 71.8, 34, 46, 29, 31.5),
