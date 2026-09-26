@@ -39,9 +39,9 @@ def I(a, b): return trimesh.boolean.intersection([a, b], engine="manifold")
 AXIS_Y = 40.0
 BARREL_D = 50.0                 # line winds on this diameter
 TOOTH_TIP_R, TOOTH_ROOT_R, TEETH = 33.0, 29.0, 12
-HF0612_BORE = 9.9               # 10.0 OD one-way bearing, 0.1 press
+HF0612_BORE = 10.0              # 10.0 OD one-way bearing; printed holes come out 0.1 to 0.2 small, which is the press (9.9 risked squeezing the rollers, fit check 2026-09-26)
 BEARING_606 = 16.8              # 17.0 OD 606ZZ, 0.2 press (PLA)
-Z_RATCHET = 36.0                # ratchet disk motor-side face; finger plane is z 36..41
+Z_RATCHET = 36.0                # ratchet disk motor-side face (disk z 36..42); finger plate z 35..42
 SERVO_SHAFT_X = 49.7            # SG90 output spline, spline end of servo toward the spool
 BOLT_R = 21.0
 BOLTS = [(BOLT_R * math.cos(a), BOLT_R * math.sin(a)) for a in (0, 2 * math.pi / 3, 4 * math.pi / 3)]
@@ -61,14 +61,14 @@ def ratchet_poly():
 def spool_ratchet():
     """Part coords = installed orientation. z0 face = screw heads, faces the motor."""
     d = extrude_polygon(ratchet_poly(), 6.0)
-    return D(d, cyl(5.1, 8, -1), cyl(15.1, 2, 4.5),
+    return D(d, cyl(5.3, 8, -1), cyl(15.25, 2, 4.5),        # 10.6 hole over the HF0612 stub, 30.5 recess over the 30 boss (fit check 2026-09-26)
              *[cyl(1.65, 8, -1, x, y) for x, y in BOLTS],
              *[cyl(3.1, 3.5, -0.5, x, y) for x, y in BOLTS])
 
 def spool_body():
     """Installed orientation: boss z 4.5..6 (in disk recess), barrel 6..12, flange 12..14."""
     b = U(cyl(BARREL_D / 2, 6, 6), cyl(32, 2, 12), cyl(9, 8, 6), cyl(15, 1.5, 4.5))
-    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 6.5, 4.4, x, y) for x, y in BOLTS])
+    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, 4.4, x, y) for x, y in BOLTS])   # M3x8 tip reaches z 11; pilot to 12.4
 
 def spool_body_print():
     b = spool_body().copy()
@@ -100,6 +100,11 @@ def bracket():
             bx(-12, 12, -1, 5, 30, 90)]                                                      # window
     return D(b, *cuts)
 
+def bracket_print():
+    """Base (ceiling face) down, the way the owner printed it."""
+    b = bracket(); b.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
+    b.apply_translation(-b.bounds[0]); return b
+
 # ---------------- line guide (new in Rev C) ----------------
 def line_guide():
     """Bolts to the two x=-32 pad holes. 3.2 mm eyelet on the line exit (x=-25, z=45)."""
@@ -114,29 +119,38 @@ def line_guide_print():
     g.apply_translation(-g.bounds[0]); return g
 
 # ---------------- small parts ----------------
-SPLINE_D = 4.8        # SG90 output spline across the teeth; printed holes come out a little small, so the teeth bite: press fit
-SPLINE_DEPTH = 3.0    # spline length; the spline end bottoms on the 2 mm floor, so the finger never rubs the servo case
+SPLINE_D = 4.8        # SG90 output spline across the teeth (owner, 2026-09-26); printed holes come out a little small, so the teeth bite
+SPLINE_LEN = 3.4      # spline height above the servo case top (owner, 2026-09-26)
+SPLINE_TIP_Z = 33.0   # installed z of the spline tip: owner saw it about 2 mm short of the ledge (z 35) with the servo in the tower
+FINGER_Z0 = 35.0      # finger plate z 35..42, level with the ledge it rests on; the ratchet disk is z 36..42
 def finger():
-    """Rev C.1 finger: 5 mm thick, 7 mm wide. Tip face beveled 20 degrees so the ramp-side corner sits
-    2.5 mm back: the tip seats fully against a tooth's steep face (checked: 5 degrees of seating window).
-    Installed coords: bottom face z 0 faces the servo, z 5 is the top. No horn: the finger presses
-    straight onto the SG90 output spline (owner measured 4.8 mm across the teeth, 2026-09-26); the
-    round socket lets it go on at any angle, and the horn screw holds it."""
-    L, W, T = 20.5, 7.0, 5.0
-    f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0))
+    """Rev C.1 finger, 7 mm wide, plate 7 mm thick (z 35..42, the ledge's full height, so a spline
+    height off by 1 mm either way still leaves 5 mm of finger on the 6 mm disk). Tip face beveled
+    20 degrees so the ramp-side corner sits 2.5 mm back (checked: seats in a tooth gap).
+    No horn: a hub reaches down from the plate onto the SG90 spline. The spline tip bottoms on a
+    1.5 mm floor, which sets the height; the horn screw goes in from the top through a 4.6 mm recess.
+    Local coords: plate bottom z 0 (installed FINGER_Z0), top z 7; the hub hangs below z 0."""
+    L, W, T = 20.5, 7.0, 7.0
+    tip = SPLINE_TIP_Z - FINGER_Z0                      # -2.0: spline tip, local
+    hub_bot = tip - SPLINE_LEN + 0.8                    # 0.8 mm clear of the servo case top
+    f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0), cyl(4.0, -hub_bot, hub_bot))
     dx = W * math.tan(math.radians(20))
     bevel = extrude_polygon(Polygon([(L - dx, W / 2 + 0.01), (L + 0.1, W / 2 + 0.01), (L + 0.1, -W / 2)]), T + 2)
     bevel.apply_translation([0, 0, -1])
-    return D(f, cyl(SPLINE_D / 2, SPLINE_DEPTH + 0.1, -0.1),   # spline socket from the servo side
-             cyl(1.15, T + 2, -1),                          # 2.3 mm hole for the horn screw
+    return D(f, cyl(SPLINE_D / 2, tip - hub_bot + 0.1, hub_bot - 0.1),   # spline socket, floor at the spline tip
+             cyl(1.25, 3, tip - 1),                                         # 2.5 mm screw hole through the 1.5 mm floor
+             cyl(2.3, T - (tip + 1.5) + 1, tip + 1.5),                      # 4.6 mm recess from the top for the screw head
              bevel)
 
 def finger_print():
     m = finger(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0]))
     m.apply_translation(-m.bounds[0]); return m        # flat top face down: recesses face up, no floating regions
 
-SPACER_R = 4.8   # 9.6 OD: slides into the ratchet disk's 10.2 hole with 0.3 mm a side (10.0 printed too tight, owner 2026-09-26)
-def tube(L): return D(cyl(SPACER_R, L, 0), cyl(3.25, L + 2, -1))
+SPACER_A_R = 6.0   # 12 OD: stops on the ratchet disk's face at z 36 (a 9.6 spacer fell into the 10.6 hole and left 2 mm of end play)
+SPACER_B_R = 4.8   # 9.6 OD on the spool body face
+SPACER_B_NOSE = 4.0   # 8.0 OD, last 1 mm at the 606ZZ end: bears on the inner ring only, not the shield
+def tube(L, r=SPACER_A_R): return D(cyl(r, L, 0), cyl(3.25, L + 2, -1))
+def spacer_b(): return D(U(cyl(SPACER_B_R, 49, 0), cyl(SPACER_B_NOSE, 1, 49)), cyl(3.25, 52, -1))   # nose up in print, no overhang
 
 def fairlead_body_print():
     import fairlead as F
@@ -161,10 +175,10 @@ PARTS = {
     "fairlead_flap": fairlead_flap_print,
     "spool_body": spool_body_print,
     "spool_ratchet": spool_ratchet,
-    "bracket": bracket,
+    "bracket": bracket_print,
     "finger": finger_print,
     "spacer_A_6mm": lambda: tube(6),
-    "spacer_B_50mm": lambda: tube(50),
+    "spacer_B_50mm": spacer_b,
     "shim_1mm": lambda: tube(1),
     "shim_2mm": lambda: tube(2),
     "ld2450_fork": ld2450_fork_print,
@@ -182,15 +196,18 @@ def assembly():
     import sensor_mount as S
     A["ld2450_fork"] = S.ld2450_fork(); A["ld2450_cradle"] = S.ld2450_cradle(); A["ld2450_radar"] = S.ld2450_board()
     f = finger(); f.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1]))
-    f.apply_translation([SERVO_SHAFT_X, AXIS_Y, Z_RATCHET]); A["finger"] = f
+    f.apply_translation([SERVO_SHAFT_X, AXIS_Y, FINGER_Z0]); A["finger"] = f
     A["rod_6mm"] = cyl(3, 100, 20, 0, AXIS_Y)
     A["coupler"] = cyl(6, 20, 10, 0, AXIS_Y)
-    A["spacer_A"] = D(cyl(SPACER_R, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
-    A["spacer_B"] = D(cyl(SPACER_R, 50, 50, 0, AXIS_Y), cyl(3.25, 52, 49, 0, AXIS_Y))
+    A["spacer_A"] = D(cyl(SPACER_A_R, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
+    sb = spacer_b(); sb.apply_translation([0, AXIS_Y, 50]); A["spacer_B"] = sb
     A["bearing_606"] = D(cyl(8.5, 6, 100, 0, AXIS_Y), cyl(3, 8, 99, 0, AXIS_Y))
     A["motor_nema11"] = U(bx(-14, 14, AXIS_Y - 14, AXIS_Y + 14, -32, 0), cyl(2.5, 20, 0, 0, AXIS_Y))
-    A["servo_sg90"] = U(bx(43.8, 67.2, 34, 46, 13, 29), bx(39.2, 71.8, 34, 46, 29, 31.5),
-                        bx(43.8, 67.2, 34, 46, 31.5, 35), cyl(2.4, 1.5, 34.5, SERVO_SHAFT_X, AXIS_Y))
+    # stand-in, not measured: the tabs sit on the tower (they fit, owner), the case top and spline
+    # follow the owner's observation (spline 3.4 mm, tip about 2 mm short of the ledge)
+    case_top = SPLINE_TIP_Z - SPLINE_LEN
+    A["servo_sg90"] = U(bx(43.8, 67.2, 34, 46, 13, case_top), bx(39.2, 43.8, 34, 46, 29, 31.5), bx(67.2, 71.8, 34, 46, 29, 31.5),
+                        cyl(2.4, SPLINE_LEN, case_top, SERVO_SHAFT_X, AXIS_Y))
     return A
 
 if __name__ == "__main__":

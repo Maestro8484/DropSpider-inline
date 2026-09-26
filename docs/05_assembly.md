@@ -42,7 +42,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 
 12. Drop the **SG90** into the tower pocket from the 606ZZ side, output spline toward the spool, wires out the far end. Two tab screws.
 13. Power the servo (or do this at commissioning): send it to 90 degrees. No horn is used.
-14. Press the **finger** straight onto the servo spline (the round socket on its underside), pointing at the rod, level, resting just above the ledge, tip in the teeth. The socket is round, so it goes on at any angle. Push until the spline bottoms in the socket, then drive the horn screw in through the small hole on top. If it is loose on the spline, a drop of CA in the socket; if too tight to push on, run a 4.8 mm drill through the socket by hand. Check: the 5 mm finger lines up with the 6 mm ratchet disk edge-on; if not, move the disk with spacer A and the shims (step 8).
+14. Press the **finger's hub** straight onto the servo spline, pointing at the rod, level, resting just above the ledge, tip in the teeth. The socket is round, so it goes on at any angle. Push until the spline bottoms in the socket, then drive the horn screw in from the top, down the 4.6 mm recess. If it is loose on the spline, a drop of CA in the socket; if too tight to push on, turn a 4.8 mm drill through the socket by hand. Check edge-on: the 7 mm finger covers the 6 mm ratchet disk; at least 5 mm must overlap. If not, move the disk with spacer A and the shims (step 8).
 
 ![Lock detail](img/lock_detail.png)
 
@@ -54,7 +54,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 15a. Clear the fairlead bore with a 3 mm drill turned by hand. A scrap of the line must slide through without catching.
 15b. KW12-3 switch onto the switch plate: roller end toward the fairlead, body on the side away from the flat back. 2x M2 x 12 through the slots, nuts on the switch side, finger-tight.
-15c. Flap knuckle into the gap under the fairlead; push a 30 mm piece of 1.75 mm filament through from the flat outer face as the hinge pin. Trim flush.
+15c. Flap knuckle into the gap under the fairlead; push a 30 mm piece of 1.75 mm filament through from the flat outer face as the hinge pin. Trim it flush on the body side; on the flap side leave 1 mm standing and melt it into a small head with a soldering iron tip, so the flap cannot walk off the pin. Check the flap swings down under its own weight.
 15d. Flap level on its rest stop: slide the switch up until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the fairlead.
 
 ![Step 6](img/step6.png)

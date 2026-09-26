@@ -26,13 +26,13 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 | -32 to 0 | NEMA 11 motor | Mounted on the outside of the motor plate, 4x M2.5 |
 | 10 to 30 | 5-to-6 mm rigid coupler | Motor shaft fills the 5 mm side. Blue Loctite on both set screws. |
 | 20 to 120 | 6 mm hardened rod, 100 mm | Clamped in the coupler only; everything else slides on it |
-| 30 to 36 | spacer_A_6mm | Sets the ratchet disk in the finger plane. Adjust with shims (see below). |
+| 30 to 36 | spacer_A_6mm | 12 mm across, so it stops on the ratchet disk's face instead of dropping into its 10.6 mm hole. Sets the disk in the finger plane. Adjust with shims (see below). |
 | 36 to 42 | spool_ratchet | 12 teeth, tip r 33, root r 29 |
 | 40.5 to 50 | spool_body with HF0612 pressed in | Boss sits in the disk recess, 3x M3x8 screws from the motor side |
-| 50 to 100 | spacer_B_50mm | |
+| 50 to 100 | spacer_B_50mm | 9.6 mm across; the last 1 mm at the 606ZZ end is 8 mm across so it presses only on the bearing's inner ring, not its shield |
 | 100 to 106 | 606ZZ in the bearing plate | Supports the rod end |
 
-**The one measurement that matters:** the ratchet disk must straddle the finger. Finger plane is z 36 to 41 (Rev C.1 finger is 5 mm thick); disk is z 36 to 42. After the motor and coupler are on, measure from the motor plate's outer face to the coupler's free end. If it is not 30 mm, change spacer A by the difference using `shim_1mm` / `shim_2mm` (or reprint spacer A). The spool floats between spacer A and spacer B, so the stack must be snug, not tight.
+**The one measurement that matters:** the ratchet disk must straddle the finger. Finger plate is z 35 to 42 (7 mm thick); disk is z 36 to 42. After the motor and coupler are on, measure from the motor plate's outer face to the coupler's free end. If it is not 30 mm, change spacer A by the difference using `shim_1mm` / `shim_2mm` (or reprint spacer A). The spool floats between spacer A and spacer B, so the stack must be snug, not tight.
 
 ## The lock (read this before touching the servo angles)
 
@@ -43,7 +43,7 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 - Finger locked = level, pointing at the rod (default servo 90). Released = swung toward the floor by 60 degrees (default servo 30). Both are set at commissioning.
 - Lock sequence (firmware does this): motor holds the spool, finger goes in, motor eases the spool down (clockwise) up to 1/12 turn until a tooth lands on the finger, the clutch then slips so the motor runs on alone, motor off, servo lets go.
 - Release sequence (M2): with the spider hanging, the tooth pins the finger. The motor winds the spool counterclockwise about 1/12 turn while the finger swings out, so the finger rides up the tooth's ramp. Never release with the motor off.
-- The finger (Rev C.1) is 5 mm thick and 7 mm wide. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. No horn: it presses straight onto the SG90 output spline (4.8 mm across the teeth, measured by the owner) through a 4.8 mm socket 3 mm deep in its underside, and the horn screw goes in through a 2.3 mm hole from the top. Print it flat top face down (as exported); the socket faces up.
+- The finger (Rev C.1) is 7 mm wide and 7 mm thick, level with the ledge it rests on (z 35 to 42); the ratchet disk is z 36 to 42, so a spline 1 mm higher or lower than expected still leaves 5 mm of finger on the disk. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. No horn: a hub under the finger reaches down onto the SG90 spline (4.8 mm across the teeth, 3.4 mm tall, tip about 2 mm short of the ledge, all measured by the owner). The spline tip bottoms on a 1.5 mm floor, which sets the height; the horn screw goes in from the top through a 4.6 mm recess. Print it flat top face down (as exported); the hub stands up.
 
 ## Direction rules (the only things that can be assembled backwards)
 
@@ -84,7 +84,7 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 
 ## Press fits and fasteners
 
-- HF0612 into spool body: 9.9 mm bore for a 10.0 mm bearing. Press in with a vise or clamp. Too tight: warm the hub with a hair dryer. Too loose: one drop of CA on the outside. Never glue near the rollers.
+- HF0612 into spool body: 10.0 mm bore for a 10.0 mm bearing; the printed hole comes out a little small, and that is the press (9.9 risked squeezing the rollers). Press in with a vise or clamp. Too tight: warm the hub with a hair dryer. Too loose: one drop of CA on the outside. Never glue near the rollers.
 - 606ZZ into bracket: 16.8 mm for 17.0 mm. Same method.
 - Spool disk to body: 3x M3x8 self-tapping into 2.5 mm holes.
 - Fairlead body to pad: **glue** (CA with accelerator, or 5-minute epoxy) over the whole rail. Push two M3 screws through the rail and the x = -32 pad holes as alignment pins while it cures, then remove them. Screws cannot stay: a head or nut on the ceiling side would hold the bracket off the ceiling. At home the motor's pull lands on the fairlead's flap stop, about 2 N.

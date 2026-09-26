@@ -68,7 +68,7 @@ def _cradle_local():
         lo, hi = sorted((s * (EDGE - LIP), s * RAIL_OUT))
         rail = bx(0, LEN, lo, hi, BACK_W, FRONT_W)                       # u, v, w as x, y, z
         slot_lo, slot_hi = sorted((s * (EDGE - LIP - 0.1), s * (EDGE + 0.3)))
-        rails.append(G.D(rail, bx(-1, LEN + 1, slot_lo, slot_hi, -0.2, BOARD_T + 0.2)))   # 1 mm lip front and back
+        rails.append(G.D(rail, bx(-1, LEN + 1, slot_lo, slot_hi, -0.3, BOARD_T + 0.3)))   # lips front and back; 2.2 groove for the 1.6 board
     back = bx(0, LEN, -RAIL_OUT, RAIL_OUT, BACK_W, BACK_W + BACK_T)
     # face plate over the antenna side: two big windows, so the radar looks out mostly through air;
     # what plastic is left is 1.2 mm PLA ribs (top, middle, bottom)
@@ -82,7 +82,7 @@ def _cradle_local():
     body = G.U(*rails, back, top, boss, neck)
     hole = _along_v(G.cyl(M3_CLEAR, 40, -20)); hole.apply_translation([PIVOT_U, 0, PIVOT_W])
     clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # circuit side open for the pin headers
-    edges = bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.2, BOARD_T + 0.2)
+    edges = bx(0, LEN + 1, -(EDGE + 0.3), EDGE + 0.3, -0.3, BOARD_T + 0.3)
     # flat print: trim the knuckle flush with the face plate's outer face, which goes on the bed
     bed = bx(-20, LEN + 5, -20, 20, BACK_W - 10, BACK_W)
     return G.D(body, hole, clear, edges, bed)

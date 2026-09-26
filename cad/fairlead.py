@@ -69,7 +69,7 @@ def fairlead_flap():
     f = U(plate, knuckle)
     slot = U(bx(LX - 1.7, LX + 1.7, HY - 4, HY + 4, 30, LZ),
              vcyl(1.7, 8, HY - 4, LX, LZ))                                  # open slot to the line hole
-    return D(f, slot, xcyl(1.1, -30, -15, PY, HZ))                          # 2.2 pin hole, free
+    return D(f, slot, xcyl(1.25, -30, -15, PY, HZ))                         # 2.5 pin hole, free (prints sideways, comes out small)
 
 def switch_model():
     body = bx(SW_X0, SW_X1, SW_BODY_TOP, SW_BODY_BOT, SW_Z0, SW_Z0 + 20)
