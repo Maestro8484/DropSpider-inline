@@ -14,7 +14,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 2. Check its direction now: push a spare piece of the 6 mm rod in, hold the rod, and spin the body. It must spin freely one way and lock the other. Mark the free direction on the flange with a marker.
 3. Set `spool_ratchet` onto the boss, counterbored side facing away from the body. Drive **3x M3x8** into the body. Snug, do not strip.
 4. Look at the spool from the **plain flange side** (this side will face the 606ZZ end). The free direction marked in step 2 must be **counterclockwise** from this side, so it locks clockwise (Rev C.1; Rev C had this backwards). If not, press the bearing out and flip it.
-5. Tie **150 mm of 2 mm round elastic** to the barrel (pass it round the barrel between the flanges, overhand knot, CA on the knot). Tie the braid to the free end of the elastic with a small double uni knot, trimmed tight: it has to fit through the fairlead's 3.2 mm throat.
+5. Tie the **6 lb monofilament** straight to the barrel with an arbor knot (the knot anglers use on a reel spool), between the flanges, a drop of CA on the knot. No elastic, no braid.
 
 ## C. Frame and rod
 
@@ -52,7 +52,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ![Fairlead sub-assembly](img/fairlead_exploded.png)
 
-15a. Clear the fairlead bore with a 3 mm drill turned by hand. A scrap of braid must slide through without catching.
+15a. Clear the fairlead bore with a 3 mm drill turned by hand. A scrap of the line must slide through without catching.
 15b. KW12-3 switch onto the switch plate: roller end toward the fairlead, body on the side away from the flat back. 2x M2 x 12 through the slots, nuts on the switch side, finger-tight.
 15c. Flap knuckle into the gap under the fairlead; push a 30 mm piece of 1.75 mm filament through from the flat outer face as the hinge pin. Trim flush.
 15d. Flap level on its rest stop: slide the switch up until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the fairlead.
@@ -60,9 +60,9 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 ![Step 6](img/step6.png)
 
 15. Glue `fairlead_body` to the pad with CA or epoxy along the rail. Two M3 screws through the rail and the x = -32 holes as alignment pins while it cures, then take them out.
-16. Wind the elastic, then the braid, onto the spool by turning it counterclockwise (seen from the 606ZZ end). The free end leaves the spool on the pad side; thread it down through the fairlead, then slide it into the flap's slot from the flap's free end.
-17. Below the flap, in order: **8 mm bead** (slides on the braid; this is what lifts the flap), **barrel swivel** (tie the braid to it; the bead rests on it), **spider** tied to the swivel's other end.
-18. Unwind fully and measure from the barrel knot to the bead, elastic included, unstretched. That is the `line` value for the firmware.
+16. Wind the line onto the spool by turning it counterclockwise (seen from the 606ZZ end). The free end leaves the spool on the pad side; thread it down through the fairlead, then slide it into the flap's slot from the flap's free end.
+17. Below the flap, in order: **8 mm bead** (slides on the line; this is what lifts the flap), **barrel swivel** (tie the line to it with an improved clinch or palomar knot; the bead rests on it), **spider** tied to the swivel's other end.
+18. Unwind fully and measure from the barrel knot to the bead, line straight but not pulled. That is the `line` value for the firmware.
 
 ![Spider home](img/fairlead_home.png)
 

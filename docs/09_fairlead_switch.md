@@ -14,7 +14,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 | Part | Job |
 |---|---|
 | `fairlead_body.stl` | Glues to the pad in the old line guide's spot. Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
-| Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the braid to saw on. Centered on the spool's line channel |
+| Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the line to saw on. Centered on the spool's line channel |
 | `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied |
 | KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
 | Hinge pin | 30 mm piece of 1.75 mm filament |
@@ -40,7 +40,7 @@ One flap is needed; a second is a spare.
 
 ## Assemble
 
-1. Clean the fairlead bore with a 3 mm drill turned by hand. Run a scrap of braid through it; it must slide without catching. Sand the top flare smooth if it feels rough.
+1. Clean the fairlead bore with a 3 mm drill turned by hand. Run a scrap of the line through it; it must slide without catching. Sand the top flare smooth if it feels rough.
 2. Fit the switch to the plate: **roller end toward the fairlead** (toward the spool), body on the side away from the plate's flat back. Two M2 screws through the plate's slots and the switch, nuts on the switch side. Leave them finger-tight.
 3. Push the flap's knuckle into the gap below the fairlead, line up the holes, and push the filament pin in from the flat outer face. It is snug in the body and free in the flap. Trim flush.
 4. Flap level on its rest stop: slide the switch up in its slots until the roller just touches the flap tail, then back it off about 0.3 mm (a piece of paper's thickness). Tighten.
@@ -62,4 +62,4 @@ Bare KW12-3, three legs: COM to GND, NO to GPIO32, NC unused. Firmware pull-up: 
 
 - The KW12-3's operating point is taken from the owner's datasheet (2.6 mm pre-travel, 0.8 mm overtravel, 0.7 N). The slotted holes cover about plus or minus 2.5 mm of error.
 - The filament hinge pin's wear over a season. Spare pins are free.
-- Braid wear in the PLA fairlead. Swap for a new print if a groove appears.
+- Line wear in the PLA fairlead. Swap for a new print if a groove appears.

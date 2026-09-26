@@ -18,10 +18,10 @@ H1,uxcell 5 to 6 mm rigid coupler L20 D12,1,amazon.com,B07P5Z25H8,ordered,blue t
 H2,6 mm x 100 mm hardened chrome rod,1,amazon.com,B0D2BK3X8P,ordered,
 H3,HF0612 one-way needle bearing,1,amazon.com,B0BKY2ZSTR,ordered,5 pk; orientation matters
 H4,606ZZ bearing 6x17x6,1,amazon.com,B0FQ4WJ8FQ,ordered,10 pk
-N1,2 mm round elastic cord,150 mm,any,,TO BUY,snubber; mandatory
+N1,2 mm round elastic cord,150 mm,any,,ONLY IF,snubber: only if the line is braid or fluorocarbon; not with 6 lb mono
 N2,8 mm hard plastic bead,1,any,,TO BUY,stop bead
 N3,small fishing barrel swivel (size 10 to 14),1,any,,TO BUY,
-N4,20 lb braided fishing line,1 m,any,,have?,
+N4,6 lb nylon monofilament fishing line,2 m,any,,have?,its stretch is the shock absorber; snaps at about 27 N
 N5,470 uF 16 V electrolytic capacitor,1,any,,ONLY IF ESP32 RESETS,at the servo; skip unless the board restarts when the finger moves
 N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
 N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling

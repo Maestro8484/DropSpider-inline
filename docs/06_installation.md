@@ -20,17 +20,17 @@ Porch measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in bel
 | Bottom of the front beam | 2184 mm (86 in) |
 | Spider, retracted | bottom of spider about 2230 mm, hidden above the beam's bottom edge |
 | Spider at rest after the drop | 1550 mm (61 in): face height for teens and adults, above small children |
-| Lowest point if the motor loses grip and the snubber catches | about 1450 mm (57 in) |
+| Lowest point if the motor loses grip and the line's stretch catches it | about 1450 mm (57 in) |
 
-Line length to set (barrel knot to bead, elastic included) = (ceiling - 85 mm) - (target rest height + spider height + 30 mm for bead and swivel) + 45 mm.
-The 85 mm is where the bead sits against the flap at home; the 45 mm is braid between the spool and the flap.
+Line length to set (barrel knot to bead) = (ceiling - 85 mm) - (target rest height + spider height + 30 mm for bead and swivel) + 45 mm.
+The 85 mm is where the bead sits against the flap at home; the 45 mm is line between the spool and the flap.
 For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 720, enter `line 720`, then shorten on site until the resting height is right.
 
 ## Fastening
 
 - 4 screws: the 2 holes at the servo end and the 2 pad holes at x = -56 (the middle pair).
 - Into a joist: #4 x 1 in pan-head wood screws.
-- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With the snubber fitted, the peak pull is about 10 N (1 kg). Without the snubber, do not install.
+- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 6 lb mono the peak pull is about 12 N (1.2 kg) and can never pass about 27 N, where the line snaps. Never hang it on braid without an elastic snubber.
 - The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead body is glued).
 
 ## Sensor
@@ -50,5 +50,5 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 - Soft foam spider only, 60 g maximum, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
 - Keep the drop clear of stairs, and of the swing of the door itself.
-- Snubber on every time. Check the knot, the bead, the flap, and the snubber before each night.
+- 6 lb monofilament only (or put the elastic snubber back). Check the knots, the bead, the flap, and the line for nicks before each night.
 - `disarm` (or unplug) when small children are expected to run through.

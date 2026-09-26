@@ -106,7 +106,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `off` | motor and servo off |
 | `clear` | forget faults and re-arm the cycle |
 | `setlock <deg>`, `setrel <deg>` | store finger angles (0 to 180) |
-| `line <mm>` | braid length from the spool knot to the stop bead (100 to 3000) |
+| `line <mm>` | line length from the spool knot to the stop bead (100 to 3000) |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
@@ -135,7 +135,7 @@ Opening the port does not reset the board.
 
 steps = ((line - 40 mm) / (pi x 50 mm) + 0.75 turn) x 200 x 8
 
-The 40 mm is braid that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
+The 40 mm is line that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
 
 Speed ramps up over 600 steps and down at the end of a counted move. A stop by the limit switch is instant, no ramp down.
 

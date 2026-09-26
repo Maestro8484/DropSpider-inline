@@ -29,7 +29,7 @@ All directions seen from the 606ZZ end. Spider falling = spool turns clockwise (
 | Drop: spool catches up to the rod's speed | spool CW relative | **locks** | fall speed capped at the motor's speed |
 | Lock seat: motor turns rod CW after a tooth lands on the finger | spool CCW relative | free | motor runs on harmlessly, spool stays on the tooth |
 
-The spool can never travel faster than the motor. So the motor sets the top speed and the stopping point of every drop, and the knot never slams. The snubber stays fitted as the backstop in case the motor loses its grip.
+The spool can never travel faster than the motor. So the motor sets the top speed and the stopping point of every drop, and the knot never slams. The line's stretch (6 lb mono) is the backstop in case the motor loses its grip.
 
 ## Second finding: M2, the finger cannot release under load
 
@@ -71,7 +71,7 @@ Directions below use the firmware's own convention: + = rewind (CCW), - = unwind
 
 Unit check for the team: one microstep = pi x 50 mm / 1600 = 0.098 mm of line. 1 m/s is about 610 rpm.
 
-**Torque note:** stopping the spider takes motor torque on top of holding its weight. At 0.6 A and 500 rpm this motor has roughly 2.5 to 3 Ncm (estimate, not measured). That stops a spider of 60 g or less at about 0.6 g. A 100 g spider needs `dropDec` near 20000 and a longer stop. If the motor loses steps during the stop, the spool runs free and the snubber catches it: a scare, not a failure. Log it as a fault only if it repeats.
+**Torque note:** stopping the spider takes motor torque on top of holding its weight. At 0.6 A and 500 rpm this motor has roughly 2.5 to 3 Ncm (estimate, not measured). That stops a spider of 60 g or less at about 0.6 g. A 100 g spider needs `dropDec` near 20000 and a longer stop. If the motor loses steps during the stop, the spool runs free and the line's stretch catches it: a scare, not a failure. Log it as a fault only if it repeats.
 
 **FastAccelStepper:** check whether it supports a separate deceleration within one move. If not, the known pattern is to change acceleration part-way through the move (`setAcceleration` + `applySpeedAcceleration`) at the point where the gentler stop needs to begin. Name the approach you use and why.
 
@@ -87,7 +87,7 @@ Unit check for the team: one microstep = pi x 50 mm / 1600 = 0.098 mm of line. 1
 | T2 | `rewind` from the bottom | Spool winds up, limit switch stops it |
 | T3 | Release under load (M2), 10 times | Finger clears every time, no servo buzz, spider starts falling |
 | T4 | Full `drop`, 5 times at 500 rpm; phone slow-motion video of the drop | 0.7 m in 0.7 s or less; no lost steps logged |
-| T5 | Stop height, 10 drops | Spider stops within 20 mm of the same height each time; snubber does not stretch past its resting length |
+| T5 | Stop height, 10 drops | Spider stops within 20 mm of the same height each time; no bounce off the line's end |
 | T6 | Lock seat, 10 times | Finger seats every time; spider drops no more than 13 mm; limit reading as expected |
 | T7 | Raise `droprpm` in steps of 100 until steps are lost | Record the highest clean speed with the real spider; set 100 below it |
 | T8 | 20 full cycles | Motor warm, not hot; no ESP32 resets; coupler screws tight |

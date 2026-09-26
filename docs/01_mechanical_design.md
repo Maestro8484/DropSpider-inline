@@ -6,7 +6,7 @@ Status: **released for build, Rev C.1** (clutch flipped, motor-led drop; see `M1
 
 ## What it does, in one paragraph
 
-A foam spider hangs on braided fishing line wound on a spool. The spool sits on a one-way clutch bearing (HF0612) on a steel rod driven by a small stepper motor. A servo-held finger locks the spool at the top with zero power. On trigger, the motor winds a hair to lift the tooth off the finger, the finger swings out, and the motor spins fast in the unwind direction. The spool runs down behind it on the clutch: it can fall as fast as gravity allows but never faster than the motor, so the motor sets the top speed and the stopping point. After a short hang, the motor winds the spool back up (the clutch locks in that direction), the finger swings back into the ratchet teeth, the motor eases the spool down onto a tooth, and everything powers down.
+A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. The spool sits on a one-way clutch bearing (HF0612) on a steel rod driven by a small stepper motor. A servo-held finger locks the spool at the top with zero power. On trigger, the motor winds a hair to lift the tooth off the finger, the finger swings out, and the motor spins fast in the unwind direction. The spool runs down behind it on the clutch: it can fall as fast as gravity allows but never faster than the motor, so the motor sets the top speed and the stopping point. After a short hang, the motor winds the spool back up (the clutch locks in that direction), the finger swings back into the ratchet teeth, the motor eases the spool down onto a tooth, and everything powers down.
 
 ## Why this layout (decisions already made, do not re-open without cause)
 
@@ -53,15 +53,15 @@ A foam spider hangs on braided fishing line wound on a spool. The spool sits on 
 
 ## Line and hard stop
 
-From the spool outward: **150 mm elastic snubber** (2 mm round elastic, tied to the barrel, wound on first), then 20 lb braided line, through the fairlead (3.2 mm throat) and the flap's slot, then the **8 mm hard plastic bead** (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
+From the spool outward: **6 lb nylon monofilament** (clear fishing line, tied straight to the barrel with an arbor knot; no elastic, no braid, owner's call 2026-09-26), through the fairlead (3.2 mm throat) and the flap's slot, then the **8 mm hard plastic bead** (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
 
-The snubber lives at the spool end on purpose. At the spider end it would hang 150 mm below the device when retracted and show under the door head. At the spool end it is wound up out of sight and only pays out at the very bottom of the drop. The elastic-to-braid knot must pass the fairlead: use a small double uni knot and trim tight.
+Why monofilament: it winds cleanly, it is nearly invisible, it is gentler on the PLA fairlead than braid, and it stretches (roughly 15 to 25 percent before it breaks, a typical figure for nylon mono, not measured here). That stretch is the shock absorber. At 6 lb (about 27 N) it is also a fuse: it snaps before it can pull the device off the ceiling.
 
-## End of drop and why the snubber is mandatory
+## End of drop and why the line must stretch
 
-Rev C.1 note: the motor now stops the spider short of the knot on every normal drop, so this slam only happens if the motor loses its grip mid-drop. The snubber stays mandatory as that backstop.
+Rev C.1 note: the motor now stops the spider short of the knot on every normal drop, so this slam only happens if the motor loses its grip mid-drop. The line's own stretch is the backstop.
 
-The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line, a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. A 150 mm elastic snubber stretches the stop over 100 mm or more and cuts the peak to about 10 N. It also makes the spider bounce, which is the better scare.
+The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line (braid), a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. About 750 mm of 6 lb mono stretches roughly 70 mm and holds the peak near 12 N for a 60 g spider (estimate from the typical stretch above), under half its breaking strength, and the spider bounces. **Never swap in braid or fluorocarbon (both stretch little) without putting a 150 mm elastic snubber back at the barrel.**
 
 The same swing means the knot can end up to half a turn either side of the bottom, which is why the rewind overshoots by 0.75 turn and relies on the bead stop.
 

@@ -92,7 +92,7 @@ def install():
     ax.plot([dx, dx], [ceil - 112, 1550 + 150], "k-", lw=1)
     ax.add_patch(Circle((dx, top_sp - 45), 45, fc="#444", alpha=0.35)); ax.text(dx - 70, top_sp - 150, "retracted", fontsize=9, ha="right")
     ax.add_patch(Circle((dx, 1550 + 50), 55, fc="#222")); ax.text(dx + 70, 1600, "stops at 1550 mm (61 in); the motor sets this height", fontsize=9)
-    ax.add_patch(Circle((dx, 1450 + 50), 55, fc="none", ec="#cf222e", ls="--")); ax.text(dx + 70, 1450, "only if the motor loses grip: snubber catches ~1450 mm (57 in)", color="#cf222e", fontsize=9)
+    ax.add_patch(Circle((dx, 1450 + 50), 55, fc="none", ec="#cf222e", ls="--")); ax.text(dx + 70, 1450, "only if the motor loses grip: line stretch catches ~1450 mm (57 in)", color="#cf222e", fontsize=9)
     # person walks in from outside, toward the porch (ruled by the owner 2026-09-26)
     px = -1500
     ax.add_patch(Circle((px, 1600), 110, fc="#fff", ec="k")); ax.plot([px, px], [1490, 850], "k", lw=3)

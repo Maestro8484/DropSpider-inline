@@ -26,7 +26,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V1 | ESP32 3.3 V signals drive the expansion board's 5 V driver logic | commissioning step 4 | 74AHCT125 buffer |
 | V2 | Servo angle direction (release = smaller angle) | step 5 | swap `setlock`/`setrel` values |
 | V3 | HF0612 press fit in PLA holds without creeping | step 11, then after 20 cycles | CA on the outer ring |
-| V4 | Snubber stiffness: 150 mm of 2 mm elastic stops a 100 g spider in about 150 mm | step 7 | double the elastic, or shorten it |
+| V4 | Line stretch as the shock absorber (6 lb mono, owner 2026-09-26, elastic dropped): estimated 12 N peak for a 60 g spider if the motor loses grip; snaps at about 27 N. Not tested; a motor-fault drop is never forced on purpose | step 7 | if a knot ever parts, put 150 mm of 2 mm elastic back at the barrel |
 | V5 | Motor skipping at the bead stop is short and harmless | step 9 | lower `rpm`, trim overshoot in `config.h`. With the limit switch on, the motor stops at the switch and should not skip at all |
 | V6 | Finger lifetime in PLA | step 14 | PETG finger |
 | V7 | LD2410C range and through-wall behavior in this house (fallback sensor only since Rev C.1) | step 12 with `sensor 2410` | tune gates; AM312 fallback |

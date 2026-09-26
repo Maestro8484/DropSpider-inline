@@ -41,7 +41,7 @@ cd cad; python generate.py      # parts + clash checks only
 - Servo on GPIO13, not GPIO14 (boot pulses would drop the spider).
 - Boot must never auto-rewind. Driver EN goes HIGH (off) first thing in `setup()`.
 - Armed idle = driver off and servo detached.
-- Snubber is mandatory; never recommend operating without it.
+- The line must stretch: 6 lb nylon monofilament, whose stretch is the shock absorber (owner 2026-09-26, elastic snubber dropped). Never recommend braid or fluorocarbon without the 150 mm elastic snubber back at the barrel.
 - `cad/generate.py` is the source of truth for geometry. Edit it, never the STLs.
 - The assembly frame (y from the mount face, z from the motor plate) is used in every doc. Keep it.
 
