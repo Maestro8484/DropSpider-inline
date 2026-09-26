@@ -72,7 +72,7 @@ The same swing means the knot can end up to half a turn either side of the botto
 | spool_body.stl | 1 | as exported, flange down | gyroid 40% | 4 | none | none |
 | spool_ratchet.stl | 1 | as exported | gyroid 40% | 4 | none | none |
 | bracket.stl | 1 | base down | gyroid 40% | 4 | tree, **not** build-plate-only | none |
-| fairlead_body.stl | 1 | as exported (flat side down) | gyroid 40% | 4 | none | none |
+| fairlead_body.stl | 1 | as exported (flat side down) | gyroid 40% | 4 | none | 5 mm (big flat footprint, stops corner lift) |
 | fairlead_flap.stl | 1 (+1 spare) | as exported (flat side down) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | ld2450_fork.stl | 1 | as exported (glue face down, ears standing up) | gyroid 40% | 4 | none | none |
 | ld2450_cradle.stl | 1 | as exported (flat, face plate down, 6.7 mm tall) | gyroid 40% | 4 | none | none |

@@ -138,7 +138,7 @@ def fairlead_png():
         save(img, name, title, (), keys=["fairlead_body", "fairlead_flap", "switch_kw12"])
 
 def fairlead_exploded_png():
-    """Fairlead sub-assembly: body, flap, filament pin, KW12-3, 2x M2 screws, exploded along the pin axis (x)."""
+    """Fairlead sub-assembly: body, flap, M2 hinge bolt, KW12-3, 2x M2 screws, exploded along the pin axis (x)."""
     import fairlead as F
     import matplotlib.patches as mp
     body, flap, sw = F.fairlead_body(), F.fairlead_flap(), F.switch_model()
@@ -152,10 +152,10 @@ def fairlead_exploded_png():
              (rview(pin), "#f59e0b")] + [(rview(sc), "#57606a") for sc in screws]
     img, proj = raster.render(items, elev=12, azim=215, W=1300, H=900)
     fig, ax = plt.subplots(figsize=(13, 9.6)); ax.imshow(img); ax.set_axis_off()
-    ax.set_title("Fairlead sub-assembly (1 body, 1 flap): pin in from the flat outer face, flap on the pin,\nswitch on the plate's far side with 2x M2 through the slots, roller end toward the fairlead", fontsize=12)
+    ax.set_title("Fairlead sub-assembly (1 body, 1 flap): M2 hinge bolt in from the flap side, threads into the body,\nswitch on the plate's far side with 2x M2 through the slots, roller end toward the fairlead", fontsize=12)
     ax.legend(handles=[mp.Patch(color=COL["fairlead_body"], label="fairlead_body.stl (x1)"),
                        mp.Patch(color=COL["fairlead_flap"], label="fairlead_flap.stl (x1)"),
-                       mp.Patch(color="#f59e0b", label="hinge pin: 30 mm of 1.75 mm filament"),
+                       mp.Patch(color="#f59e0b", label="hinge pin: M2 bolt, 16 to 20 mm"),
                        mp.Patch(color=COL["switch_kw12"], label="KW12-3 roller switch"),
                        mp.Patch(color="#57606a", label="2x M2 x 12 screw + nut")], loc="lower left", fontsize=10)
     fig.savefig(os.path.join(IMG, "fairlead_exploded.png"), dpi=100, bbox_inches="tight"); plt.close(fig)

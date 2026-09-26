@@ -50,14 +50,34 @@ def trumpet():
     assert top - 0.1 < v.bounds[0][1] and v.bounds[1][1] < bot + 0.1, v.bounds
     v.apply_translation([LX, 0, LZ]); return v
 
+RIB_X1 = -21.5                # ribs reach this far from the back plate (bracket gussets start at x -20)
+
+def yz_prism(zy, x0, x1):
+    """Prism along x from a polygon given as (z, y) points. Prints as a vertical wall (print z = x)."""
+    from trimesh.creation import extrude_polygon
+    from shapely.geometry import Polygon
+    g = extrude_polygon(Polygon(zy), x1 - x0)
+    g.apply_transform(np.array([[0, 0, 1, x0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]], float)); return g
+
 def fairlead_body():
-    rail  = bx(-36, -26, 3, 7, 20, 91)                     # glue footprint, same as the old guide
-    spine = bx(-36, -29, 3, 92, 54, 70)                    # carries the hinge
-    block = bx(-36, -19, 70, STOP_Y, 39, 62)               # fairlead + hard stop face
-    rest  = bx(-36, -26, 80.0, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail
-    swpl  = bx(-36, -28.2, 86, 108, 64, 92)                # switch plate, switch on its +x face
-    b = U(rail, spine, block, rest, swpl)
+    """Reinforced 2026-09-26 (owner: the first print felt weak from the base up). The old 7 x 16 spine
+    is now a 4 mm back plate (x -36..-32) spanning z 54..92 the full height, with two 4 mm ribs
+    standing 10.5 mm proud of it (a C channel in section), a thicker and wider glue rail, and the
+    back plate carried on under the block on the line side. Every member starts on the x = -36
+    face, which is the print bed, so nothing needs support."""
+    rail  = bx(-36, -25, 3, 9, 20, 91)                     # glue footprint 11 x 71 (was 10 x 71), 6 thick (was 4)
+    web   = bx(-36, -32, 9, 100, 54, 92)                   # back plate, 4 mm, rail to below the switch plate top
+    lower = bx(-36, -32, 70, 100, 39, 54)                  # back plate continues under the block, line side
+    boss  = bx(-36, -29, 62, 100, 54, 70)                  # 7 mm hinge boss (M2 bolt threads 7 mm), block to switch plate
+    guss  = yz_prism([(54, 58), (54, 70), (39, 70)], -36, -31)   # 5 mm gusset over the block, line side
+    rib1  = bx(-36, RIB_X1, 8, 70, 54, 58)                 # rib, spool side of the plate, lands on the block top
+    rib2  = bx(-36, RIB_X1, 8, 86, 88, 92)                 # rib, far edge; ends above the switch's slot travel (body top 92.8 at most)
+    block = bx(-36, -19, 70, STOP_Y, 39, 62)               # fairlead + hard stop face (unchanged)
+    rest  = bx(-36, -26, STOP_Y, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail, 4.6 thick (was 2.6)
+    swpl  = bx(-36, -28.2, 86, 108, 64, 92)                # switch plate, switch on its +x face (unchanged)
+    b = U(rail, web, lower, boss, guss, rib1, rib2, block, rest, swpl)
     cuts = [vcyl(1.7, 10, 0, -32, 28), vcyl(1.7, 10, 0, -32, 83),        # alignment pin holes
+            bx(-37, -31, 9, 20, 80.5, 85.5),                                # notch in the plate so the z 83 pin hole stays open
             trumpet(),
             xcyl(0.95, -37, -28, PY, HZ),                                   # 1.9: the M2 hinge bolt threads itself in
             bx(-29.01, -16, HY - 3.6, HY + 3.6, HZ - 3.6, HZ + 3.6)]        # knuckle clearance
@@ -103,6 +123,9 @@ if __name__ == "__main__":
     print("switch x body:", round(I(body, sw).volume, 2), " switch x flap:", round(I(sw, flap).volume, 2))
     ring = trimesh.creation.annulus(r_min=33.01, r_max=35, height=16); ring.apply_translation([0, 40, 43])
     print("spool 2 mm clearance vs body:", round(I(ring, body).volume, 2))
+    p = G.fairlead_body_print()               # faces looking down at the bed but not on it = unsupported overhang
+    down = (p.face_normals[:, 2] < -0.7) & (p.triangles_center[:, 2] > 0.01)
+    print(f"print overhang (down-facing area off the bed): {p.area_faces[down].sum():.1f} mm2, bed contact {p.area_faces[(p.face_normals[:, 2] < -0.7) & ~down].sum():.0f} mm2")
     for deg in np.arange(0, 25, 0.25):
         f2 = rotate_flap(flap, -deg)          # negative = free end rises toward the ceiling
         if I(f2, body).volume > 0.2:
