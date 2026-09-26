@@ -1,21 +1,24 @@
-# 06 - Installation above a doorway
+# 06 - Installation under the porch
 
 ![Install](img/install.png)
 
 ## Where it goes
 
-- **On the ceiling, on the room side** of the doorway the victims walk through.
-- Line (the fairlead) **300 mm (12 in) in from the wall face**, centered on the door's width.
-- Rod axis parallel to the wall, either direction. The fairlead side (electronics pad) should face the doorway so the controller sits closest to where the sensor lead comes from.
-- The device hangs about 112 mm below the ceiling at its lowest point (the limit switch). Retracted, the spider's bottom sits about 215 mm below the ceiling, above the sight line under the door head. It stays hidden until the person is about 0.6 m from the wall.
+Porch measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in below it, device 12 in behind the beam.
 
-## Heights (8 ft ceiling, 6 ft 8 in door; adjust for yours)
+- **On the porch ceiling, behind the front beam.** People walk in from outside, under the beam.
+- Spider line (the fairlead) **305 mm (12 in) behind the beam's back face**, centred on the walkway.
+- Rod axis parallel to the beam. **Servo end, with the radar, toward the beam**; the fairlead end away from it.
+- The device hangs about 112 mm below the ceiling at its lowest point (the limit switch). Retracted, the spider's bottom sits about 215 mm below the ceiling, above the beam's bottom edge (254 mm below the ceiling), so the beam hides it until the person is close.
+- **Radar tilt 50 degrees down** for this porch. The beam blocks every radar ray shallower than about 45 degrees down; at 50 the middle of the radar's beam passes under it. Worked out from the measurements (drawn in the picture): legs visible from about 1.7 m outside the beam, chest from about 0.8 m. Not yet walk-tested (test S3). Radar partly sees through wood too; the walk test settles it.
+
+## Heights (8 ft porch ceiling, beam 10 in deep)
 
 | Point | Height |
 |---|---|
-| Ceiling | 2440 mm (96 in) |
-| Top of door opening | 2030 mm (80 in) |
-| Spider, retracted | bottom of spider about 2230 mm |
+| Porch ceiling | 2440 mm (96 in) |
+| Bottom of the front beam | 2184 mm (86 in) |
+| Spider, retracted | bottom of spider about 2230 mm, hidden above the beam's bottom edge |
 | Spider at rest after the drop | 1550 mm (61 in): face height for teens and adults, above small children |
 | Lowest point if the motor loses grip and the snubber catches | about 1450 mm (57 in) |
 
@@ -31,6 +34,8 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 - The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead body is glued).
 
 ## Sensor
+
+- Outdoors under a covered porch: keep the device and controller out of blowing rain; the LD2450 and the electronics are not waterproof.
 
 - **LD2450** (primary): on the device, in its tilting cradle under the servo end (`ld2450_fork.stl` glued, `ld2450_cradle.stl` on one M3 bolt), looking out from under the porch toward people walking in, standing upright. Set the tilt on site, starting at 20 degrees down (doc 03). Nothing to mount on the wall.
 - Its lead (4 wires, 1.25 mm plug at the sensor) runs about 10 cm across the device to the controller.

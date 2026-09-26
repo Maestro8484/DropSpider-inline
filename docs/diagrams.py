@@ -75,41 +75,48 @@ def wiring():
 def install():
     IN = 25.4
     fig, ax = plt.subplots(figsize=(15, 10))
-    ceil, head = 96 * IN, 80 * IN
-    wall_x0, wall_x1 = 0, 120          # 4.75 in wall
-    ax.add_patch(Rectangle((-2200, ceil), 4900, 60, color="#d0d7de")); ax.text(-2150, ceil + 20, "ceiling (96 in / 2440 mm shown)")
-    ax.add_patch(Rectangle((wall_x0, head), wall_x1 - wall_x0, ceil - head, color="#d0d7de"))
-    ax.add_patch(Rectangle((-2200, -40), 4900, 40, color="#d0d7de")); ax.text(-2150, -30, "floor", va="top")
-    ax.plot([wall_x0, wall_x0], [0, head], "k:", lw=1); ax.plot([wall_x1, wall_x1], [0, head], "k:", lw=1)
-    ax.text(15, head / 2, "door opening\n80 in (2030 mm)", rotation=90, va="center", fontsize=9)
-    # device on ceiling
-    dx = wall_x1 + 300
-    ax.add_patch(Rectangle((dx - 90, ceil - 112), 180, 112, fc="#9aa0a6", ec="k")); ax.text(dx + 110, ceil - 45, "DropSpider on the ceiling, room side.\nFairlead 300 mm (12 in) past the wall face,\ncentered on the door width", fontsize=9, va="top")
+    # Porch, measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in, device 12 in behind it.
+    ceil, beam_d = 96 * IN, 10 * IN
+    head = ceil - beam_d
+    wall_x0, wall_x1 = 0, 140          # front beam, 140 mm thick (assumed)
+    ax.add_patch(Rectangle((wall_x0, ceil), 2700 - wall_x0, 60, color="#d0d7de")); ax.text(wall_x1 + 900, ceil + 20, "porch ceiling (96 in / 2440 mm)")
+    ax.add_patch(Rectangle((wall_x0, head), wall_x1 - wall_x0, ceil - head, color="#b9a58a"))
+    ax.text(wall_x0 - 30, head + 20, "front beam,\nhangs 10 in\n(254 mm)", fontsize=8.5, va="bottom", ha="right")
+    ax.add_patch(Rectangle((-2200, -40), 4900, 40, color="#d0d7de")); ax.text(-2150, -30, "ground", va="top")
+    ax.text(-2150, ceil - 60, "outside, open sky", fontsize=9, color="#57606a")
+    # device on the porch ceiling
+    dx = wall_x1 + 12 * IN
+    ax.add_patch(Rectangle((dx - 90, ceil - 112), 180, 112, fc="#9aa0a6", ec="k")); ax.text(dx + 110, ceil - 45, "DropSpider on the porch ceiling.\nSpider line 12 in (305 mm) behind the beam,\nradar end toward the beam", fontsize=9, va="top")
     # spider positions
     top_sp = ceil - 115
     ax.plot([dx, dx], [ceil - 112, 1550 + 150], "k-", lw=1)
     ax.add_patch(Circle((dx, top_sp - 45), 45, fc="#444", alpha=0.35)); ax.text(dx - 70, top_sp - 150, "retracted", fontsize=9, ha="right")
     ax.add_patch(Circle((dx, 1550 + 50), 55, fc="#222")); ax.text(dx + 70, 1600, "stops at 1550 mm (61 in); the motor sets this height", fontsize=9)
     ax.add_patch(Circle((dx, 1450 + 50), 55, fc="none", ec="#cf222e", ls="--")); ax.text(dx + 70, 1450, "only if the motor loses grip: snubber catches ~1450 mm (57 in)", color="#cf222e", fontsize=9)
-    # person
-    # person walks toward the doorway from the room side (ruled by the owner 2026-09-26)
-    px = 2150
+    # person walks in from outside, toward the porch (ruled by the owner 2026-09-26)
+    px = -1500
     ax.add_patch(Circle((px, 1600), 110, fc="#fff", ec="k")); ax.plot([px, px], [1490, 850], "k", lw=3)
     ax.plot([px, px - 150], [850, 0], "k", lw=3); ax.plot([px, px + 150], [850, 0], "k", lw=3)
-    ax.annotate("", xy=(px - 500, 900), xytext=(px - 150, 900), arrowprops=dict(arrowstyle="->", lw=2))
-    ax.text(px - 450, 1780, "approaching from the room, about 1.2 m/s", fontsize=9)
-    ax.text(-2150, 2330, "From the room side no door head hides the device:\nthe retracted spider is in view as people approach", color="#bc4c00", fontsize=9)
-    # sensor on the device, servo end, tilted 20 degrees down into the room
-    sx, sy = dx + 95, ceil - 30
+    ax.annotate("", xy=(px + 500, 900), xytext=(px + 150, 900), arrowprops=dict(arrowstyle="->", lw=2))
+    ax.text(px - 250, 1780, "walking in, about 1.2 m/s", fontsize=9)
+    # sight line under the beam: the retracted spider stays above it
+    eye = (px + 60, 1600)
+    ex = dx + 200
+    ax.plot([eye[0], ex], [eye[1], eye[1] + (head - eye[1]) * (ex - eye[0]) / (wall_x0 - eye[0])], color="#bc4c00", ls="--", lw=1)
+    ax.text(-2150, 2150, "sight line under the beam: the retracted spider\nstays hidden above it until the person is close", color="#bc4c00", fontsize=9)
+    # radar on the device's servo end, facing out under the beam, tilted 40 degrees down
+    sx, sy = dx - 95, ceil - 46
     ax.add_patch(Rectangle((sx - 6, sy - 22), 12, 44, color="#1a7f37"))
-    ax.text(-2150, 1400, "Green: LD2450 in its holder on the device (top, right of the\nbox), looking into the room, tilted 20 degrees down. Fires\nonly on someone walking toward the doorway, timed so the\nspider arrives as they reach it", color="#1a7f37", fontsize=9)
-    for ang in (-55, 15):
-        ax.plot([sx, sx + 1900 * math.cos(math.radians(ang))], [sy, sy + 1900 * math.sin(math.radians(ang))], color="#1a7f37", lw=1, alpha=0.6)
+    lim = math.degrees(math.atan2(sy - head, sx - wall_x1))    # steepest ray the beam still blocks
+    for ang, style in ((lim, "-"), (75, "-")):
+        L = (sy - 0) / math.sin(math.radians(ang))
+        ax.plot([sx, sx - L * math.cos(math.radians(ang))], [sy, sy - L * math.sin(math.radians(ang))], color="#1a7f37", lw=1.2, ls=style, alpha=0.8)
+    ax.text(900, 1150, f"Green: LD2450 on the device, facing out under the beam.\nThe beam blocks rays shallower than {lim:.0f} degrees down, so the\nradar sees a walker's legs from about 1.7 m out and their\nchest from about 0.8 m out. Tilt it 50 degrees down: the\nstrongest middle of its beam then passes under the beam.", color="#1a7f37", fontsize=9)
     # dims
     ax.annotate("", xy=(dx + 600, ceil - 130), xytext=(dx + 600, 1650), arrowprops=dict(arrowstyle="<->"))
     ax.text(dx + 620, (ceil + 1650) / 2, "drop ~ 700 mm (28 in)", fontsize=9)
     ax.set_xlim(-2200, 2700); ax.set_ylim(-60, ceil + 100); ax.set_aspect("equal"); ax.axis("off")
-    ax.set_title("Installation, side section through the doorway (8 ft ceiling, 6 ft 8 in door)", fontsize=13)
+    ax.set_title("Installation under the porch, side section (8 ft ceiling, beam hangs 10 in, device 12 in behind it)", fontsize=13)
     fig.savefig(os.path.join(IMG, "install.png"), dpi=110, bbox_inches="tight"); plt.close(fig)
 
 if __name__ == "__main__":

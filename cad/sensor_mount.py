@@ -28,8 +28,8 @@ import generate as G
 
 # LD2450 board, Hi-Link manual figure 3
 BOARD_L, BOARD_W, BOARD_T = 44.0, 15.0, 1.6
-TILT_DEG = 20.0                # tilt used for the assembly model and pictures
-TILT_MIN, TILT_MAX = 0.0, 50.0 # checked range
+TILT_DEG = 50.0                # this porch: beam 10 in deep, device 12 in behind; model and pictures use it
+TILT_MIN, TILT_MAX = 0.0, 60.0 # checked range
 Z_CENTER = 62.0
 PIVOT = (68.0, 13.0)           # (x, y) of the M3 pivot axis, installed; the axis runs along z
 M3_CLEAR = 1.7                 # 3.4 mm hole
