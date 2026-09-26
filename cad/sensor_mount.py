@@ -37,18 +37,18 @@ M3_CLEAR = 1.7                 # 3.4 mm hole
 # cradle section, local coordinates: u down the board (0 = board top), v across (= z), w out of the antennas
 LIP = 1.0
 EDGE = BOARD_W / 2
-RAIL_OUT = EDGE + 2.2          # 9.7: cradle half width
-BACK_W = -8.0
-BACK_T = 2.0
+RAIL_OUT = EDGE + 1.5          # 9.0: cradle half width (lightened 2026-09-26, was 9.7)
+BACK_T = 1.2                   # was 2.0
+BACK_W = -(4.0 + BACK_T)       # 4 mm behind the board for its parts; was 6
 FRONT_W = BOARD_T + 1.2
 LEN = BOARD_L + 2.0
-PIVOT_U, PIVOT_W = -12.0, -2.6 # pivot position in the cradle's local frame
+PIVOT_U, PIVOT_W = -10.5, -1.2 # pivot position in the cradle's local frame (was -12, -2.6)
 
 # fork
-KNUCKLE_HALF = 6.4             # cradle knuckle half width (unchanged); ears sit 0.3 mm outside it
-EAR_T = 2.0                    # lightened 2026-09-26 (was 3.0): a 5 g radar needs very little
-EAR_R = 4.5                    # was 6.0
-PLATE_T = 2.0                  # was 3.0
+FORK_HALF = 9.7               # fork half width (fork unchanged)
+EAR_T = 3.0
+KNUCKLE_HALF = FORK_HALF - EAR_T - 0.3    # 6.4: knuckle fits between the ears with 0.3 mm each side
+EAR_R = 6.0
 
 
 def _along_v(m):
@@ -67,11 +67,12 @@ def _cradle_local():
     back = bx(0, LEN, -RAIL_OUT, RAIL_OUT, BACK_W, BACK_W + BACK_T)
     back = G.D(back, bx(1.5, 13, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1),   # plug window, top end
                bx(LEN - 13, LEN + 1, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))  # plug window, bottom end
-    top = bx(-2.5, 0, -RAIL_OUT, RAIL_OUT, BACK_W, FRONT_W)
+    back = G.D(back, bx(16, LEN - 16, -5.5, 5.5, BACK_W - 1, BACK_W + BACK_T + 1))   # middle window: the back is a light ladder
+    top = bx(-1.5, 0, -RAIL_OUT, RAIL_OUT, BACK_W, FRONT_W)
     # knuckle: a round boss on the pivot, joined to the top block, narrow enough to sit between the ears
-    boss = _along_v(G.cyl(5.0, 2 * KNUCKLE_HALF, -KNUCKLE_HALF))
+    boss = _along_v(G.cyl(4.0, 2 * KNUCKLE_HALF, -KNUCKLE_HALF))
     boss.apply_translation([PIVOT_U, 0, PIVOT_W])
-    neck = bx(PIVOT_U, -2.0, -KNUCKLE_HALF, KNUCKLE_HALF, PIVOT_W - 5.0, PIVOT_W + 5.0)
+    neck = bx(PIVOT_U, -1.0, -KNUCKLE_HALF, KNUCKLE_HALF, PIVOT_W - 3.0, PIVOT_W + 3.0)
     body = G.U(*rails, back, top, boss, neck)
     hole = _along_v(G.cyl(M3_CLEAR, 40, -20)); hole.apply_translation([PIVOT_U, 0, PIVOT_W])
     clear = bx(0, LEN + 1, -(EDGE - LIP - 0.1), EDGE - LIP - 0.1, BACK_W + BACK_T, 40)   # antennas and back parts stay clear
@@ -104,11 +105,10 @@ def ld2450_board(tilt_deg=TILT_DEG):
 def ld2450_fork():
     """Glued flat to the bracket underside (y = 4). Two round ears carry the M3 pivot."""
     px, py = PIVOT
-    z_in = KNUCKLE_HALF + 0.3                      # ears' inner faces, same place as before
-    plate = G.bx(62, 74, 4, 4 + PLATE_T, Z_CENTER - z_in - EAR_T, Z_CENTER + z_in + EAR_T)
+    plate = G.bx(58, 75, 4, 7, Z_CENTER - FORK_HALF, Z_CENTER + FORK_HALF)
     ears = []
-    for z0 in (Z_CENTER - z_in - EAR_T, Z_CENTER + z_in):
-        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 4 + PLATE_T - 0.5, py, z0, z0 + EAR_T)))
+    for z0 in (Z_CENTER - FORK_HALF, Z_CENTER + FORK_HALF - EAR_T):
+        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 5, py, z0, z0 + EAR_T)))
     return G.D(G.U(plate, *ears), G.cyl(M3_CLEAR, 40, Z_CENTER - 20, px, py))
 
 
