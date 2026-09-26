@@ -49,10 +49,11 @@ LEN = BOARD_L + 2.0
 PIVOT_U, PIVOT_W = -10.5, 0.0  # pivot position in the cradle's local frame
 
 # fork
-FORK_HALF = 9.7               # fork half width (fork unchanged)
-EAR_T = 3.0
-KNUCKLE_HALF = FORK_HALF - EAR_T - 0.3    # 6.4: knuckle fits between the ears with 0.3 mm each side
-EAR_R = 6.0
+KNUCKLE_HALF = 6.4             # cradle knuckle half width; the ears sit 0.3 mm outside it
+EAR_T = 2.0                    # lightweight fork (owner's pick 2026-09-26): 2 mm ears
+EAR_R = 4.5
+PLATE_T = 2.0                  # 2 mm glue plate
+FORK_HALF = KNUCKLE_HALF + 0.3 + EAR_T   # 8.7
 
 
 def _along_v(m):
@@ -112,10 +113,10 @@ def ld2450_board(tilt_deg=TILT_DEG):
 def ld2450_fork():
     """Glued flat to the bracket underside (y = 4). Two round ears carry the M3 pivot."""
     px, py = PIVOT
-    plate = G.bx(58, 75, 4, 7, Z_CENTER - FORK_HALF, Z_CENTER + FORK_HALF)
+    plate = G.bx(62, 74, 4, 4 + PLATE_T, Z_CENTER - FORK_HALF, Z_CENTER + FORK_HALF)
     ears = []
     for z0 in (Z_CENTER - FORK_HALF, Z_CENTER + FORK_HALF - EAR_T):
-        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 5, py, z0, z0 + EAR_T)))
+        ears.append(G.U(G.cyl(EAR_R, EAR_T, z0, px, py), G.bx(px - EAR_R, px + EAR_R, 4 + PLATE_T - 0.5, py, z0, z0 + EAR_T)))
     return G.D(G.U(plate, *ears), G.cyl(M3_CLEAR, 40, Z_CENTER - 20, px, py))
 
 
