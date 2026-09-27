@@ -47,7 +47,7 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 
 ## Direction rules (the only things that can be assembled backwards)
 
-1. **Line exits on the electronics-pad side** of the spool and goes straight down through the fairlead. Wind it so pulling the line spins the spool clockwise seen from the 606ZZ end.
+1. **Line exits on the electronics-pad side** of the spool and goes straight down through the fairlead. Wind it so pulling the line spins the spool clockwise seen from the 606ZZ end. **Inverted install (doc 06):** the line exits on the **servo side** (x 25) and goes through the 5 mm hole in the base; the winding sense, the clutch, the finger and the firmware `dir` are all unchanged, because the spool still turns clockwise (seen from the 606ZZ end) when the spider falls. The finger's own weight now rests it toward the ledge.
 2. **HF0612 orientation (Rev C.1, flipped from Rev C):** with the spool on the rod and the rod held still, the spool must **lock clockwise** (seen from the 606ZZ end) and spin freely counterclockwise. If backwards, press the bearing out and flip it.
 3. **Motor rewind direction:** set in firmware (`dir 0/1`), no rewiring.
 

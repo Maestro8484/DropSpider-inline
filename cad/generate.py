@@ -204,6 +204,7 @@ PARTS = {
     "tie_bar": lambda: __import__("wall_hinge").tie_bar_print(),                       # wall install only
     "strut": lambda: __import__("wall_hinge").strut_print(),                           # wall install only: print two
     "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # wall install only: radar fork with screw holes for the beam's underside
+    "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),             # inverted install only (docs/06): fairlead block under the base
 }
 
 # ---------------- installed assembly ----------------

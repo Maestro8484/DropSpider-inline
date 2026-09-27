@@ -16,7 +16,7 @@ pip install trimesh manifold3d shapely numpy matplotlib      # once
 | Step | Script | Writes | What it does |
 |---|---|---|---|
 | 1 | `cad/generate.py` | `cad/stl/*.stl` | Builds each part from boxes and cylinders, adds and cuts them (boolean operations, via manifold3d), turns each part to its print orientation, exports STL, then runs checks and prints a report |
-| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
+| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install, inverted_install | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
 | 3 | `docs/diagrams.py` | `docs/img/wiring.png`, `install.png` | Flat drawings made with matplotlib |
 
 Same code, same output: the pictures and STLs are rebuilt identically every time.
@@ -28,10 +28,11 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: fork glued under the servo end, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
-| `wall_hinge.py` | Wall install draft (doc 06 alternative, the owner's plan): hinge plate frame for the beam, two clips for the pad, a tie bar across the device's far end, two struts. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, six pins, screwdriver paths, swing, strut load and buckling |
-| `wall_mount.py` | Fallback wall install: one braced shelf (212 cm3) that keeps the device at the ceiling with no cords, plus `ld2450_fork_screw` for putting the radar under the beam. Not in the print list; `python wall_mount.py` for its report |
+| `inverted.py` | Inverted install (doc 06 alternative, approved 2026-09-27): the device turned over on two steel corner braces. `bracket_inverted()` (the 3 drilled holes), `fairlead_base()` (doc 09's unit as a block under the base, exported as `fairlead_base.stl`), the radar turned over under the servo end, brace stand-ins, a board box, `assembly_inverted()`, `porch()` and `view_inv()` (pictures with the floor down). Run it on its own for its report: watertight, face flat, clash (braces and board box included), radar view, line path, spool clearance, flap stops and roller push, screw heads, loads, heights |
+| `wall_hinge.py` | Superseded by `inverted.py`, kept for reference. Wall install draft (the owner's earlier plan): hinge plate frame for the beam, two clips for the pad, a tie bar across the device's far end, two struts. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, six pins, screwdriver paths, swing, strut load and buckling |
+| `wall_mount.py` | Superseded, kept for reference. Fallback wall install: one braced shelf (212 cm3) that keeps the device at the ceiling with no cords, plus `ld2450_fork_screw` for putting the radar under the beam. Not in the print list; `python wall_mount.py` for its report |
 | `render.py` | All 3D pictures. One function per picture |
-| `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/ |
+| `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
 | `retired/` | Obsolete parts kept for reference. Do not print |
@@ -44,6 +45,7 @@ Units: millimeters.
 - **Rod axis** at x = 0, y = 40. Servo tower on **+x**. Electronics pad on **-x**.
 - **Line** leaves the spool at x = -25, z = 45 and runs straight down (+y) through the fairlead.
 - "Clockwise seen from the 606ZZ end" = looking from +z toward the motor, x to the right, y up.
+- Inverted install (`inverted.py`): the same frame, so y = 0 is the base's outer face and +y points UP in the porch. The line leaves the spool at x = 25, z = 45 and runs through the base (-y). Its pictures use `view_inv()` so the floor is down.
 
 ## Checks the scripts run (read the report every time)
 

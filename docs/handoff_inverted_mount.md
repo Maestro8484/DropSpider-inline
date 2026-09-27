@@ -11,7 +11,11 @@ Owner's corrections, 2026-09-27, applied the same day and re-checked (all checks
 - "does that design allow room for the pcb board and esp32": yes. The pad (the base's device side at the beam end, now facing up) is untouched; a 52 x 75 x 30 stand-in box there clears every part.
 - Braces "rotated the other way": the flat leg under the base, the other leg standing UP the beam's face beside the device. The base now sits 160 below the ceiling (was 70); the bead rests 179 below it; the beam's bottom edge is 254.
 
-Owed from the owner: approve the mockup (then step 3), and say where along the base the two braces go (drawn at the ends, z 8 and z 106; the 106 one hangs 8 mm past the base's end). An 8 in brace's flat leg would reach 36 mm past the base's far end.
+Owner's answers, 2026-09-27: mockup approved; the braces and their holes are his to place and drill by hand; a Fable check of the design after the doc work.
+
+Step 3 done the same day: docs 01 (direction rule 1), 05 (section G), 06 (the wall section is now this install), 08 (V10, V18; the finger item renumbered V20), 09 (`fairlead_base.stl` section), BOM (PRINT-INV, I1, I2; wall lines marked superseded), `cad/README.md`, `README.md`, `fairlead_base` in `generate.py`'s print list, and `cad/bracket_footprint_inverted.svg` (the three drilled holes). Full rebuild run: every check passes and every existing STL and picture came out byte-identical.
+
+Still open: nothing is built. The spider sits inside the radar's view (doc 06); the walk test settles whether that matters.
 
 ## First job: the mockup, for the owner to check
 

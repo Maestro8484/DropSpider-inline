@@ -25,7 +25,7 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 | `docs/08_open_items.md` | what is verified, what is not, risks |
 | `docs/09_fairlead_switch.md` | fairlead, hinged flap and KW12-3 limit switch |
 | `docs/M1_fix_handoff.md`, `docs/handoff_sensor_bearings.md` | Rev C.1 owner handoffs: clutch fix and motor-led drop; LD2450 and bearing care |
-| `cad/generate.py`, `cad/fairlead.py` | source of truth for every printed part (`tools\regen_cad.ps1` rebuilds STLs and images) |
+| `cad/generate.py`, `cad/fairlead.py`, `cad/inverted.py` | source of truth for every printed part (`inverted.py`: the device turned over on the porch beam, doc 06) (`tools\regen_cad.ps1` rebuilds STLs and images) |
 | `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts: do not print |
 | `platformio.ini`, `src/`, `include/` | firmware, standard PlatformIO layout, 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works) |
 | `secrets.ini.example` | template for `secrets.ini`: WiFi name, password, update password (never committed) |

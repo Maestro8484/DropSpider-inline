@@ -31,15 +31,15 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V6 | Finger lifetime in PLA | step 14 | PETG finger |
 | V7 | LD2410C range and through-wall behavior in this house (fallback sensor only since Rev C.1) | step 12 with `sensor 2410` | tune gates; AM312 fallback |
 | V9 | Limit switch reads right and stops the rewind at the bead | steps 3b and 9 | `liminv`; move the switch; route its lead away from the motor wires |
-| V10 | Limit switch mount. **Designed in Rev C.1:** KW12-3 in the fairlead with a hinged flap (doc 09, `cad/fairlead.py`). CAD-checked: 4.0 mm roller push against 3.4 mm needed, hard stop takes the motor's pull. Not yet built | doc 09 assembly step 5 by hand, then commissioning step 9 | slide the switch in its slots; reprint the flap |
+| V10 | Limit switch mount. **Designed in Rev C.1:** KW12-3 in the fairlead with a hinged flap (doc 09, `cad/fairlead.py`). CAD-checked: 4.0 mm roller push against 3.4 mm needed, hard stop takes the motor's pull. Inverted install: the same unit as one block under the base (`fairlead_base.stl`, doc 09), same checks pass. Not yet built | doc 09 assembly step 5 by hand, then commissioning step 9 | slide the switch in its slots; reprint the flap |
 | V11 | Board joins the home network, page loads, network update works | step 3a, then one `scripts\update_firmware.bat` WiFi update | USB console `wifi`; own network DropSpider-setup at 192.168.4.1 |
 | V13 | Top drop speed and stopping ability of the NEMA 11 at 12 V, 0.6 A, with the real spider (estimate: about 500 rpm, stops 60 g or less cleanly) | T4, T5, T7 in `M1_fix_handoff.md` | lower `droprpm` / `dropdec`; lighter spider |
 | V14 | **Answered by the fairlead geometry:** after the lock seat the bead drops off the flap, so the switch reads OPEN at rest. Firmware must infer home from the last cycle (switch stop, then seat move), not from the boot reading | commissioning step 10; boot with the spider home | firmware rule, not hardware |
 | V15 | LD2450 as the trigger: tracking through the door frame, speed sign, approach-only firing, arrival timing | S1 to S5 in `handoff_sensor_bearings.md` | widen or narrow `doorwidth`, tune `leadms`; `sensor 2410` fallback |
 | V16 | Printed fits on the owner's printer after the fit-check fixes: finger on the spline (5.0 drawn), spacers, ratchet over the HF0612 stub, flap on the M2 bolt, cradle grooves | test fit at assembly | open the hole with a drill by hand; adjust the drawn size in code |
-| V18 | Wall install draft (doc 06 alternative): `hinge_plate.stl`, 2x `hinge_clip.stl`, `tie_bar.stl`, 2x `strut.stl`. CAD-checked 2026-09-27 (watertight, clears every part, six pins line up, swings clear to 65 degrees, struts pushed 20 N on a line snap against 160 N buckling each). **Not printed, not hung** | print, fit the clips and tie bar, hang it on the bench from four screws in a board, pull 5 kg on the far end | thicker struts (`STRUT_D`), or the braced shelf in `cad/wall_mount.py` |
+| V18 | Inverted install (doc 06 alternative, the owner's plan approved 2026-09-27): device turned over on two steel corner braces, `fairlead_base.stl` under the base, radar glued under the servo end, three holes drilled in the base. CAD-checked 2026-09-27 (`python cad/inverted.py`: watertight, clears every part including a 52 x 75 x 30 board box, line path clear, flap and switch as doc 09, radar view not blocked by the device). **Not printed, not hung**; the braces and their holes are the owner's | build it, hang it on the bench, run commissioning steps 9 and 12, then walk test S3 (does the radar see the spider?) | radar tilt; the spider-in-view question is open |
 | V17 | The fitted SG90 is a 180 degree positioning servo, not a 360 continuous one (the owner's spare has no hard stop) | `servo 90`, `servo 30`, `servo 150`, no finger fitted: must move and hold | swap the servo |
-| V18 | Finger height on the real spline: plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
+| V20 | Finger height on the real spline (was a second V18, renumbered 2026-09-27): plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
 | V19 | Reinforced fairlead body strength and the flat switch face on a real print; switch mounts with no washers | assembly steps 15 to 15d | 6 walls on that part |
 | V12 | Board on COM13 is an ESP32 with 4 MB flash. **Closed 2026-09-25:** first the 38-pin NodeMCU-32S, now the 30-pin DevKit V1 in use, both ESP32-D0WD-V3, 4 MB, read by esptool | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
 
@@ -51,7 +51,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 ## Known limits of Rev C.1
 
-- Ceiling mount only.
+- Ceiling mount is the default. The inverted install on the beam's face (doc 06, V18) is CAD-checked, not built.
 - No stall sensing; the expansion board hides the TMC2209 UART pin.
 - Static IP address not set yet; DHCP only.
 - One shared update password, from `secrets.ini`. Fine on a home network.
@@ -63,5 +63,5 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 ## Candidate Rev D items (not started)
 
-- Wall-mount variant with a relocated fairlead.
+- Wall-mount variant with a relocated fairlead: done as the inverted install (doc 06, V18), not yet built.
 - Enclosure for the controller board.

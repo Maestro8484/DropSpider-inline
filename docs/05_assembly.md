@@ -73,11 +73,13 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 21. Wire per `02_electrical.md` (LD2450 on GPIO16/17, KW12-3 NO to GPIO32 and COM to GND). Mount the controller board on the pad with foam tape or zip ties through the x = -80 holes. Keep the x = -56 holes and the two at the servo end clear: they are the ceiling screw holes.
 22. Go to `07_commissioning.md` before mounting anything overhead.
 
-## G. Wall install only (device on the beam's face, doc 06)
+## G. Inverted install only (device turned over on the beam's face, doc 06)
 
-23. Print `hinge_plate.stl` (one), `hinge_clip.stl` (two), `tie_bar.stl` (one), `strut.stl` (two); settings in doc 01.
-24. Bolt each clip on top of the pad, knuckle past the pad's edge, 2x M3 with nuts under the pad (the x -80 and x -56 holes of one row). The board goes on foam tape. Bolt the tie bar on top of the base through the x 65 holes, lugs hanging down past the device's ends.
-25. On the ladder, per doc 06: plate to the beam, knuckles into the forks, hinge pins, swing up level, strut pins top and bottom, hinge pins tightened. Then `07_commissioning.md` as usual.
+23. Drill the base: 5 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (the fairlead block). Print `cad/bracket_footprint_inverted.svg` at 100% as a template. Sand the 5 mm hole smooth.
+24. Print `fairlead_base.stl` instead of `fairlead_body.stl`. Fit the flap and switch to it as in steps 15a to 15d, then screw it under the base with 2x M3 x 12 from inside the base.
+25. Glue `ld2450_fork.stl` under the base at the servo end (the fork's plate at x 56 to 68, centred on z 62, ears hanging down); cradle on one M3 bolt through the fork's ears, radar slid into the cradle (doc 03), looking back toward the pad end and down, 50 degrees to start.
+26. Wind the line counterclockwise (seen from the 606ZZ end) as in step 16, but lead it off the spool's **servo side**, down through the base hole, the block's bore and the flap's slot.
+27. The braces and their holes are the owner's. Then `07_commissioning.md` as usual.
 
 ## Base layout reference
 
