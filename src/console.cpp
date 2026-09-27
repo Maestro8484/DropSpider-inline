@@ -58,31 +58,43 @@ String logJsonSince(uint32_t since, uint32_t &next) {
 
 static void printStatus() {
   MachineStatus m = machineStatus();
-  logf("state=%s armed=%d sensor=%d limit=%s driver=%s servo=%s@%d | lock=%d rel=%d line=%dmm rpm=%d dir=%d settle=%dms rearm=%dms | rewind steps=%ld last=%ld%s drops=%lu%s%s",
+  logf("state=%s armed=%d sensor=%d limit=%s home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
        m.state, m.armed, m.sensor,
        m.limitFitted ? (m.limitRaw ? "pressed" : "open") : (m.limitRaw ? "not-fitted(pressed)" : "not-fitted(open)"),
+       m.home ? "yes" : "unknown",
        m.driverOn ? "on" : "off", m.servoAttached ? "on" : "off", m.servoDeg,
-       S.servoLock, S.servoRel, S.lineMm, S.rpm, S.rewindDir, S.settleMs, S.rearmMs,
        m.rewindSteps, m.lastRewindSteps, m.lastRewindByLimit ? "(limit)" : "",
        (unsigned long)m.drops, m.fault[0] ? " | fault: " : "", m.fault);
+  logf("settings: lock=%d rel=%d line=%dmm rpm=%d dir=%d settle=%dms rearm=%dms limit=%d liminv=%d"
+       " | dropmm=%d droprpm=%d dropacc=%d dropdec=%d relms=%d",
+       S.servoLock, S.servoRel, S.lineMm, S.rpm, S.rewindDir, S.settleMs, S.rearmMs, S.limitFitted, S.limitInverted,
+       S.dropMm, S.dropRpm, S.dropAcc, S.dropDec, S.releaseMs);
 }
 
+// One log line per help line: a log line holds 320 characters at most.
+static const char *const HELP[] = {
+  "commands:",
+  "  status | help | arm | disarm | save | defaults | clear",
+  "  drop            full cycle now (unload + finger out, powered drop, settle, rewind, lock)",
+  "  rel             unload + finger out only; motor stays on holding the spider",
+  "  lock            finger in, seat move onto a tooth, then driver off",
+  "  rewind          rewind only (driver stays on until 'lock'); stops at the limit switch",
+  "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; driver stays on",
+  "  stop            halt everything now, leave the motor as it is",
+  "  off             driver off and servo off",
+  "  servo <deg>     move the finger live (for finding angles)",
+  "  setlock <deg> | setrel <deg> | line <mm> | rpm <n> | dir <0|1> | settle <ms> | rearm <ms>",
+  "  limit <0|1>     limit switch fitted | liminv <0|1> switch reads backwards",
+  "  dropmm <mm>     how far the spider drops (100 to line - 70)",
+  "  droprpm <n>     drop top speed, 100 to 900 | relms <ms> finger travel before the drop, 100 to 600",
+  "  dropacc <n> | dropdec <n>   drop start and stop rates, microsteps/s^2 (100000 is about 1 g)",
+  "  wifi            show network state",
+  "  (settings change immediately; 'save' keeps them after power loss)",
+  "  motion commands disarm the sensor; 'arm' when bench work is done",
+};
+
 static void printHelp() {
-  logf("commands:\n"
-       "  status | help | arm | disarm | save | defaults | clear\n"
-       "  drop            full cycle now (release, settle, rewind, lock)\n"
-       "  rel             finger out only (spider drops, no rewind)\n"
-       "  lock            finger in, then driver off\n"
-       "  rewind          rewind only (driver stays on until 'lock'); stops at the limit switch\n"
-       "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; driver stays on\n"
-       "  stop            halt everything now, leave the motor as it is\n"
-       "  off             driver off and servo off\n"
-       "  servo <deg>     move the finger live (for finding angles)\n"
-       "  setlock <deg> | setrel <deg> | line <mm> | rpm <n> | dir <0|1> | settle <ms> | rearm <ms>\n"
-       "  limit <0|1>     limit switch fitted | liminv <0|1> switch reads backwards\n"
-       "  wifi            show network state\n"
-       "  (settings change immediately; 'save' keeps them after power loss)\n"
-       "  motion commands disarm the sensor; 'arm' when bench work is done");
+  for (const char *l : HELP) logf("%s", l);
 }
 
 extern String webWhereAmI();
@@ -128,7 +140,7 @@ void consoleRun(const String &raw, String *capture) {
   else if (settingsIsName(cmd)) {
     MachineStatus m = machineStatus();
     String why;
-    if ((cmd == "dir" || cmd == "rpm") && m.motorRunning) logf("refused: motor is running");
+    if ((cmd == "dir" || cmd == "rpm" || cmd.startsWith("drop")) && m.motorRunning) logf("refused: motor is running");
     else if (!settingsSet(cmd, argS, why)) logf("refused: %s %s", cmd.c_str(), why.c_str());
     else printStatus();
   }

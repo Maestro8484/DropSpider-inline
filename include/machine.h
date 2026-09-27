@@ -25,7 +25,8 @@ struct MachineStatus {
   long     rewindSteps;     // what a full rewind is set to run
   long     lastRewindSteps; // what the last rewind actually ran
   bool     lastRewindByLimit;
-  int      measuredLineMm;  // from the last full-drop rewind stopped by the switch, 0 if none
+  int      measuredDropMm;  // from the last cycle's rewind stopped by the switch, 0 if none
+  bool     home;            // switch pressed, or seated on the finger after a switch-stopped rewind (V14)
   uint32_t drops;
   TriggerSource lastTrigger;
   uint32_t lastTriggerAgoMs;// 0 if never

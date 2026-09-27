@@ -53,7 +53,7 @@ The web page is the console on your phone or PC. Every button sends a console co
 
 | Card | What is on it |
 |---|---|
-| Status | state, chips (armed, spider home, radar, motor powered, fault), drop count, last trigger, last rewind, line length measured by the switch |
+| Status | state, chips (armed, spider home, radar, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind |
 | Run | Drop it now, Arm or Disarm, Stop, Motor and servo off, Clear fault |
 | Bench: finger servo | live angle, nudge 1 or 5 degrees, go to lock or release angle, store the current angle as lock or release |
 | Bench: motor | jog one turn or 1/8 turn each way, Rewind, Lock, Release |
@@ -62,31 +62,58 @@ The web page is the console on your phone or PC. Every button sends a console co
 | Network | save a different home network and restart |
 | Firmware | link to the update page |
 
-## Cycle
+## Cycle (Rev C.1, motor-led drop)
 
 ```
-READY (armed) --radar or BOOT button--> finger out (spider free-falls)
+READY (armed) --radar or BOOT button-->
+  RELEASE: driver on; finger swings out while the motor winds the spool up 1/12 turn (M2),
+           wait relms (250 ms)
+  DROP:    motor unwinds dropmm at up to droprpm, starting at dropacc and stopping at dropdec;
+           the spool falls behind it on the clutch and can never pass it. Motor holds at the bottom
   --settle 1.5 s--> REWIND (stops the moment the limit switch closes; without the switch,
-                    fixed steps + 0.75 turn overshoot and the bead stops on the eyelet)
-  --> LOCK (finger in, motor off, spool settles onto a tooth, servo off)
+                    the drop + 0.75 turn overshoot and the bead stops on the eyelet)
+  --> LOCK (finger in; seat move lets the spool down 1.2/12 turn at 30 rpm onto a tooth,
+            the clutch slips once it lands; driver off; servo off 0.7 s later)
   --> LOCKOUT 20 s --> WAIT FOR THE DOORWAY TO CLEAR (radar LOW for 2 s) --> READY
 ```
 
+- The driver is on from the release to the end of the lock. Never drop with the driver off: the unpowered motor drags too much for a clean fall.
 - Armed and ready: driver off, servo off. Only the ESP32 and the radar draw power.
-- Boot: driver off first thing, finger to lock, never rewinds on its own. If the limit switch is fitted and open at boot, the page says the spider is not home; rewind and lock by hand.
-- The machine runs on its own task, so console, page and network updates stay live during a cycle. `stop` works mid-rewind.
+- Boot: driver off first thing, finger to lock, never rewinds on its own. See "Home at boot" below.
+- The machine runs on its own task, so console, page and network updates stay live during a cycle. `stop` works mid-drop and mid-rewind.
+
+## The drop's two rates
+
+FastAccelStepper 0.33.14 has one acceleration value per move, not separate start and stop rates. It does recompute the stop when the acceleration is changed mid-move (`setAcceleration` then `applySpeedAcceleration`). So the drop starts at `dropacc`, and the machine task, every 2 ms, works out how far the stop at `dropdec` needs from the current speed. When the move gets that close, plus a margin of 10 ms of travel and 50 steps, it switches to `dropdec`. The margin matters: switched too late, the library overshoots the end and reverses back to it.
+
+If `dropdec` is set equal to or above `dropacc`, no switch happens and the whole drop uses `dropacc`.
+
+Unit check: one microstep = pi x 50 mm / 1600 = 0.098 mm of line. 1 m/s is about 610 rpm. 100000 steps/s^2 is about 1 g at the barrel.
+
+Drop steps = dropmm / 0.098 mm + the steps the unload actually wound up. `dropmm` can never be set closer than 30 mm to the barrel knot (at most `line` - 70). If a smaller `line` is stored than the drop allows, the drop is cut to fit and says so in the log.
 
 ## Limit switch
 
 A 3-pin endstop at the eyelet, pressed by the stop bead when the spider arrives home. Wiring in `02_electrical.md`.
 
 - Off until you turn it on (`limit 1`), so an unwired or backwards switch cannot stop a rewind early. Check it reads right first: the page shows "reads pressed" or "reads open"; press the lever by hand and watch. If backwards: `liminv 1`.
-- When on, it is a hard cut-off: any motor move in the rewind direction stops within a few milliseconds of the switch closing, in every state.
+- When on, it is a hard cut-off: any motor move in the rewind direction stops within a few milliseconds of the switch closing, in every state. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
 - Faults it catches, each a strike (three in a row and it stops arming until `clear` or a BOOT press):
   - trips in under a quarter of the expected rewind: line snagged or broke;
   - full rewind runs and it never trips: bead missed it, or it is unplugged;
   - still pressed right after a drop: wiring or `liminv` wrong. That rewind then runs on the step count alone.
-- Each good rewind from a full drop that ends on the switch reports the measured line length, to check against `line`.
+- Each cycle's rewind that ends on the switch reports how far the spider dropped, to check against `dropmm`.
+- Lost steps on the stop: if that rewind runs more than 20 mm past the drop (allowing one unload for the seat), the log says `lost steps?`. It means the spool got ahead of the motor at the stop and the line's stretch caught the spider. Not a fault on its own; lower `dropdec` or `droprpm` if it repeats.
+
+### Home at boot (V14)
+
+After the lock seat the bead drops off the flap, so the switch reads open with the spider home. That is by design. The firmware remembers, in flash, that the last lock followed a rewind the switch stopped. At boot:
+
+- switch pressed, or that memory says home: no message, ready;
+- switch open and that memory says home: log `switch open, spider home from the last lock`, ready;
+- switch open and home not known: the page says the spider is not home; rewind and lock by hand. Boot still never rewinds.
+
+Any drop, release, jog, finger move, rewind start, or a stop part way through something forgets home until the next switch-stopped rewind and lock. `status` shows `home=yes` or `home=unknown`.
 
 ## Console commands
 
@@ -96,17 +123,22 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 |---|---|
 | `help`, `status` | list commands; show state, settings, sensor, limit switch, rewind steps |
 | `arm`, `disarm` | let the radar fire it, or ignore the radar |
-| `drop` | full cycle now (works when disarmed) |
-| `rel` | finger out only: spider drops, no rewind |
+| `drop` | full cycle now (works when disarmed): unload and release, powered drop, settle, rewind, lock |
+| `rel` | unload and release only (steps 1 to 3 of the drop): the motor winds up 1/12 turn while the finger swings out, then stays on holding the spider. `jog` lowers it; `off` lets it slide down on the motor's drag |
 | `rewind` | rewind only; motor stays on until `lock`; stops at the limit switch |
-| `lock` | finger in, motor off, settle |
+| `lock` | finger in, seat move onto a tooth, motor off, servo off |
 | `jog <n>` | move n microsteps (1600 = one turn), + = rewind direction, motor stays on. Refused winding in with the switch pressed |
 | `servo <deg>` | move the finger live, to find angles; it holds there |
 | `stop` | halt everything now, abort any cycle, leave the motor powered as it was |
 | `off` | motor and servo off |
 | `clear` | forget faults and re-arm the cycle |
 | `setlock <deg>`, `setrel <deg>` | store finger angles (0 to 180) |
-| `line <mm>` | line length from the spool knot to the stop bead (100 to 3000) |
+| `line <mm>` | line length from the barrel knot to the stop bead, line straight not pulled (100 to 3000). Refused if it would leave `dropmm` reaching the knot |
+| `dropmm <mm>` | how far the spider drops, 100 to `line` - 70, default 620 |
+| `droprpm <n>` | drop top speed, 100 to 900, default 500 |
+| `dropacc <n>` | drop start rate, microsteps/s^2, 20000 to 400000, default 120000 |
+| `dropdec <n>` | drop stop rate, 10000 to 200000, default 60000 (about 0.6 g). Keep low: the motor has to stop the spider |
+| `relms <ms>` | finger travel time before the drop starts, 100 to 600, default 250 |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
@@ -114,7 +146,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `wifi` | where the board is on the network |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
-- Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes.
+- Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
 - Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done.
 - Motion commands are refused while a cycle runs; `stop` and `off` always work.
 - Each motion command ends with a `[done] ...` or `refused: ...` line. `tools/console.py` waits for it.
@@ -134,6 +166,8 @@ Opening the port does not reset the board.
 ## Rewind math
 
 steps = ((line - 40 mm) / (pi x 50 mm) + 0.75 turn) x 200 x 8
+
+In a cycle the rewind is the drop's steps + 0.75 turn instead, if that is less: the spool is only down as far as the drop went.
 
 The 40 mm is line that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
 

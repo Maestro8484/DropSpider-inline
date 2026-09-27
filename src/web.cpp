@@ -62,7 +62,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="row"><span>Drops so far</span><b id="drops">-</b></div>
  <div class="row"><span>Last fired by</span><b id="trig">-</b></div>
  <div class="row"><span>Last rewind</span><b id="rw">-</b></div>
- <div class="row"><span>Line length measured by the switch</span><b id="meas">-</b></div>
+ <div class="row"><span>Last drop, measured by the rewind</span><b id="meas">-</b></div>
  <div class="row"><span>Running for</span><b id="up">-</b></div>
 </div>
 
@@ -102,7 +102,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="g">
   <button onclick="c('rewind')">Rewind</button><button onclick="c('lock')">Lock</button><button onclick="c('rel')">Release</button>
  </div>
- <div class="sub">+ is the rewind direction. The motor stays powered after a jog or rewind until Lock or Off.</div>
+ <div class="sub">+ is the rewind direction. The motor stays powered after a jog, rewind or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
 </div>
 
 <div class="card">
@@ -137,10 +137,15 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
 <script>
 const SETS=[
  ["setlock","Finger lock angle","degrees"],["setrel","Finger release angle","degrees"],
- ["line","Line length","mm, spool knot to stop bead, elastic included"],["rpm","Rewind speed","rpm, 30 to 600"],
+ ["line","Line length","mm, barrel knot to stop bead, line straight not pulled"],["rpm","Rewind speed","rpm, 30 to 600"],
  ["dir","Rewind direction","0 or 1, flip if the clutch just slips"],["settle","Hang at the bottom","ms before rewind"],
  ["rearm","Lockout after a scare","ms"],["limit","Limit switch fitted","1 = the switch stops the rewind"],
- ["liminv","Limit switch reads backwards","1 = flip it"]];
+ ["liminv","Limit switch reads backwards","1 = flip it"],
+ ["dropmm","Drop distance","mm the spider travels, 100 to line minus 70"],
+ ["droprpm","Drop top speed","rpm, 100 to 900. 610 rpm is about 1 m/s"],
+ ["dropacc","Drop start rate","steps/s&sup2;, 20000 to 400000. 100000 is about 1 g"],
+ ["dropdec","Drop stop rate","steps/s&sup2;, 10000 to 200000. Keep low: the motor has to stop the spider"],
+ ["relms","Finger travel before the drop","ms, 100 to 600"]];
 let st=null,armed=false,built=0,since=0;
 function c(cmd){cmd=(cmd||'').trim();if(!cmd)return;fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(tick)}
 function nudge(d){if(!st)return;c('servo '+Math.max(0,Math.min(180,st.servoDeg+d)))}
@@ -157,12 +162,12 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  document.getElementById('drops').textContent=s.drops;
  document.getElementById('trig').textContent=s.trigger+(s.triggerAgo?' ('+ms(s.triggerAgo)+' ago)':'');
  document.getElementById('rw').textContent=s.lastRewind?(s.lastRewind+' steps of '+s.rewindSteps+(s.lastRewindLimit?', stopped by the switch':'')):'none yet';
- document.getElementById('meas').textContent=s.measuredLine?('about '+s.measuredLine+' mm (set '+s.settings.line+')'):'not yet';
+ document.getElementById('meas').textContent=s.measuredDrop?('about '+s.measuredDrop+' mm (set '+s.settings.dropmm+')'):'not yet';
  document.getElementById('up').textContent=ms(s.uptime);
  document.getElementById('sdeg').textContent=s.servoDeg+'°'+(s.servoOn?' holding':' (servo off)');
  document.getElementById('armb').textContent=armed?'Disarm':'Arm';
  let h=armed?chip('armed','ok'):chip('not armed','wa');
- h+=s.limitFitted?(s.limit?chip('spider home (switch pressed)','ok'):chip('switch open, spider not home','wa')):chip('limit switch off in settings'+(s.limit?', reads pressed':', reads open'),'wa');
+ h+=s.limitFitted?(s.limit?chip('spider home (switch pressed)','ok'):s.home?chip('spider home (seated on the finger)','ok'):chip('switch open, spider not home','wa')):chip('limit switch off in settings'+(s.limit?', reads pressed':', reads open'),'wa');
  h+=s.sensor?chip('radar: someone there','wa'):chip('radar: clear','ok');
  if(s.driverOn)h+=chip('motor powered','wa');
  if(s.fault)h+=chip(s.fault+(s.faultRun>1?' ('+s.faultRun+' in a row)':''),'no');
@@ -215,7 +220,8 @@ static void sendStatus() {
   j += ",\"rewindSteps\":" + String(m.rewindSteps);
   j += ",\"lastRewind\":" + String(m.lastRewindSteps);
   j += ",\"lastRewindLimit\":" + String(m.lastRewindByLimit);
-  j += ",\"measuredLine\":" + String(m.measuredLineMm);
+  j += ",\"measuredDrop\":" + String(m.measuredDropMm);
+  j += ",\"home\":" + String(m.home);
   j += ",\"drops\":" + String(m.drops);
   j += ",\"trigger\":\"" + String(triggerName(m.lastTrigger)) + "\"";
   j += ",\"triggerAgo\":" + String(m.lastTriggerAgoMs);

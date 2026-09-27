@@ -16,3 +16,6 @@ Every bench and install result, in order. One row per attempt, failures included
 | 2026-09-25 | board swap to 30-pin DevKit V1 (V12) | PASS | - | esptool: ESP32-D0WD-V3 rev 3.0, 4 MB flash, MAC 3c:e9:0e:88:82:b8. Enters flash mode by itself: plain `pio run -t upload` and `scripts/update_firmware.bat usb` both flashed it, hash verified. Pin names checked against Joe's photo |
 | 2026-09-25 | 3, 3a | PASS | DHCP | `status` over USB: ready. Joined MAINFRAME007 at 192.168.1.138; dropspider.local answers |
 | 2026-09-25 | V11 on the 30-pin board | PASS | - | `scripts/update_firmware.bat wifi`: first try, "Result: OK" in 30 s; back on the network at 192.168.1.138, uptime reset, state ready |
+| 2026-09-27 | build, Rev C.1 firmware (task 1) | PASS | - | `pio run` SUCCESS, 45.9% flash, 17.1% RAM, no warnings in project code. Motor-led drop, unload on release (M2), seat move on lock, V14 home memory, new settings dropmm, droprpm, dropacc, dropdec, relms |
+| 2026-09-27 | network update, Rev C.1 | NOT DONE | - | Board not reachable: `dropspider.local` did not resolve, 192.168.1.138 did not answer, no COM13 on the PC. Board off or unplugged |
+| 2026-09-27 | T1 to T8 | NOT RUN | - | waiting on the Rev C.1 flash |

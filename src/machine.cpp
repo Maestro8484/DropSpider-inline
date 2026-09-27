@@ -15,7 +15,8 @@ static Servo pawl;
 
 enum St {
   ST_BOOT, ST_IDLE, ST_LOCKOUT, ST_WAIT_CLEAR, ST_FAULT,          // at rest
-  ST_RELEASE, ST_SETTLE, ST_REWIND, ST_LOCK_IN, ST_LOCK_SEAT,     // cycle or bench
+  ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND,                      // cycle
+  ST_LOCK_IN, ST_LOCK_SEAT, ST_LOCK_HOLD,                         // cycle or bench
   ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO                            // bench only
 };
 
@@ -37,7 +38,19 @@ static bool ignoreLimit = false;        // this rewind runs on the step count al
 
 static long lastRewind = 0;
 static bool lastRewindLimit = false;
-static int  measuredLine = 0;
+static int  measuredDrop = 0;
+
+// Rev C.1 drop
+static long unloadRan = 0;              // what the unload move actually ran (the switch may cut it)
+static long lastDropSteps = 0;          // what the last powered drop was told to run
+static bool decelApplied = false;       // the drop has switched to its stopping rate
+static int32_t dropDecNow = 0;          // stopping rate for the drop in progress
+static uint32_t dropStartMs = 0;
+
+// V14: after a rewind stopped by the switch and a seat move, the spider sits on the
+// finger with the switch reading open. homeFlag remembers that (also kept in flash).
+static bool upByLimit = false;          // last motion was a rewind that the switch stopped
+static bool homeFlag = false;
 
 static TriggerSource lastTrigger = TRIG_NONE;
 static uint32_t lastTriggerMs = 0;
@@ -67,11 +80,13 @@ static const char *stateName(St s) {
     case ST_LOCKOUT:     return "lockout after a scare";
     case ST_WAIT_CLEAR:  return "waiting for the doorway to clear";
     case ST_FAULT:       return "stopped, needs a look";
-    case ST_RELEASE:     return "finger out, spider dropping";
+    case ST_RELEASE:     return "finger out, spool unloading";
+    case ST_DROP:        return "spider dropping (motor leading)";
     case ST_SETTLE:      return "spider hanging";
     case ST_REWIND:      return "rewinding";
     case ST_LOCK_IN:     return "finger going in";
     case ST_LOCK_SEAT:   return "spool settling onto the finger";
+    case ST_LOCK_HOLD:   return "finger holding, motor off";
     case ST_JOG:         return "jogging the motor";
     case ST_BENCH_REL:   return "finger out (bench)";
     case ST_BENCH_SERVO: return "moving the finger (bench)";
@@ -96,6 +111,8 @@ long rewindSteps() {
   return (long)(turns * STEPS_PER_TURN);
 }
 
+static float mmPerStep() { return PI * BARREL_DIA_MM / STEPS_PER_TURN; }
+
 static void driverOn()  { digitalWrite(PIN_EN, LOW); driverIsOn = true; delay(5); }
 static void driverOff() { digitalWrite(PIN_EN, HIGH); driverIsOn = false; }
 
@@ -109,13 +126,21 @@ static void servoOff() { if (pawl.attached()) pawl.detach(); }
 
 static bool limitHome() { return S.limitFitted && limStable; }
 
-// Start a move of n microsteps, + = rewind direction. Driver must already be on.
-static bool startMove(long n) {
+static void setHome(bool h) { homeFlag = h; homeSave(h); }
+static void homeLost() { upByLimit = false; setHome(false); }
+
+static void applyDir() {
   if (appliedDir != S.rewindDir) {
     stepper->setDirectionPin(PIN_DIR, S.rewindDir == 1);
     appliedDir = S.rewindDir;
   }
-  uint32_t hz = (uint32_t)S.rpm * STEPS_PER_TURN / 60;
+}
+
+// Start a move of n microsteps at rpm, + = rewind direction. Driver must already
+// be on. Reaches full speed within RAMP_STEPS.
+static bool startMove(long n, int rpm) {
+  applyDir();
+  uint32_t hz = (uint32_t)rpm * STEPS_PER_TURN / 60;
   stepper->setSpeedInHz(hz);
   stepper->setAcceleration((int32_t)((uint64_t)hz * hz / (2 * RAMP_STEPS)));
   movingUp = n > 0;
@@ -166,6 +191,56 @@ static bool buttonEdge() {
 
 // ---------------------------------------------------------------- sequences
 
+// M2: the finger cannot swing out while the spider's weight presses a tooth onto
+// it. The motor winds the spool up about 1/12 turn at the same moment, so the
+// finger rides up the tooth's ramp and out. The driver stays on from here to the
+// end of the lock: an unpowered motor drags too much for a clean drop.
+static void startRelease() {
+  homeLost();
+  driverOn();
+  ignoreLimit = false;                        // the limit cut-off still guards the unload
+  servoWrite(S.servoRel);
+  if (!startMove(UNLOAD_STEPS, UNLOAD_RPM)) logf("[release] unload move would not start");
+}
+
+// Called once the unload has finished: how far it really went.
+static void noteUnload() {
+  unloadRan = stepper->getCurrentPosition() - moveStartPos;
+  if (cutByLimit)
+    logf("[release] unload cut short by the limit switch after %ld of %d steps", unloadRan, UNLOAD_STEPS);
+}
+
+// The drop in microsteps: the set drop plus whatever the unload wound up, never
+// closer than DROP_KNOT_MARGIN_MM to the barrel knot.
+static long dropSteps() {
+  int mm = S.dropMm;
+  if (mm > dropMmMax()) mm = dropMmMax();
+  if (mm < 0) mm = 0;
+  return (long)(mm / mmPerStep()) + unloadRan;
+}
+
+// Motor-led drop: the motor unwinds ahead of the spool, the spool falls behind it
+// on the clutch and can never pass it, so the motor sets the top speed and the
+// stopping point. FastAccelStepper 0.33.14 has one acceleration per move, so the
+// drop starts at dropAcc and step() switches to dropDec when the stop has to begin.
+static void startDrop() {
+  if (S.dropMm > dropMmMax())
+    logf("[drop] dropmm %d reaches too near the knot for line %d mm: using %d", S.dropMm, S.lineMm, dropMmMax());
+  long n = dropSteps();
+  applyDir();
+  stepper->setSpeedInHz((uint32_t)S.dropRpm * STEPS_PER_TURN / 60);
+  stepper->setAcceleration(S.dropAcc);
+  dropDecNow = S.dropDec;
+  decelApplied = dropDecNow >= S.dropAcc;     // a stop as quick as the start needs no switch
+  movingUp = false;
+  cutByLimit = false;
+  moveStartPos = stepper->getCurrentPosition();
+  lastDropSteps = n;
+  dropStartMs = millis();
+  if (stepper->move(-n) != MOVE_OK) logf("[drop] motor would not start");
+  enter(ST_DROP);
+}
+
 static void startCycle(TriggerSource src) {
   cycle = true;
   lastTrigger = src;
@@ -174,13 +249,13 @@ static void startCycle(TriggerSource src) {
   drops++;
   if (faultRun == 0) fault = "";
   logf("[cycle] trigger: %s", triggerName(src));
-  driverOff();
-  servoWrite(S.servoRel);                     // spider free-falls here
+  startRelease();
   enter(ST_RELEASE);
 }
 
 static void startRewind() {
   driverOn();
+  homeLost();
   ignoreLimit = false;
   if (limitHome()) {
     if (cycle) {
@@ -193,11 +268,16 @@ static void startRewind() {
       moveStartPos = stepper->getCurrentPosition();
       movingUp = false; cutByLimit = false;
       lastRewind = 0; lastRewindLimit = true;
+      upByLimit = true;
       enter(ST_REWIND);                       // finishes on the next tick
       return;
     }
   }
-  startMove(rewindSteps());
+  // After a powered drop the spool is down only as far as the drop went, so wind
+  // that plus the usual overshoot. The switch or the bead stop ends it first.
+  long n = rewindSteps();
+  if (cycle && lastDropSteps > 0) n = min(n, lastDropSteps + (long)(OVERSHOOT_TURNS * STEPS_PER_TURN));
+  startMove(n, S.rpm);
   enter(ST_REWIND);
 }
 
@@ -208,25 +288,35 @@ static void finishRewind() {
     lastRewind = ran;
     lastRewindLimit = cutByLimit;
   }
+  if (cutByLimit) upByLimit = true;
+  // What the rewind should run after a cycle: the drop, less the unload that went
+  // up first. The seat move before the drop can add up to one unload more.
+  long expected = lastDropSteps - unloadRan;
   if (S.limitFitted && !alreadyHome) {
     if (cutByLimit) {
-      if (cycle && ran < (long)(REWIND_MIN_FRAC * rewindSteps())) {
+      if (cycle && ran < (long)(REWIND_MIN_FRAC * expected)) {
         strike("limit switch tripped far too early: check for a snag or a broken line");
-      } else {
-        if (cycle) measuredLine = (int)(ran / (float)STEPS_PER_TURN * PI * BARREL_DIA_MM + SPOOL_TO_EYELET_MM);
-        if (cycle) { faultRun = 0; fault = ""; }
+      } else if (cycle) {
+        measuredDrop = (int)(ran * mmPerStep());
+        long extra = ran - expected - UNLOAD_STEPS;
+        if (extra * mmPerStep() > LOST_STEPS_WARN_MM)
+          logf("[drop] lost steps? rewind ran %d mm more than the drop: the spool got ahead of the motor on the stop",
+               (int)(extra * mmPerStep()));
+        faultRun = 0; fault = "";
       }
     } else if (cycle && !ignoreLimit) {
       strike("full rewind ran without the limit switch tripping");
     }
   }
-  logf("[rewind] ran %ld steps (%.2f turns)%s", ran, ran / (float)STEPS_PER_TURN,
+  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s", ran, ran / (float)STEPS_PER_TURN, (int)(ran * mmPerStep()),
        cutByLimit ? ", stopped by the limit switch" : "");
 }
 
+// Finger in while the motor holds, then the motor lets the spool down onto a
+// tooth (the seat move). Once a tooth lands the clutch slips and the motor runs
+// on alone. Driver off after that, servo off after LOCK_SEAT_MS.
 static void startLock() {
-  // finger in while the motor still holds, then let the spool back onto a tooth
-  // while the servo keeps pushing
+  driverOn();                                 // already on after a rewind; holds the spool
   servoWrite(S.servoLock);
   enter(ST_LOCK_IN);
 }
@@ -275,6 +365,7 @@ static void handleReq(const Req &r) {
   if (r.a == ACT_STOP || r.a == ACT_OFF) {
     haltMotor();
     bool wasCycle = cycle;
+    if (isBusy()) homeLost();                 // stopped part way: nobody knows where the spider is
     cycle = false;
     if (r.a == ACT_OFF) { driverOff(); servoOff(); }
     disarmForBench();
@@ -297,7 +388,7 @@ static void handleReq(const Req &r) {
       break;
     case ACT_REL:
       disarmForBench(); cycle = false;
-      driverOff(); servoWrite(S.servoRel); enter(ST_BENCH_REL);
+      startRelease(); enter(ST_BENCH_REL);
       break;
     case ACT_LOCK:
       disarmForBench(); cycle = false;
@@ -310,12 +401,14 @@ static void handleReq(const Req &r) {
     case ACT_JOG:
       disarmForBench(); cycle = false;
       driverOn();
+      homeLost();
       ignoreLimit = false;
-      if (!startMove(r.arg)) { logf("refused: motor would not start"); return; }
+      if (!startMove(r.arg, S.rpm)) { logf("refused: motor would not start"); return; }
       enter(ST_JOG);
       break;
     case ACT_SERVO:
       disarmForBench(); cycle = false;
+      homeLost();                             // the finger may have let the spool go
       servoWrite(r.arg); enter(ST_BENCH_SERVO);
       break;
     default: break;
@@ -334,6 +427,19 @@ static void step() {
     cutByLimit = true;
   }
 
+  // Drop: switch to the gentler stopping rate just before the stop must begin.
+  // Speed and position are the ramp generator's, which runs a few ms ahead of the
+  // motor, so the margin only has to cover this task's own tick.
+  if (state == ST_DROP && !decelApplied && stepper->isRunning()) {
+    float v = labs(stepper->getCurrentSpeedInMilliHz(false)) / 1000.0f;
+    long left = labs(stepper->targetPos() - stepper->getPositionAfterCommandsCompleted());
+    if (left <= v * v / (2.0f * dropDecNow) + v * DECEL_MARGIN_S + DECEL_MARGIN_STEPS) {
+      stepper->setAcceleration(dropDecNow);
+      stepper->applySpeedAcceleration();
+      decelApplied = true;
+    }
+  }
+
   Req r;
   if (xQueueReceive(queue, &r, 0) == pdTRUE) handleReq(r);
 
@@ -343,9 +449,13 @@ static void step() {
   switch (state) {
     case ST_BOOT:
       if (inState() < 50) break;              // let the switch readings settle
-      if (S.limitFitted && !limitHome()) {
+      // V14: after a lock seat the switch reads open by design. Home is the switch
+      // pressed, or the last lock having followed a rewind the switch stopped.
+      if (S.limitFitted && !limitHome() && !homeFlag) {
         fault = "spider not home at power-up. Boot never rewinds on its own: use rewind, then lock.";
         logf("[boot] %s", fault);
+      } else if (S.limitFitted && !limitHome()) {
+        logf("[boot] switch open, spider home from the last lock (seated below the switch)");
       }
       enter(ST_WAIT_CLEAR);
       lowSince = now;
@@ -374,8 +484,19 @@ static void step() {
       break;
 
     case ST_RELEASE:
-      if (inState() >= SERVO_MOVE_MS) enter(ST_SETTLE);
+      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      noteUnload();
+      startDrop();
       break;
+
+    case ST_DROP: {
+      if (stepper->isRunning()) break;
+      long ran = moveStartPos - stepper->getCurrentPosition();
+      logf("[drop] ran %ld steps (%d mm) in %lu ms at up to %d rpm; motor holding",
+           ran, (int)(ran * mmPerStep()), (unsigned long)(millis() - dropStartMs), S.dropRpm);
+      enter(ST_SETTLE);
+      break;
+    }
 
     case ST_SETTLE:
       if (inState() >= (uint32_t)S.settleMs) startRewind();
@@ -389,12 +510,24 @@ static void step() {
       break;
 
     case ST_LOCK_IN:
-      if (inState() >= SERVO_MOVE_MS) { driverOff(); enter(ST_LOCK_SEAT); }
+      if (inState() < SERVO_MOVE_MS) break;
+      ignoreLimit = false;
+      if (!startMove(-SEAT_STEPS, SEAT_RPM)) logf("[lock] seat move would not start");
+      enter(ST_LOCK_SEAT);
       break;
 
     case ST_LOCK_SEAT:
+      if (stepper->isRunning()) break;
+      driverOff();
+      enter(ST_LOCK_HOLD);
+      break;
+
+    case ST_LOCK_HOLD:
       if (inState() < LOCK_SEAT_MS) break;
       servoOff();
+      setHome(upByLimit);
+      logf("[lock] seated. Limit switch %s%s", !S.limitFitted ? "not fitted" : limitHome() ? "pressed" : "open",
+           upByLimit ? "; spider home" : "; home not known (last rewind was not stopped by the switch)");
       if (cycle) {
         cycle = false;
         if (faultRun >= FAULT_STRIKES) {
@@ -407,7 +540,7 @@ static void step() {
           enter(ST_LOCKOUT);
         }
       } else {
-        benchDone("lock: finger in, motor off");
+        benchDone("lock: finger in, seated, motor off");
       }
       break;
 
@@ -419,7 +552,10 @@ static void step() {
       break;
 
     case ST_BENCH_REL:
-      if (inState() >= SERVO_MOVE_MS) { servoOff(); benchDone("rel: finger out"); }
+      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      noteUnload();
+      servoOff();
+      benchDone("rel: finger out, motor on and holding the spider (jog to lower it, off lets it slide down)");
       break;
 
     case ST_BENCH_SERVO:
@@ -460,6 +596,7 @@ void machineBegin() {
   pawl.setPeriodHertz(50);
 
   drops = dropCount();
+  homeFlag = homeSaved();
   limLast = limStable = [] { bool l = digitalRead(PIN_LIMIT) == LOW; return S.limitInverted ? !l : l; }();
   btnLast = btnStable = btnWas = digitalRead(PIN_BUTTON) == HIGH;
   limAt = btnAt = millis();
@@ -490,6 +627,7 @@ MachineStatus machineStatus() {
   m.sensor = sensorNow;
   m.limitRaw = limStable;
   m.limitFitted = S.limitFitted;
+  m.home = limitHome() || homeFlag;
   m.driverOn = driverIsOn;
   m.servoAttached = pawl.attached();
   m.servoDeg = servoDeg;
@@ -498,7 +636,7 @@ MachineStatus machineStatus() {
   m.rewindSteps = rewindSteps();
   m.lastRewindSteps = lastRewind;
   m.lastRewindByLimit = lastRewindLimit;
-  m.measuredLineMm = measuredLine;
+  m.measuredDropMm = measuredDrop;
   m.drops = drops;
   m.lastTrigger = lastTrigger;
   m.lastTriggerAgoMs = lastTriggerMs ? millis() - lastTriggerMs : 0;

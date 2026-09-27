@@ -31,6 +31,21 @@
 #define OVERSHOOT_TURNS     0.75f  // extra rewind so the bead always reaches the eyelet
 #define RAMP_STEPS          600    // steps to reach full rewind speed from standstill
 
+// ---------- Rev C.1 motor-led drop ----------
+// + = rewind (CCW), - = unwind (CW), as everywhere in the firmware.
+#define UNLOAD_STEPS        (STEPS_PER_TURN / 12)          // wind up 1/12 turn while the finger swings out (M2)
+#define UNLOAD_RPM          120
+#define SEAT_STEPS          (STEPS_PER_TURN * 12 / 120)    // 1/12 turn x 1.2: lets the spool down onto a tooth
+#define SEAT_RPM            30
+#define DROP_KNOT_MARGIN_MM 30     // a drop never comes closer than this to the barrel knot
+// The drop's gentler stop is switched in this far ahead of the exact point, so a
+// late look by the machine task can never make the motor overshoot and reverse.
+#define DECEL_MARGIN_S      0.010f
+#define DECEL_MARGIN_STEPS  50
+// Rewind ran this much more than the drop: the spool got ahead of the motor
+// (lost steps on the stop) and the line's stretch caught the spider.
+#define LOST_STEPS_WARN_MM  20
+
 // ---------- timing ----------
 #define SERVO_MOVE_MS       350    // time for the finger to travel
 #define LOCK_SEAT_MS        700    // servo keeps pushing while the spool settles onto a tooth
@@ -70,7 +85,7 @@
 // ---------- DEFAULTS (runtime tunable, saved in flash) ----------
 #define DEF_SERVO_LOCK      90     // finger level, in the teeth, resting on the ledge
 #define DEF_SERVO_REL       30     // finger swung toward the floor, clear of the teeth
-#define DEF_LINE_MM         720    // barrel knot to stop bead, elastic included. Measure yours.
+#define DEF_LINE_MM         720    // barrel knot to stop bead, line straight not pulled. Measure yours.
 #define DEF_RPM             240    // rewind speed
 #define DEF_REWIND_DIR      1      // flip (0/1) if rewind turns the wrong way
 #define DEF_SETTLE_MS       1500   // hang time at the bottom before rewind
@@ -78,3 +93,8 @@
 #define DEF_ARMED           1
 #define DEF_LIMIT_FITTED    0      // turn on once the limit switch is wired and reads right
 #define DEF_LIMIT_INVERTED  0      // flip if the switch reads backwards
+#define DEF_DROP_MM         (DEF_LINE_MM - 40 - 60)  // how far the spider travels
+#define DEF_DROP_RPM        500    // top speed of the drop. 1 m/s is about 610 rpm
+#define DEF_DROP_ACC        120000 // microsteps/s^2 at the start of the drop. 100000 is about 1 g
+#define DEF_DROP_DEC        60000  // microsteps/s^2 for the stop, about 0.6 g. Keep low: motor torque
+#define DEF_RELEASE_MS      250    // finger travel time before the drop starts

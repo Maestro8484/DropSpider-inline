@@ -31,6 +31,11 @@ static const Row ROWS[] = {
   { "armed",   "armed",  &S.armed,         0,    1,      DEF_ARMED },
   { "limit",   "limFit", &S.limitFitted,   0,    1,      DEF_LIMIT_FITTED },
   { "liminv",  "limInv", &S.limitInverted, 0,    1,      DEF_LIMIT_INVERTED },
+  { "dropmm",  "dropMm", &S.dropMm,        100,  2930,   DEF_DROP_MM },      // also <= dropMmMax()
+  { "droprpm", "dropRpm",&S.dropRpm,       100,  900,    DEF_DROP_RPM },
+  { "dropacc", "dropAcc",&S.dropAcc,       20000, 400000, DEF_DROP_ACC },
+  { "dropdec", "dropDec",&S.dropDec,       10000, 200000, DEF_DROP_DEC },
+  { "relms",   "relMs",  &S.releaseMs,     100,  600,    DEF_RELEASE_MS },
 };
 static const size_t N = sizeof(ROWS) / sizeof(ROWS[0]);
 
@@ -79,6 +84,16 @@ bool settingsSet(const String &name, const String &value, String &why) {
       why = String("allowed ") + ROWS[i].lo + " to " + ROWS[i].hi;
       return false;
     }
+    // The drop and the line limit each other: the spider must stop short of the knot.
+    if (name == "dropmm" && v > dropMmMax()) {
+      why = String("allowed 100 to ") + dropMmMax() + " with line " + S.lineMm + " mm";
+      return false;
+    }
+    if (name == "line" && S.dropMm > v - SPOOL_TO_EYELET_MM - DROP_KNOT_MARGIN_MM) {
+      why = String("dropmm ") + S.dropMm + " would reach the knot: set dropmm to " +
+            (long)(v - SPOOL_TO_EYELET_MM - DROP_KNOT_MARGIN_MM) + " or less first";
+      return false;
+    }
     *ROWS[i].ptr = (int)v;
     return true;
   }
@@ -101,6 +116,14 @@ void wifiSave(const String &ssid, const String &pass) {
   Guard g;
   prefs.putString("ssid", ssid);
   prefs.putString("pass", pass);
+}
+
+int dropMmMax() { return S.lineMm - (int)SPOOL_TO_EYELET_MM - DROP_KNOT_MARGIN_MM; }
+
+bool homeSaved() { Guard g; return prefs.getBool("home", false); }
+void homeSave(bool home) {
+  Guard g;
+  if (prefs.getBool("home", false) != home) prefs.putBool("home", home);
 }
 
 uint32_t dropCount()     { Guard g; return prefs.getULong("drops", 0); }
