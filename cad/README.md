@@ -28,7 +28,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: fork glued under the servo end, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
-| `wall_hinge.py` | Wall install draft (doc 06 alternative, the owner's plan): hinge plate for the beam, two clips for the pad, cords. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, pin alignment, swing, cord pull |
+| `wall_hinge.py` | Wall install draft (doc 06 alternative, the owner's plan): hinge plate frame for the beam, two clips for the pad, a tie bar across the device's far end, two struts. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, six pins, screwdriver paths, swing, strut load and buckling |
 | `wall_mount.py` | Fallback wall install: one braced shelf (212 cm3) that keeps the device at the ceiling with no cords, plus `ld2450_fork_screw` for putting the radar under the beam. Not in the print list; `python wall_mount.py` for its report |
 | `render.py` | All 3D pictures. One function per picture |
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/ |
@@ -56,7 +56,7 @@ Units: millimeters.
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
 | Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
-| Wall hinge: plate, clips, pins and cords clear every part; pins line up; the device swings 0 to 90 degrees clear of the plate | `python wall_hinge.py` | `clear every device part`, `pin holes line up ... True`, four `clear of the plate` lines |
+| Wall hinge: plate, clips, tie bar and struts clear every part and each other; six pins line up; four screwdriver paths clear; swing clear to 65 degrees | `python wall_hinge.py` | `clear every device part and each other`, `all 6 pins ... True`, four `clear` screw lines, `swing: clear ... down to 65 degrees` |
 
 ## Changing a part: the routine
 

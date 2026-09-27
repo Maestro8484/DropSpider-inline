@@ -37,25 +37,31 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 ![Wall install](img/wall_install.png)
 
-The owner's plan (2026-09-27): keep the printed bracket, hinge its pad end to a plate on the beam, hold the far end up with two cords. Three small flat prints, two M3 bolts, cord you have. Designed and CAD-checked the same day, **not yet printed or hung** (open item V18). Source `cad/wall_hinge.py`; run it for the report.
+The owner's plan (2026-09-27): keep the printed bracket, hinge its pad end to a plate on the beam, a bar at 45 degrees between the far ends of the two plates at each side. Five small flat prints, M3 pins, wood screws. Designed and CAD-checked the same day, **not yet printed or hung** (open item V18). Source `cad/wall_hinge.py`; run it for the report.
 
-**Parts.** `hinge_plate.stl` (one, 88 x 46 mm, 18 cm3): a strip screwed to the beam's inside face, two forks along its bottom edge, two eyes along its top edge. `hinge_clip.stl` (two, 2 cm3 each): each bolts on top of the pad through the x -80 and x -56 holes at one hole row (2x M3 with nuts under the pad; the controller board then sits on foam tape, not zip ties) and carries a knuckle past the pad's edge. Hinge pin: an M3 x 25 bolt through fork, knuckle, fork, with a nut; tighten it once the cords are on and the hinge is locked. Cords: thin cord (2 mm micro cord passes the 3.4 mm holes) or light chain from the base's two mount holes at the servo end (x 65, z 20 and z 90; or round an M3 bolt dropped in each) up to the plate's eyes.
+**Parts (69 cm3 of PLA in all).**
 
-**Why the device hangs 45 mm below the ceiling.** A cord can only pull, so its anchor must be above the hinge, and nothing can be above the ceiling. The plate is 45 tall, the hinge at its bottom, the eyes at its top. The cords rise 40 mm over 159 (14 degrees). `PLATE_H` in `cad/wall_hinge.py` sets it: lower means the spider hides better and the cords pull harder.
+| Part | Print | What it is |
+|---|---|---|
+| `hinge_plate.stl` | 1, 29 cm3 | A frame screwed to the beam's inside face: a top rail carrying the two hinge forks, two legs hanging down the beam with a fork at the bottom of each for the bars. One #4 x 1 in screw at each leg corner |
+| `hinge_clip.stl` | 2, 2 cm3 each | Each bolts on top of the pad through the x -80 and x -56 holes of one row (2x M3, nuts under the pad; the controller board then sits on foam tape) and carries a knuckle past the pad's edge. Hinge pin: M3 x 25 through fork, knuckle, fork, with a nut |
+| `tie_bar.stl` | 1, 12 cm3 | The second plate: a strip on top of the device's far edge, 2x M3 through the base's x 65 holes (nut under the base; at z 20 the nut touches the servo tower's face by under 1 mm, so put the nut on top there and the head below, or file one flat). A lug hangs under each end, past the device |
+| `strut.stl` | 2, 12 cm3 each | The bar at 40 degrees with an eye at each end: M3 x 20 pin into the leg's bottom fork, M3 x 20 pin into the tie bar's lug. It sits outside the device, past the motor at one end and past the bearing plate at the other |
+
+**Why the bar is a printed bar and not chain.** The hinge is at the top and the plate hangs down the beam, so the device's weight tries to fold the hinge shut and the bar between the plates' far ends is pushed, not pulled. Chain or cord goes slack under a push. The bar takes 4 N standing and 20 N if the line snaps, across both; one 7 x 8 mm PLA bar buckles at about 160 N.
 
 | Point | Wall install (draft) |
 |---|---|
 | Line (the fairlead) | 77 mm from the beam's face (ceiling install: 305 mm) |
-| Device top | 45 mm below the ceiling |
-| Spider retracted, bottom | spider height + 160 mm below the ceiling. Beam edge at 254: a spider up to about 90 mm tall stays hidden |
-| Cord pull | 12 N standing across both cords, 63 N if the line snaps (2 mm micro cord holds about 400 N, paracord over 2000) |
-| Line length | the ceiling-install formula with (ceiling - 45) for the ceiling height |
+| Device top | 8 mm below the ceiling (the hinge knuckle needs the room) |
+| Spider retracted, bottom | spider height + 123 mm below the ceiling; hidden behind a 254 mm beam up to a 130 mm spider |
+| Line length | the ceiling-install formula with (ceiling - 8) for the ceiling height |
 
 **Radar.** On the device it looks toward the door, away from people walking in. Either accept a late trigger for the first walk test, or screw `ld2450_fork_screw.stl` (the fork with a 44 mm plate and two #4 holes, `cad/wall_mount.py`) up into the beam's underside and put the cradle on it looking out and down; the lead then runs up the beam's face (about 350 mm, BOM N10).
 
-**Order.** Bench: bolt the two clips to the pad. Ladder: screw the plate to the beam with 4x #4 x 1 in (2 mm pilots; holes at 45 and 67 mm along, two rows), top edge against the ceiling, forks down. Lift the device, drop each knuckle between its fork, push the two M3 x 25 pins through and nut them loosely. Swing the far end up level, tie the cords to the eyes, then tighten the pins. Nothing is glued.
+**Order.** Bench: clips on the pad, tie bar on the base. Ladder: plate to the beam with 4x #4 x 1 in (2 mm pilots), top rail against the ceiling, legs down; every screw has a straight screwdriver path along the rod direction, checked in the model. Hold the device hanging at about 45 degrees, drop its knuckles into the forks, push the two hinge pins through and nut them. Swing the far end up level, pin each strut top and bottom, tighten the hinge pins. Nothing is glued.
 
-**Checked in the model.** Plate, clips, pins and cords clear every part; the pin holes line up through both forks and the knuckle; the device swings from hanging straight down to level without touching the plate; both prints have under 100 mm2 of unsupported overhang. A one-piece braced shelf that needs no cords and keeps the device at the ceiling is in `cad/wall_mount.py` (212 cm3 print) if this draft flexes or sags.
+**Checked in the model.** All five parts watertight; plate, clips, tie bar and struts clear every device part and each other; all six pins pass through their holes; the device swings on the hinge clear of the plate from level down to 65 degrees (hang it at less than that); every print has under 200 mm2 of unsupported overhang. A one-piece braced shelf is in `cad/wall_mount.py` (212 cm3) if this draft flexes.
 
 ## Sensor
 

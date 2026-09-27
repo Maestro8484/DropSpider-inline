@@ -201,6 +201,8 @@ PARTS = {
     "ld2450_cradle": ld2450_cradle_print,
     "hinge_plate": lambda: __import__("wall_hinge").hinge_plate_print(),               # wall install only (docs/06): one
     "hinge_clip": lambda: __import__("wall_hinge").hinge_clip_print(),                 # wall install only: print two
+    "tie_bar": lambda: __import__("wall_hinge").tie_bar_print(),                       # wall install only
+    "strut": lambda: __import__("wall_hinge").strut_print(),                           # wall install only: print two
     "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # wall install only: radar fork with screw holes for the beam's underside
 }
 

@@ -75,9 +75,9 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ## G. Wall install only (device on the beam's face, doc 06)
 
-23. Print `hinge_plate.stl` (one) and `hinge_clip.stl` (two); settings in doc 01.
-24. Bolt each clip on top of the pad, knuckle past the pad's edge, 2x M3 with nuts under the pad (the x -80 and x -56 holes of one row). The board goes on foam tape.
-25. On the ladder, per doc 06: plate to the beam, knuckles into the forks, M3 x 25 pins, cords to the eyes, pins tightened. Then `07_commissioning.md` as usual.
+23. Print `hinge_plate.stl` (one), `hinge_clip.stl` (two), `tie_bar.stl` (one), `strut.stl` (two); settings in doc 01.
+24. Bolt each clip on top of the pad, knuckle past the pad's edge, 2x M3 with nuts under the pad (the x -80 and x -56 holes of one row). The board goes on foam tape. Bolt the tie bar on top of the base through the x 65 holes, lugs hanging down past the device's ends.
+25. On the ladder, per doc 06: plate to the beam, knuckles into the forks, hinge pins, swing up level, strut pins top and bottom, hinge pins tightened. Then `07_commissioning.md` as usual.
 
 ## Base layout reference
 

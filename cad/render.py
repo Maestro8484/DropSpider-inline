@@ -13,7 +13,7 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
        "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
        "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
-       "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "cord": "#111827"}
+       "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
@@ -24,7 +24,8 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
          "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw",
          "hinge_plate": "hinge_plate.stl (4x #4 screws into the beam)", "hinge_clip": "hinge_clip.stl x2 (2x M3 each, on the pad)",
-         "pin": "hinge pin: M3 x 25 bolt + nut, x2", "cord": "thin cord or light chain, x2"}
+         "pin": "pins: 2x M3 x 25 (hinge), 4x M3 x 20 (struts), nuts", "tie_bar": "tie_bar.stl (2x M3 through the base's x 65 holes)",
+         "strut": "strut.stl x2 (the 45 degree bar, pushed)"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
@@ -173,13 +174,13 @@ def wall_png():
     import wall_hinge as WH
     A = WH.assembly_hinge(); P = WH.porch()
     items = [(rview(P["ceiling"]), COL["ceiling"]), (rview(P["beam"]), COL["beam"])]
-    key = lambda k: k if k in COL else k.rsplit("_", 1)[0]          # hinge_clip_0, pin_1, cord_28 share their family's color
+    key = lambda k: k if k in COL else ("pin" if k.startswith("pin") else k.rsplit("_", 1)[0])   # hinge_clip_0, strut_1, pin_h0 share their family's color
     items += [(rview(m), COL[key(k)]) for k, m in A.items()]
     img, proj = raster.render(items, elev=-18, azim=-42, W=1300, H=1000)
     labels = [lbl(proj, (WH.LINE_X, 45, -125), 10, 20, f"line falls {WH.LINE_X - WH.X_OUT:.0f} mm from the beam's face"),
-              lbl(proj, (WH.X_IN, 55, WH.PLATE_H), 30, -10, f"hinge at the bottom, eyes at the top: device {WH.PLATE_H:.0f} mm below the ceiling")]
-    save(img, "wall_install.png", "Wall install (draft): hinge plate on the beam's inside face, clips on the pad, two cords hold the far end (view from below, inside the porch)",
-         labels, keys=["hinge_plate", "hinge_clip", "pin", "cord", "bracket", "beam", "ceiling"])
+              lbl(proj, (WH.X_IN, WH.STRUT_Z[0], -WH.STRUT_LOW_Y), -60, 30, "hinge at the top, a pushed bar at 40 degrees at each end")]
+    save(img, "wall_install.png", "Wall install (draft, the owner's plan): plate hinged to the pad end, tie bar across the far end, one strut per side (view from below, inside the porch)",
+         labels, keys=["hinge_plate", "hinge_clip", "tie_bar", "strut", "pin", "bracket", "beam", "ceiling"])
 
 def wall_exploded_png():
     """Wall mount lifted off the device, bolts below, nuts above, wood screws pulled out of the plate."""
