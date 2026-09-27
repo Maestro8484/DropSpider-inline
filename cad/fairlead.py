@@ -26,7 +26,10 @@ SW_BODY_TOP, SW_BODY_BOT = 95.3, 105.5   # KW12-3 body (lever side up toward the
 SW_HOLE_Y = SW_BODY_BOT - 2.9            # mounting hole line
 SW_Z0 = 71.0                  # body end nearest the roller
 SW_HOLES_Z = (SW_Z0 + 5.25, SW_Z0 + 5.25 + 9.5)
-SW_X0, SW_X1 = -28.2, -21.8   # body thickness 6.4, roller centered on x = -25
+SW_SLIDE = 2.5                # the slots let the switch move this far up or down (y)
+SW_X0, SW_X1 = -29.0, -22.6   # body thickness 6.4. Mounting face x = -29, flush with the hinge boss (was -28.2:
+                              # the plate stood 0.8 mm proud as a square the owner had to shim with washers, 2026-09-26)
+SW_XC = (SW_X0 + SW_X1) / 2   # roller centred on the body thickness, x -25.8, on the flap tail (flap x -27.9..-17)
 
 def xcyl(r, x0, x1, y, z, sections=48):
     c = cylinder(radius=r, height=x1 - x0, sections=sections)
@@ -51,6 +54,9 @@ def trumpet():
     v.apply_translation([LX, 0, LZ]); return v
 
 RIB_X1 = -21.5                # ribs reach this far from the back plate (bracket gussets start at x -20)
+BOT_Y = 108.0                 # bottom edge of the body: one straight line from z 39 to z 97 (was y 100 beside the switch plate)
+RIB2_Z0, RIB2_Z1 = 93.0, 97.0 # far rib, moved past the switch plate end (was z 88..92, where the switch body blocked it below y 86)
+RIB1B_Y0 = 88.5               # the spool-side rib resumes full depth here, under the flap's swing (knuckle corner reaches y 86.4)
 
 def yz_prism(zy, x0, x1):
     """Prism along x from a polygon given as (z, y) points. Prints as a vertical wall (print z = x)."""
@@ -60,30 +66,37 @@ def yz_prism(zy, x0, x1):
     g.apply_transform(np.array([[0, 0, 1, x0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]], float)); return g
 
 def fairlead_body():
-    """Reinforced 2026-09-26 (owner: the first print felt weak from the base up). The old 7 x 16 spine
-    is now a 4 mm back plate (x -36..-32) spanning z 54..92 the full height, with two 4 mm ribs
-    standing 10.5 mm proud of it (a C channel in section), a thicker and wider glue rail, and the
-    back plate carried on under the block on the line side. Every member starts on the x = -36
-    face, which is the print bed, so nothing needs support."""
-    rail  = bx(-36, -25, 3, 9, 20, 91)                     # glue footprint 11 x 71 (was 10 x 71), 6 thick (was 4)
-    web   = bx(-36, -32, 9, 100, 54, 92)                   # back plate, 4 mm, rail to below the switch plate top
-    lower = bx(-36, -32, 70, 100, 39, 54)                  # back plate continues under the block, line side
-    boss  = bx(-36, -29, 62, 100, 54, 70)                  # 7 mm hinge boss (M2 bolt threads 7 mm), block to switch plate
+    """Reinforced 2026-09-26 (owner: the first print felt weak from the base up): a 4 mm back plate
+    (x -36..-32) with two 4 mm ribs standing 10.5 mm proud of it (a C channel in section), a thicker
+    and wider glue rail, and the back plate carried on under the block on the line side.
+    Second print, same day, two more owner asks:
+      1. The switch plate stood 0.8 mm proud of the hinge boss (x -28.2 vs -29): a raised square he
+         had to shim with washers. Boss and plate are now ONE 7 mm slab, one flat face at x = -29
+         from the block (y 62) to the bottom edge, z 54..93. The switch sits 0.8 mm nearer the back.
+      2. The ribs stopped short of the bottom. The spool-side rib runs rail to block, is carried past
+         the flap's swing by the 7 mm slab, and resumes full depth under the flap to the bottom edge.
+         The far rib moved from z 88..92 (the switch body was in its way) to z 93..97, past the plate
+         end, and runs rail to bottom edge unbroken. The bottom edge is one line at y 108.
+    Every member starts on the x = -36 face, which is the print bed, so nothing needs support."""
+    rail  = bx(-36, -25, 3, 9, 20, 93)                     # glue footprint 11 x 73, 6 thick; ends at the pad's edge (z 93)
+    web   = bx(-36, -32, 9, BOT_Y, 54, RIB2_Z1)            # back plate, 4 mm, rail to the bottom edge
+    lower = bx(-36, -32, 70, BOT_Y, 39, 54)                # back plate under the block, line side; stays 4 mm (the 8 mm stop bead passes at x -29..-21)
+    slab  = bx(-36, SW_X0, 62, BOT_Y, 54, RIB2_Z0)         # hinge boss (M2 bolt threads 7 mm) + switch plate, one flat face at x = -29
     guss  = yz_prism([(54, 58), (54, 70), (39, 70)], -36, -31)   # 5 mm gusset over the block, line side
-    rib1  = bx(-36, RIB_X1, 8, 70, 54, 58)                 # rib, spool side of the plate, lands on the block top
-    rib2  = bx(-36, RIB_X1, 8, 86, 88, 92)                 # rib, far edge; ends above the switch's slot travel (body top 92.8 at most)
+    rib1  = bx(-36, RIB_X1, 8, 70, 54, 58)                 # rib, spool side of the plate, rail to the block top
+    rib1b = bx(-36, RIB_X1, RIB1B_Y0, BOT_Y, 54, 58)       # same rib under the flap, to the bottom edge
+    rib2  = bx(-36, RIB_X1, 8, BOT_Y, RIB2_Z0, RIB2_Z1)    # far rib, rail to the bottom edge; 2 mm past the switch body end (z 91)
     block = bx(-36, -19, 70, STOP_Y, 39, 62)               # fairlead + hard stop face (unchanged)
-    rest  = bx(-36, -26, STOP_Y, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail, 4.6 thick (was 2.6)
-    swpl  = bx(-36, -28.2, 86, 108, 64, 92)                # switch plate, switch on its +x face (unchanged)
-    b = U(rail, web, lower, boss, guss, rib1, rib2, block, rest, swpl)
+    rest  = bx(-36, -26, STOP_Y, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail, 4.6 thick
+    b = U(rail, web, lower, slab, guss, rib1, rib1b, rib2, block, rest)
     cuts = [vcyl(1.7, 10, 0, -32, 28), vcyl(1.7, 10, 0, -32, 83),        # alignment pin holes
             bx(-37, -31, 9, 20, 80.5, 85.5),                                # notch in the plate so the z 83 pin hole stays open
             trumpet(),
             xcyl(0.95, -37, -28, PY, HZ),                                   # 1.9: the M2 hinge bolt threads itself in
-            bx(-29.01, -16, HY - 3.6, HY + 3.6, HZ - 3.6, HZ + 3.6)]        # knuckle clearance
-    for z in SW_HOLES_Z:                                                    # 2.4 wide slots, +-2.5 mm in y
-        cuts += [xcyl(1.2, -37, -27, SW_HOLE_Y - 2.5, z), xcyl(1.2, -37, -27, SW_HOLE_Y + 2.5, z),
-                 bx(-37, -27, SW_HOLE_Y - 2.5, SW_HOLE_Y + 2.5, z - 1.2, z + 1.2)]
+            bx(SW_X0 + 0.01, -16, HY - 3.6, HY + 3.6, HZ - 3.6, HZ + 3.6)]  # knuckle clearance guard: nothing may stand proud of the slab face here
+    for z in SW_HOLES_Z:                                                    # 2.4 wide slots, +-2.5 mm in y; nuts on the x = -36 face
+        cuts += [xcyl(1.2, -37, -27, SW_HOLE_Y - SW_SLIDE, z), xcyl(1.2, -37, -27, SW_HOLE_Y + SW_SLIDE, z),
+                 bx(-37, -27, SW_HOLE_Y - SW_SLIDE, SW_HOLE_Y + SW_SLIDE, z - 1.2, z + 1.2)]
     return D(b, *cuts)
 
 def fairlead_flap():
@@ -97,7 +110,7 @@ def fairlead_flap():
 def switch_model():
     body = bx(SW_X0, SW_X1, SW_BODY_TOP, SW_BODY_BOT, SW_Z0, SW_Z0 + 20)
     pins = bx(SW_X0 + 2, SW_X1 - 2, SW_BODY_BOT, SW_BODY_BOT + 6.4, SW_Z0 + 2, SW_Z0 + 18)
-    roller = xcyl(2.4, LX - 1.5, LX + 1.5, HY + FT / 2 + 0.3 + 2.4, TAIL_Z)
+    roller = xcyl(2.4, SW_XC - 1.5, SW_XC + 1.5, HY + FT / 2 + 0.3 + 2.4, TAIL_Z)
     return U(body, pins, roller)
 
 def rotate_flap(m, deg):
@@ -121,6 +134,15 @@ if __name__ == "__main__":
     print(f"line path clear through the fairlead: {lb < 0.01} ({lb:.2f} mm3), through the flap slot: {lf < 0.01} ({lf:.2f} mm3)")
     print("body x flap at rest:", round(I(body, flap).volume, 2))
     print("switch x body:", round(I(body, sw).volume, 2), " switch x flap:", round(I(sw, flap).volume, 2))
+    fx0, fx1 = flap.bounds[0][0], flap.bounds[1][0]
+    print(f"roller x {SW_XC - 1.5:.1f}..{SW_XC + 1.5:.1f} lies on the flap tail x {fx0:.1f}..{fx1:.1f}: {fx0 < SW_XC - 1.5 and SW_XC + 1.5 < fx1}")
+    # Flatness: every +x-facing face under the switch, over its whole slide range, must lie on ONE plane.
+    # (The owner shimmed a 0.8 mm step with washers, 2026-09-26.) Clip the body to the footprint first so
+    # the face centres are inside it, then list the distinct x values of the faces that look toward +x.
+    y0, y1, z0, z1 = SW_BODY_TOP - SW_SLIDE, SW_BODY_BOT + SW_SLIDE, SW_Z0, SW_Z0 + 20
+    probe = I(bx(SW_X0 - 1, SW_X0 + 12, y0, y1, z0, z1), body)
+    xs = sorted(set(np.round(probe.triangles_center[probe.face_normals[:, 0] > 0.99, 0], 2).tolist()))
+    print(f"switch mounting face flat: {len(xs) == 1} (x of every +x face under the switch footprint y {y0}..{y1} z {z0}..{z1}: {xs})")
     ring = trimesh.creation.annulus(r_min=33.01, r_max=35, height=16); ring.apply_translation([0, 40, 43])
     print("spool 2 mm clearance vs body:", round(I(ring, body).volume, 2))
     p = G.fairlead_body_print()               # faces looking down at the bed but not on it = unsupported overhang
