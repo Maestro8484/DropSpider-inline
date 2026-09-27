@@ -3,9 +3,10 @@
 Handoff from the lead mechanical engineer to the software/electrical team. Read `README.md`, then `docs/08_open_items.md`, before changing anything.
 
 **Current tasks, in order:**
-1. `docs/M1_fix_handoff.md`: Rev C.1 fixes the clutch direction flaw (M1) and a finger release jam (M2) with a motor-led drop. Tests T1 to T8.
+1. Start from `docs/handoff_task1_firmware.md` (state, hardware changes since the spec, order of work), then `docs/M1_fix_handoff.md`: Rev C.1 fixes the clutch direction flaw (M1) and a finger release jam (M2) with a motor-led drop. Tests T1 to T8.
 2. `docs/handoff_sensor_bearings.md`: LD2450 becomes the primary trigger (LD2410C fallback), plus bearing care rules. Tests S1 to S5. Start only after T1 to T8 pass.
-3. `docs/09_fairlead_switch.md`: fairlead + hinged flap + KW12-3 limit switch replaces the line guide (closes V10). First run `tools\regen_cad.ps1` (needs `pip install trimesh manifold3d shapely numpy matplotlib`): the STLs in `cad/stl` are already current, but `docs/img` still holds pre-fairlead pictures and is missing `fairlead_rest.png`, `fairlead_home.png` and `fairlead_exploded.png`. The owner's file link cannot write images. Old `line_guide.stl` is in `cad/retired/`. Then firmware: the switch reads OPEN at rest after the lock seat by design (V14); infer home from the last cycle, not the boot reading.
+3. `docs/09_fairlead_switch.md`: fairlead + hinged flap + KW12-3 limit switch (closes V10). CAD, STLs and pictures are current (rebuild with `tools\regen_cad.ps1`). Firmware: the switch reads OPEN at rest after the lock seat by design (V14); infer home from the last cycle, not the boot reading.
+4. Separate, not blocking: `docs/handoff_vertical_mount.md`, strategy for hanging the device from a vertical face (the porch beam's inside face).
 
 Firmware, doc 02, doc 04 and web help text are the team's to change. Rev C.1 rule from the owner: existing hardware only, no new purchases.
 

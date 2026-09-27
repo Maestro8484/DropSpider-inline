@@ -36,6 +36,10 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V13 | Top drop speed and stopping ability of the NEMA 11 at 12 V, 0.6 A, with the real spider (estimate: about 500 rpm, stops 60 g or less cleanly) | T4, T5, T7 in `M1_fix_handoff.md` | lower `droprpm` / `dropdec`; lighter spider |
 | V14 | **Answered by the fairlead geometry:** after the lock seat the bead drops off the flap, so the switch reads OPEN at rest. Firmware must infer home from the last cycle (switch stop, then seat move), not from the boot reading | commissioning step 10; boot with the spider home | firmware rule, not hardware |
 | V15 | LD2450 as the trigger: tracking through the door frame, speed sign, approach-only firing, arrival timing | S1 to S5 in `handoff_sensor_bearings.md` | widen or narrow `doorwidth`, tune `leadms`; `sensor 2410` fallback |
+| V16 | Printed fits on the owner's printer after the fit-check fixes: finger on the spline (5.0 drawn), spacers, ratchet over the HF0612 stub, flap on the M2 bolt, cradle grooves | test fit at assembly | open the hole with a drill by hand; adjust the drawn size in code |
+| V17 | The fitted SG90 is a 180 degree positioning servo, not a 360 continuous one (the owner's spare has no hard stop) | `servo 90`, `servo 30`, `servo 150`, no finger fitted: must move and hold | swap the servo |
+| V18 | Finger height on the real spline: plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
+| V19 | Reinforced fairlead body strength and the flat switch face on a real print; switch mounts with no washers | assembly steps 15 to 15d | 6 walls on that part |
 | V12 | Board on COM13 is an ESP32 with 4 MB flash. **Closed 2026-09-25:** first the 38-pin NodeMCU-32S, now the 30-pin DevKit V1 in use, both ESP32-D0WD-V3, 4 MB, read by esptool | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
 
 ## Closed

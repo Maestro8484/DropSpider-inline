@@ -69,11 +69,17 @@ Units: millimeters.
 - **Print orientation lives in code.** Parts that must print a certain way have a `*_print()` function that turns them before export. Never ask the owner to rotate in the slicer.
 - **Recesses face up.** A recess on the bed side leaves a ceiling with nothing under it; Bambu Studio reports "floating regions" or "isolated object". The finger v1 failed this way.
 - **No overhangs on the spool.** The spool is two parts (body and ratchet disk) so both print flat with zero supports and no scars in the line channel. The spool hub must end flush with its flange; a stub under the flange forced supports once.
-- **Thin features fail in PLA.** Keep printed walls at 1.2 mm or more near loads. Finger v1 had 0.9 mm walls and a half-width tip; v2 is 5 mm thick and 7 mm wide.
+- **Thin features fail in PLA.** Keep printed walls at 1.2 mm or more near loads. Finger v1 had 0.9 mm walls and a half-width tip; the current finger is 7 mm wide with a 7 mm plate.
 - **Tip shapes must match the teeth.** An unbeveled 7 mm finger could not seat in any tooth gap. The 20 degree bevel on the ramp side fixed it. Re-run the seating check after any finger or tooth change.
 - **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead's two M3 screws are countersunk flush (owner: no glue).
 - **Directions are easy to get backwards.** One-way clutch: it only lets the spool overrun in the direction the rod can drive it (flaw M1). Check any direction claim against the frame above before writing it into a doc.
-- **The bracket is printed and final.** Changes should bolt or glue to it, not require reprinting it.
+- **The bracket is printed and final.** Changes should bolt or screw to it, not require reprinting it. No glue (owner 2026-09-26).
+
+- **Printed holes come out small on the owner's printer.** A 4.8 mm socket printed 4.5; a 10.0 spacer in a 10.2 hole was too tight. Draw slide fits 0.2 to 0.3 mm a side bigger, and free-turning pins about 0.25 mm a side. A fit check (2026-09-26) found 9 fits wrong; see the git log.
+- **A boolean cut can silently miss.** The fairlead bore once sat at y -78 because of a sign flip, so the part printed solid. Every functional void now has a check that fails if it misses (line path check, flatness check in `fairlead.py`).
+- **A face something mounts on must be one plane.** Check the distinct levels of the faces under it (the switch face and the fairlead's mounting face each had a 0.8 to 1 mm step the owner had to shim).
+- **A recess on the bed side needs stepped bridging**, or it prints a roof over air. The finger's screw-head recess uses it: two strips, then a square, then the round hole.
+- **Every member starts on the bed plane**, and ribs run the full height to both ends.
 
 ## Adding a new picture
 
