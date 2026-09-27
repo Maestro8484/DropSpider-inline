@@ -26,10 +26,12 @@ N3,small fishing barrel swivel (size 10 to 14),1,any,,TO BUY,
 N4,6 lb nylon monofilament fishing line,2 m,any,,have?,its stretch is the shock absorber; snaps at about 27 N
 N5,470 uF 16 V electrolytic capacitor,1,any,,ONLY IF ESP32 RESETS,at the servo; skip unless the board restarts when the finger moves
 N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
-N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling
+N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling install (the wall install needs 6 screws and no anchors: 4 plate + 2 radar fork)
+W1,M3 x 10 to 12 bolts + M3 nuts,6,any,,have?,wall install only: device to the shelf
 N8,M3x8 self-tapping or machine screws,3,any,,have?,spool disk to body
 N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
 N11,soft foam spider <=60 g,1,any,,TO BUY,Rev C.1: motor must stop it
 N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
 PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
+PRINT-WALL,wall_mount / ld2450_fork_screw (instead of ld2450_fork),,printed,cad/stl,ONLY IF wall install,doc 06 alternative; not yet ruled by the owner

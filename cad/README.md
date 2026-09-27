@@ -16,7 +16,7 @@ pip install trimesh manifold3d shapely numpy matplotlib      # once
 | Step | Script | Writes | What it does |
 |---|---|---|---|
 | 1 | `cad/generate.py` | `cad/stl/*.stl` | Builds each part from boxes and cylinders, adds and cuts them (boolean operations, via manifold3d), turns each part to its print orientation, exports STL, then runs checks and prints a report |
-| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
+| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install, wall_exploded | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
 | 3 | `docs/diagrams.py` | `docs/img/wiring.png`, `install.png` | Flat drawings made with matplotlib |
 
 Same code, same output: the pictures and STLs are rebuilt identically every time.
@@ -28,6 +28,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: fork glued under the servo end, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
+| `wall_mount.py` | Wall install (doc 06 alternative): shelf, wall plate and two braces in one part, plus the radar fork with screw holes for the beam's underside. `assembly_wall()` places the device, the mount and the radar under the beam. Run it on its own for its report: watertight, clash against every part, nut pockets open, straight screwdriver paths, radar clear at every tilt, print overhang, strength numbers |
 | `render.py` | All 3D pictures. One function per picture |
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/ |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
@@ -54,6 +55,7 @@ Units: millimeters.
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
 | Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
+| Wall mount: clears every part, 6 nut pockets open, 4 screwdriver paths clear, radar clear at tilt 0 to 60, braces under 1 MPa | `python wall_mount.py` | `wall_mount clears every device part`, `nut pockets are open on all 6 holes: True`, four `clear` screw lines, seven `clear` tilt lines |
 
 ## Changing a part: the routine
 
@@ -80,6 +82,8 @@ Units: millimeters.
 - **A face something mounts on must be one plane.** Check the distinct levels of the faces under it (the switch face and the fairlead's mounting face each had a 0.8 to 1 mm step the owner had to shim).
 - **A recess on the bed side needs stepped bridging**, or it prints a roof over air. The finger's screw-head recess uses it: two strips, then a square, then the round hole.
 - **Every member starts on the bed plane**, and ribs run the full height to both ends.
+- **`lbl()` in render.py takes render-world coordinates, (x, z, -y), not assembly coordinates.** A label given (x, y, z) lands somewhere else on the page (wall_install.png, 2026-09-27).
+- **An L-bracket with two end braces cannot print on its side** (the prior-art advice for a strong corner): the second brace would hang over air. It prints shelf-down with the plate and braces standing; the braces keep the corner's layer bonds under 1 MPa, so the weaker orientation costs nothing that matters.
 
 ## Adding a new picture
 

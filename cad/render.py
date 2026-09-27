@@ -10,13 +10,18 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "switch_kw12": "#111111",
        "finger": "#e5534b", "rod_6mm": "#444", "coupler": "#d4a72c", "spacer_A": "#2da44e", "spacer_B": "#2da44e",
        "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
-       "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38"}
+       "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
+       "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
+       "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
          "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
-         "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar"}
+         "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
+         "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x #4 screws into the beam's underside)",
+         "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
+         "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
@@ -160,6 +165,38 @@ def fairlead_exploded_png():
                        mp.Patch(color="#57606a", label="2x M2 x 12 screw + nut")], loc="lower left", fontsize=10)
     fig.savefig(os.path.join(IMG, "fairlead_exploded.png"), dpi=100, bbox_inches="tight"); plt.close(fig)
 
+def wall_png():
+    """The device hanging from the beam's inside face on the wall mount, radar under the beam."""
+    import wall_mount as WM
+    A = WM.assembly_wall(); P = WM.porch()
+    items = [(rview(P["ceiling"]), COL["ceiling"]), (rview(P["beam"]), COL["beam"])]
+    items += [(rview(m), COL[k]) for k, m in A.items()]
+    img, proj = raster.render(items, elev=-22, azim=-38, W=1300, H=1150)
+    labels = [lbl(proj, (WM.LINE_X, WM.LINE_Z, -125), 10, 20, f"line falls {WM.LINE_X - WM.X_OUT:.0f} mm from the beam's face"),
+              lbl(proj, (WM.X_OUT - WM.RADAR_X_IN, 62, -(WM.BEAM_BOTTOM_Y + 50)), 20, 10, "radar under the beam, looking out and down")]
+    save(img, "wall_install.png", "Wall install: device on the beam's inside face, pad end at the wall, ceiling face up against the shelf (view from below, inside the porch)",
+         labels, keys=["wall_mount", "bracket", "fairlead_body", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"])
+
+def wall_exploded_png():
+    """Wall mount lifted off the device, bolts below, nuts above, wood screws pulled out of the plate."""
+    import wall_mount as WM
+    A = WM.assembly_wall(); H = WM.hardware()
+    items = []
+    for k, m in A.items():
+        if k.startswith("ld2450"): continue
+        mm = m.copy()
+        if k == "wall_mount": mm.apply_translation([0, -70, 0])
+        items.append((rview(mm), COL[k]))
+    for k, m in H.items():
+        mm = m.copy(); kind = k.split("_")[0]
+        if kind == "bolt": mm.apply_translation([0, 30, 0])
+        elif kind == "nut": mm.apply_translation([0, -100, 0])
+        else: mm.apply_translation([28, -70, 0])
+        items.append((rview(mm), COL[kind]))
+    img, proj = raster.render(items, elev=24, azim=-40, W=1400, H=1000)
+    save(img, "wall_exploded.png", "Wall mount exploded: nuts tap into the shelf's top pockets at the bench, the device bolts up from below, 4 wood screws into the beam",
+         (), keys=["wall_mount", "nut", "bolt", "screw", "bracket"])
+
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png()
+    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png(); wall_exploded_png()
     print("renders written to", os.path.abspath(IMG))

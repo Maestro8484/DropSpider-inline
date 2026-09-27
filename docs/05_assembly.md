@@ -73,6 +73,14 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 21. Wire per `02_electrical.md` (LD2450 on GPIO16/17, KW12-3 NO to GPIO32 and COM to GND). Mount the controller board on the pad with foam tape or zip ties through the x = -80 holes. Keep the x = -56 holes and the two at the servo end clear: they are the ceiling screw holes.
 22. Go to `07_commissioning.md` before mounting anything overhead.
 
+## G. Wall install only (device on the beam's face, doc 06)
+
+![Wall mount exploded](img/wall_exploded.png)
+
+23. Print `wall_mount.stl` and `ld2450_fork_screw.stl` (settings in doc 01). Skip `ld2450_fork.stl`: the radar goes under the beam, not on the device.
+24. Tap 6 M3 nuts into the hex pockets on the shelf's top. Set the device's ceiling face against the shelf's underside, pad end at the wall plate, and drive 6x M3 x 10 to 12 up from below into the nuts (fit note for the x 65, z 20 bolt in doc 06).
+25. Fasten per doc 06: 4 screws through the plate into the beam, 2 through the radar fork into the beam's underside. Then `07_commissioning.md` as usual.
+
 ## Base layout reference
 
 ![Base](img/base_layout.png)

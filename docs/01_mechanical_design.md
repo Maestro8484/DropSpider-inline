@@ -79,6 +79,8 @@ The same swing means the knot can end up to half a turn either side of the botto
 | finger.stl | 1 (+1 spare) | as exported (flat top face down, hub standing up) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | spacer_A_6mm.stl, spacer_B_50mm.stl | 1 each | on end | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | shim_1mm.stl, shim_2mm.stl | only if needed (05 step 8) | flat | rectilinear 100% | 4 | none | none |
+| wall_mount.stl | 1, wall install only (doc 06) | as exported (shelf top down, plate and braces standing, 85 mm tall, 169 x 154 footprint) | gyroid 40% | 4 | none (the nut pockets use stepped bridging) | 5 mm (big flat footprint) |
+| ld2450_fork_screw.stl | 1, wall install only, instead of ld2450_fork | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
 
 PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom layers. `cad/retired/line_guide.stl` is obsolete; do not print it.
 
@@ -90,6 +92,7 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 - Fairlead body to pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below. Nothing may stand proud of the ceiling face, which is why the heads are countersunk. At home the motor's pull lands on the fairlead's flap stop, about 2 N.
 - KW12-3: 2x M2 x 12 + nuts through the slotted holes. Hinge pin: an M2 bolt, 16 to 20 mm, threaded into the body, free in the flap (filament was too tight, owner 2026-09-26).
 - Motor: 4x M2.5x6.
+- Wall mount (doc 06 alternative only): 6x M3 nuts tapped into 5.8 mm hex pockets on the shelf's top (print about 5.6, snug), 6x M3 x 10 to 12 bolts from below through the device's ceiling holes, 4x #4 x 1 in wood screws through the plate, 2x #4 for the radar fork under the beam.
 - SG90: its own two tab screws.
 
 ## Bearing care
