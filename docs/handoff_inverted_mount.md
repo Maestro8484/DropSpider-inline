@@ -8,16 +8,16 @@ The owner ruled 2026-09-27: build the inverted layout (yes), he has the corner b
 2. Add `inverted_png()` to `cad/render.py`: `assembly_inverted()` plus `porch()`, drawn through `view_inv()` (floor down), a line and bead from `line_and_bead()`, viewed from below inside the porch like `wall_install.png`. Save as `docs/img/inverted_install.png`. Look at it. Put it at the top of this file and send it to the owner. Stop there until he answers.
 3. Only after he approves: docs 06 (the wall install becomes this), 09 (block under the base, same flap and switch), 01 (line exits the servo side), 05, 08 (V10 and V18), BOM (braces), `cad/README.md`, and the drilled holes on a second footprint drawing (`footprint_svg.py` sectioning `bracket_inverted()`).
 
-## The brace question (owner, 2026-09-27: "is a 6 in by 6 in L bracket long enough, 1 in wide, about 35 lb capacity, or shorter?")
+## Braces: 6 in steel L brackets, the owner's ruling 2026-09-27
 
-Capacity is not the question: the device is about 1 lb and the line cannot pull more than 6 lb. Length is. A 6 in leg (152 mm) under the base reaches from the beam to x +60, almost the far end, which is good for the base (it rests on steel end to end) but it runs through the fairlead block (x 19 to 36, z 20 to 99) if the braces sit on the pad rows at z 28 and z 83. So:
+His words: "i will manually edit the plate via drill or 3d model myself based on the 6inch braces". So the braces are 6 in by 6 in, 1 in wide, about 35 lb rated, and the bracket's bolt holes for them are HIS: he drills the base to the braces' own holes, or edits the model himself. The next session does not place the braces and does not drill holes for them in `bracket_inverted()`.
 
-- **6 in braces:** put them at the base's ends, about z 8 and z 106 (the block's plate must then start at z 24 and its far rib at z 93 to 99 comes off), bolted through holes drilled in the base at spots the model clears; the vertical legs hang 152 mm down the beam, still above its bottom edge. `corner_braces()` in `cad/inverted.py` is written for 1.5 in legs on the pad rows; change `BRACE_LEG`, `BRACE_W`, `BRACE_Z` and the bolt spots, and let the clash check place them.
-- **3 or 4 in braces:** sit on the pad rows z 28 and z 83 through the existing x -80 and x -56 holes, clear of the block; the base cantilevers past the leg end with margin about 6. The cleaner fit if he has them.
+What the next session still does about them:
 
-The model decides; do not hand-place.
-
-What this is for: the owner's third pass on hanging the device from the beam. Instead of a printed mount that carries the device from above, turn the device over so its flat base is at the bottom, let the line leave through the base, and sit the base on two steel corner braces screwed to the beam. Every load then presses the printed parts into the base instead of hanging them off it, and the mount is hardware, not PLA. This file records what that changes, what was checked, and what the build is.
+- Model the braces as 6 in stand-ins (`BRACE_LEG` 152, `BRACE_W` 25 in `cad/inverted.py`) at whatever z the owner says, and run the clash check against the fairlead block. A 6 in leg reaches from the beam to x +60 under the base; on the pad rows (z 28 and z 83) it runs through the block (x 19 to 36, z 20 to 99), so the braces go at the base's ends (about z 8 and z 106) unless he says otherwise. Ask him which z once, in the mockup message.
+- Keep the fairlead block clear of the brace legs: its plate starts at z 24 and its far rib (z 93 to 99) comes off if the braces are at the ends. That is one edit in `fairlead_base()`.
+- Leave the drilled holes for the braces out of `bracket_inverted()` and off the footprint drawing. Only the three holes the session owns go in: the line (5 mm at x 25, z 45) and the two block screws (x 32, z 28 and z 83). Any others are his.
+- The vertical legs hang 152 mm down the beam, ending 222 mm below the ceiling, above the beam's bottom edge (254). Capacity is not a question: the device is about 1 lb and the line cannot pull more than 6 lb.
 
 ## Ground truth first
 
