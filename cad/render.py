@@ -13,7 +13,8 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
        "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
        "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
-       "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b"}
+       "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b",
+       "fairlead_base": "#8b5cf6", "brace": "#6b7280", "line": "#111111", "bead": "#f59e0b"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
@@ -25,19 +26,21 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw",
          "hinge_plate": "hinge_plate.stl (4x #4 screws into the beam)", "hinge_clip": "hinge_clip.stl x2 (2x M3 each, on the pad)",
          "pin": "pins: 2x M3 x 25 (hinge), 4x M3 x 20 (struts), nuts", "tie_bar": "tie_bar.stl (2x M3 through the base's x 65 holes)",
-         "strut": "strut.stl x2 (the 45 degree bar, pushed)"}
+         "strut": "strut.stl x2 (the 45 degree bar, pushed)",
+         "fairlead_base": "fairlead_base.stl (under the base, 2x M3 from inside)", "brace": "2x steel corner brace, 6 in (owner drills the base)",
+         "line": "6 lb line, out through a 5 mm hole in the base", "bead": "stop bead"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
     mm = m.copy(); v = mm.vertices.copy(); mm.vertices = np.column_stack([v[:, 0], v[:, 2], -v[:, 1]]); return mm
 
-def save(img, name, title, labels=(), keys=()):
+def save(img, name, title, labels=(), keys=(), loc="upper right"):
     import matplotlib.patches as mp
     fig, ax = plt.subplots(figsize=(img.shape[1] / 100, img.shape[0] / 100 + 0.5))
     ax.imshow(img); ax.set_axis_off(); ax.set_title(title, fontsize=13)
     for (x, y, t) in labels: ax.text(x, y, t, fontsize=10, bbox=dict(fc="white", ec="0.6", alpha=0.9))
     if keys:
-        ax.legend(handles=[mp.Patch(color=COL[k], label=LABEL[k]) for k in keys], loc="upper right", fontsize=10, framealpha=0.95)
+        ax.legend(handles=[mp.Patch(color=COL[k], label=LABEL[k]) for k in keys], loc=loc, fontsize=10, framealpha=0.95)
     fig.savefig(os.path.join(IMG, name), dpi=100, bbox_inches="tight"); plt.close(fig)
 
 def lbl(proj, pt, dx, dy, text):
@@ -202,6 +205,19 @@ def wall_exploded_png():
     save(img, "wall_exploded.png", "Wall mount exploded: nuts tap into the shelf's top pockets at the bench, the device bolts up from below, 4 wood screws into the beam",
          (), keys=["wall_mount", "nut", "bolt", "screw", "bracket"])
 
+def inverted_png():
+    """The owner's inverted install: device turned over on two 6 in corner braces, line out through the base."""
+    import inverted as INV
+    A = INV.assembly_inverted(); A.update(INV.line_and_bead())
+    A.update({k: G.I(m, G.bx(-200, 250, -300, 100, -25, 135)) for k, m in INV.porch().items()})   # a short length of beam and ceiling, so the device reads
+    key = lambda k: "brace" if k.startswith("brace") else k
+    img, proj = raster.render([(INV.view_inv(m), COL[key(k)]) for k, m in A.items()], elev=-12, azim=-30, W=1300, H=1000)
+    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -110), 12, 0, f"line falls {INV.LINE_X - INV.X_BEAM:.0f} mm from the beam's face"),
+              lbl(proj, (INV.X_BEAM + 140, -INV.BRACE_Z[0], -2), 30, 40, "base sits on the braces' flat legs"),
+              lbl(proj, (INV.LINE_X + 10, -INV.LINE_Z, -30), 40, 10, "fairlead, flap and switch under the base")]
+    save(img, "inverted_install.png", "Inverted install (the owner's plan): device turned over on two 6 in steel corner braces, line out the bottom (view from below, inside the porch)",
+         labels, keys=["bracket", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "beam", "ceiling"], loc="lower right")
+
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png()
+    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png(); inverted_png()
     print("renders written to", os.path.abspath(IMG))

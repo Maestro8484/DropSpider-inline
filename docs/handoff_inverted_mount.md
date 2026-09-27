@@ -1,8 +1,16 @@
 # Handoff: inverted device on metal corner braces (owner's redesign, 2026-09-27)
 
-## First job for the next session: the mockup, for the owner to check
+![Inverted install mockup](img/inverted_install.png)
 
-The owner ruled 2026-09-27: build the inverted layout (yes), he has the corner braces (yes), and he wants an accurate mockup picture first, before any doc work. `cad/inverted.py` is written but has NOT been run: it is the design in code, unverified. Do this, in order:
+## Where it stands: mockup sent, waiting on the owner
+
+Steps 1 and 2 below are done (2026-09-27). `python inverted.py` passes every check: block watertight, mounting face one plane at y 0, no clashes (braces included), line path clear through the base hole, bore and flap slot, spool clearance 0, hard stop 14.75 degrees, roller push 4.33 (needs 3.4), both screw heads clear. Two fixes were needed: the braces became 6 in stand-ins at z 8 and z 106 with no holes, and the fairlead block was trimmed to z 24 to 93 (far rib dropped) to clear them; the face check was rewritten because it wrongly counted the block's own inner steps as mounting faces. `render.inverted_png()` makes the picture above. The full rebuild (`tools\regen_cad.ps1`) was not run: `generate.py` is untouched, and it rewrites every image while another session was live.
+
+Owed from the owner: approve the mockup (then step 3), and say where along the base the two braces go (drawn at the ends, z 8 and z 106; the 106 one hangs 8 mm past the base's end).
+
+## First job: the mockup, for the owner to check
+
+The owner ruled 2026-09-27: build the inverted layout (yes), he has the corner braces (yes), and he wants an accurate mockup picture first, before any doc work. Do this, in order:
 
 1. `cd cad; python inverted.py`. Fix whatever fails until the report shows: block watertight, mounting face one plane, no CLASH lines, line path clear through base hole, bore and flap slot, spool 2 mm clearance 0, hard stop near 14.75 degrees with roller push at least 3.4, both screw heads clear.
 2. Add `inverted_png()` to `cad/render.py`: `assembly_inverted()` plus `porch()`, drawn through `view_inv()` (floor down), a line and bead from `line_and_bead()`, viewed from below inside the porch like `wall_install.png`. Save as `docs/img/inverted_install.png`. Look at it. Put it at the top of this file and send it to the owner. Stop there until he answers.

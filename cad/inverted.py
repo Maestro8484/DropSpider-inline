@@ -16,8 +16,9 @@ What is new:
                      transform T (180 degrees about z, then +69 in y): the same flared bore, the
                      same flap (fairlead_flap.stl unchanged), the same switch slots and stops.
                      Two M3 screws from inside the base thread into 2.5 pilots.
-  corner braces      2x steel L brackets, 1.5 in legs (stand-ins for pictures and clash checks),
-                     bolted through the pad's x -80 and x -56 holes, vertical legs screwed to the beam.
+  corner braces      2x steel L brackets, 6 in legs, 1 in wide (stand-ins for pictures and clash
+                     checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
+                     at the base's ends, vertical legs screwed to the beam.
   radar              ld2450_fork_screw (cad/wall_mount.py) under the beam, looking out and down.
 
 Coordinates: the device's own frame from generate.py (y = 0 the base's outer face, +y INTO the
@@ -37,9 +38,8 @@ import wall_mount as WM
 LINE_X, LINE_Z = 25.0, 45.0          # line exit: the barrel's +x tangent, straight to the base
 LINE_HOLE_D = 5.0
 BLOCK_SCREWS = [(32.0, 28.0), (32.0, 83.0)]   # (x, z): M3 from inside the base into the block's 2.5 pilots
-PAD_BRACE_X = (-80.0, -56.0)        # the pad holes the braces use
-BRACE_Z = (28.0, 83.0)
-BRACE_LEG, BRACE_W, BRACE_T = 38.0, 16.0, 1.5   # 1.5 in steel corner brace stand-in
+BRACE_Z = (8.0, 106.0)              # brace centre lines: the base's ends, clear of the block (z 24 to 93); the owner's call
+BRACE_LEG, BRACE_W, BRACE_T = 152.0, 25.0, 1.5  # 6 in x 1 in steel corner brace stand-in
 BEAM_GAP = 4.0                       # pad edge (x -88) to the beam's face
 X_BEAM = -88.0 - BEAM_GAP            # -92
 DEVICE_TOP = 62.0                    # bearing plate top; the tallest thing above the base
@@ -70,15 +70,14 @@ def fairlead_base():
     """Doc 09's block, slab, plates, ribs and rest stop moved by T and clipped to the outside of the
     base, plus a 4 mm mounting plate on the base's outer face. Same cuts as doc 09, moved by T."""
     bx = G.bx
-    plate = bx(19, 36, -4, 0, 20, 99)
+    plate = bx(19, 36, -4, 0, 24, 93)                          # z 24 to 93: clear of the braces at the base's ends
     slab  = bx(-36, F.SW_X0, 62, F.BOT_Y, 54, F.RIB2_Z0)
-    web   = bx(-36, -32, 3, F.BOT_Y, 54, F.RIB2_Z1)
+    web   = bx(-36, -32, 3, F.BOT_Y, 54, F.RIB2_Z0)             # stops at z 93: the far rib (93 to 99) is dropped for the brace
     lower = bx(-36, -32, 70, F.BOT_Y, 39, 54)
     rib1b = bx(-36, F.RIB_X1, F.RIB1B_Y0, F.BOT_Y, 52.5, 58.5)
-    rib2  = bx(-36, F.RIB_X1, 3, F.BOT_Y, F.RIB2_Z0, F.RIB2_Z1)
     block = bx(-36, -19, 70, F.STOP_Y, 39, 62)
     rest  = bx(-36, -26, F.STOP_Y, F.HY - F.FT / 2 - 0.2, 63.5, 67.5)
-    moved = [T(m) for m in (slab, web, lower, rib1b, rib2, block, rest)]
+    moved = [T(m) for m in (slab, web, lower, rib1b, block, rest)]
     outside = bx(0, 40, -60, 0, 0, 120)                      # keep only what lies outside the base (y <= 0)
     body = G.U(plate, *[G.I(m, outside) for m in moved])
     cuts = [T(F.trumpet()),
@@ -115,9 +114,7 @@ def corner_braces():
         z0, z1 = zc - BRACE_W / 2, zc + BRACE_W / 2
         horiz = G.bx(X_BEAM, X_BEAM + BRACE_LEG, -BRACE_T, 0, z0, z1)
         vert = G.bx(X_BEAM, X_BEAM + BRACE_T, -BRACE_LEG, 0, z0, z1)
-        b = G.U(horiz, vert)
-        b = G.D(b, *[G.vcyl(2.5, 6, -3, x, zc) for x in PAD_BRACE_X], *[G.cyl(2.2, 6, zc - 3, X_BEAM + 0, y) for y in (-10.0, -30.0)])
-        out[f"brace_{i}"] = b
+        out[f"brace_{i}"] = G.U(horiz, vert)
     return out
 
 
@@ -162,8 +159,8 @@ if __name__ == "__main__":
     print(f"fairlead_base watertight={body.is_watertight} size={np.round(body.extents, 1).tolist()} vol={body.volume / 1000:.1f}cm3")
     p = fairlead_base_print(); down = (p.face_normals[:, 2] < -0.7) & (p.triangles_center[:, 2] > 0.01)
     print(f"  print: footprint {np.round(p.extents[:2], 1).tolist()}, height {p.extents[2]:.1f}, overhang off the bed {p.area_faces[down].sum():.0f} mm2")
-    ys = sorted(set(np.round(body.triangles_center[body.face_normals[:, 1] > 0.99, 1], 2).tolist()))
-    print(f"mounting face is one plane at y 0: {ys == [0.0]} (faces looking into the base: {ys})")
+    top = body.face_normals[:, 1] > 0.99; at0 = top & (np.abs(body.triangles_center[:, 1]) < 0.01)
+    print(f"mounting face is one plane at y 0: {abs(body.bounds[1][1]) < 0.01} (nothing above y 0; contact area {body.area_faces[at0].sum():.0f} mm2)")
     A = assembly_inverted()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
     new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar"]
