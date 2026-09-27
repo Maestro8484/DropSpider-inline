@@ -54,9 +54,9 @@ def trumpet():
     assert top - 0.1 < v.bounds[0][1] and v.bounds[1][1] < bot + 0.1, v.bounds
     v.apply_translation([LX, 0, LZ]); return v
 
-RIB_X1 = -21.5                # ribs reach this far from the back plate (bracket gussets start at x -20)
+RIB_X1 = -24.0                # ribs stop at the bracket base's edge so the whole mounting face is ONE plane at y 3 (owner 2026-09-26)
 BOT_Y = 108.0                 # bottom edge of the body: one straight line from z 39 to z 97 (was y 100 beside the switch plate)
-RIB2_Z0, RIB2_Z1 = 93.0, 97.0 # far rib, moved past the switch plate end (was z 88..92, where the switch body blocked it below y 86)
+RIB2_Z0, RIB2_Z1 = 93.0, 99.0 # 6 mm thick (depth trimmed to 12, so thicker); far rib, moved past the switch plate end (was z 88..92, where the switch body blocked it below y 86)
 RIB1B_Y0 = 88.5               # the spool-side rib resumes full depth here, under the flap's swing (knuckle corner reaches y 86.4)
 
 def yz_prism(zy, x0, x1):
@@ -84,11 +84,10 @@ def fairlead_body():
     lower = bx(-36, -32, 70, BOT_Y, 39, 54)                # back plate under the block, line side; stays 4 mm (the 8 mm stop bead passes at x -29..-21)
     slab  = bx(-36, SW_X0, 62, BOT_Y, 54, RIB2_Z0)         # hinge boss (M2 bolt threads 7 mm) + switch plate, one flat face at x = -29
     guss  = yz_prism([(54, 58), (54, 70), (39, 70)], -36, -31)   # 5 mm gusset over the block, line side
-    # Ribs run flush up to the bracket's underside (owner 2026-09-26: they stopped 5 mm short):
-    # y 3 under the pad (x <= -24), y 4 under the bracket base (x > -24).
-    def rib(y1, z0, z1): return U(bx(-36, -24, 3, y1, z0, z1), bx(-24, RIB_X1, 4, y1, z0, z1))
-    rib1  = rib(70, 54, 58)                                 # rib, spool side of the plate, mounting face to the block top
-    rib1b = bx(-36, RIB_X1, RIB1B_Y0, BOT_Y, 54, 58)       # same rib under the flap, to the bottom edge
+    # Ribs: 12 deep (x -36..-24), 6 thick, tops on the one mounting plane y 3 (owner: flush, no steps).
+    def rib(y1, z0, z1): return bx(-36, RIB_X1, 3, y1, z0, z1)
+    rib1  = rib(70, 52.5, 58.5)                                 # rib, spool side of the plate, mounting face to the block top
+    rib1b = bx(-36, RIB_X1, RIB1B_Y0, BOT_Y, 52.5, 58.5)     # same rib under the flap, to the bottom edge
     rib2  = rib(BOT_Y, RIB2_Z0, RIB2_Z1)                   # far rib, mounting face to the bottom edge; 2 mm past the switch body end (z 91)
     block = bx(-36, -19, 70, STOP_Y, 39, 62)               # fairlead + hard stop face (unchanged)
     rest  = bx(-36, -26, STOP_Y, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail, 4.6 thick
