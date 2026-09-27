@@ -7,6 +7,7 @@ C2,ESP32-S NodeMCU 38-pin (ESP-WROOM-32 CP2102),1,any,,have,board in use on the 
 S3,KW12-3 micro switch with roller lever (SPDT),1,any,,have,in the fairlead (doc 09); COM to GND and NO to GPIO32
 H5,M2 x 12 screws + M2 nuts,2,any,,have?,KW12-3 to the fairlead switch plate
 H8,M2 bolt 16 to 20 mm,1,any,,have,flap hinge pin; threads into the fairlead body
+H9,M3 countersunk (flat-head) screw 8 to 10 mm,2,any,,have?,fairlead body to the pad; heads flush with the ceiling face
 H6,1.75 mm filament (30 mm piece),1,any,,have,fairlead flap hinge pin
 H7,M3 bolt 20 to 25 mm + M3 nut (nylon-insert if you have one),1,any,,have?,radar cradle tilt pivot
 S4,HLK-LD2450 mmWave tracking radar,1,any,,have,PRIMARY trigger (Rev C.1); UART2 GPIO16/17; 4-pin 1.25 mm cable

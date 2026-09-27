@@ -13,7 +13,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 
 | Part | Job |
 |---|---|
-| `fairlead_body.stl` | Glues to the pad in the old line guide's spot. Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
+| `fairlead_body.stl` | Screws to the pad in the old line guide's spot (2x M3 countersunk from the ceiling side). Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
 | Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the line to saw on. Centered on the spool's line channel |
 | `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied |
 | KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
@@ -45,7 +45,7 @@ One flap is needed; a second is a spare.
 3. Push the flap's knuckle into the gap below the fairlead and line up the holes. Drive an M2 bolt (16 to 20 mm) in from the flap's outer side: free through the flap (2.5 mm hole; drill it by hand if it drags), threading itself into the body. Stop before the head clamps the flap; it must swing down under its own weight.
 4. Flap level on its rest stop: slide the switch up in its slots until the roller just touches the flap tail, then back it off about 0.3 mm (a piece of paper's thickness). Tighten.
 5. Check by hand: lift the flap's free end. Click at about 2 mm; flap stops flat against the fairlead a moment later. Let go: it drops back, switch opens.
-6. Glue the body to the pad exactly as the old line guide: CA or epoxy along the rail, two M3 screws through the rail and the x = -32 pad holes as alignment pins, remove them after it cures.
+6. Screw the body to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
 7. Thread the line from the spool down through the fairlead, then slide it into the flap's slot from the free end. Bead, swivel, spider below as before.
 
 ## Wiring

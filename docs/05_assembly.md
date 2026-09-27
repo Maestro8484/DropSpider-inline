@@ -59,7 +59,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ![Step 6](img/step6.png)
 
-15. Glue `fairlead_body` to the pad with CA or epoxy along the rail. Two M3 screws through the rail and the x = -32 holes as alignment pins while it cures, then take them out.
+15. Screw `fairlead_body` to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
 16. Wind the line onto the spool by turning it counterclockwise (seen from the 606ZZ end). The free end leaves the spool on the pad side; thread it down through the fairlead, then slide it into the flap's slot from the flap's free end.
 17. Below the flap, in order: **8 mm bead** (slides on the line; this is what lifts the flap), **barrel swivel** (tie the line to it with an improved clinch or palomar knot; the bead rests on it), **spider** tied to the swivel's other end.
 18. Unwind fully and measure from the barrel knot to the bead, line straight but not pulled. That is the `line` value for the firmware.

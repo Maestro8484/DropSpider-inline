@@ -31,7 +31,7 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 - 4 screws: the 2 holes at the servo end and the 2 pad holes at x = -56 (the middle pair).
 - Into a joist: #4 x 1 in pan-head wood screws.
 - Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 6 lb mono the peak pull is about 12 N (1.2 kg) and can never pass about 27 N, where the line snaps. Never hang it on braid without an elastic snubber.
-- The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead body is glued).
+- The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead's two screws are countersunk flush).
 
 ## Sensor
 

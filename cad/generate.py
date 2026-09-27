@@ -76,6 +76,14 @@ def spool_body_print():
     return b
 
 # ---------------- bracket ----------------
+def csk(x, z, head_d=6.4):
+    """90 degree countersink for an M3 flat-head screw put in from the ceiling face (y = 0): widest at y 0."""
+    c = trimesh.creation.cone(radius=head_d / 2 + 0.1, height=head_d / 2 + 0.1, sections=48)   # base at z 0, apex at +z
+    c.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))      # +z -> +y (into the pad)
+    c.apply_translation([x, -0.1, z])
+    assert c.bounds[0][1] < 0 < c.bounds[1][1], c.bounds                                      # widest end at the ceiling face
+    return c
+
 def bracket():
     base = U(bx(-24, 75, 0, 4, 0, 110), bx(-88, -24, 0, 3, 18, 93))
     motor = bx(-20, 20, 0, 62, 0, 4)
@@ -97,6 +105,7 @@ def bracket():
             cyl(0.9, 20, 18, 41.5, AXIS_Y), cyl(0.9, 20, 18, 69.5, AXIS_Y),                  # SG90 tab screws
             vcyl(1.7, 10, -1, 65, 20), vcyl(1.7, 10, -1, 65, 90),                           # mount holes
             *[vcyl(1.6, 10, -1, x, z) for x in (-80, -56, -32) for z in (28, 83)],           # pad: 6 holes
+            *[csk(-32, z) for z in (28, 83)],                                                 # fairlead screws: flat heads flush with the ceiling face
             bx(-12, 12, -1, 5, 30, 90)]                                                      # window
     return D(b, *cuts)
 

@@ -71,7 +71,7 @@ Units: millimeters.
 - **No overhangs on the spool.** The spool is two parts (body and ratchet disk) so both print flat with zero supports and no scars in the line channel. The spool hub must end flush with its flange; a stub under the flange forced supports once.
 - **Thin features fail in PLA.** Keep printed walls at 1.2 mm or more near loads. Finger v1 had 0.9 mm walls and a half-width tip; v2 is 5 mm thick and 7 mm wide.
 - **Tip shapes must match the teeth.** An unbeveled 7 mm finger could not seat in any tooth gap. The 20 degree bevel on the ramp side fixed it. Re-run the seating check after any finger or tooth change.
-- **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead body is glued, not screwed.
+- **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead's two M3 screws are countersunk flush (owner: no glue).
 - **Directions are easy to get backwards.** One-way clutch: it only lets the spool overrun in the direction the rod can drive it (flaw M1). Check any direction claim against the frame above before writing it into a doc.
 - **The bracket is printed and final.** Changes should bolt or glue to it, not require reprinting it.
 

@@ -4,7 +4,8 @@ Assembly frame as in generate.py: y from the ceiling face (+y toward floor), z f
 Line axis: x = -25, z = 45 (center of the 6 mm line channel), vertical (along y).
 
 Parts:
-  fairlead_body.stl  glues to the pad in the old line guide's spot (rail over the x=-32 holes)
+  fairlead_body.stl  screws to the pad in the old line guide's spot: 2x M3 countersunk (flat-head) screws down
+                     through the x = -32 pad holes, heads flush with the ceiling face, threading into the rail. No glue (owner 2026-09-26)
   fairlead_flap.stl  hinged bumper. The stop bead lifts it; its tail presses the KW12-3 roller.
 Hinge pin: an M2 bolt, 16 to 20 mm (owner 2026-09-26; filament was too tight). In from the flap side,
 free in the flap's 2.5 mm hole, threads itself into the body's 1.9 mm hole.
@@ -68,7 +69,7 @@ def yz_prism(zy, x0, x1):
 def fairlead_body():
     """Reinforced 2026-09-26 (owner: the first print felt weak from the base up): a 4 mm back plate
     (x -36..-32) with two 4 mm ribs standing 10.5 mm proud of it (a C channel in section), a thicker
-    and wider glue rail, and the back plate carried on under the block on the line side.
+    and wider mounting rail, and the back plate carried on under the block on the line side.
     Second print, same day, two more owner asks:
       1. The switch plate stood 0.8 mm proud of the hinge boss (x -28.2 vs -29): a raised square he
          had to shim with washers. Boss and plate are now ONE 7 mm slab, one flat face at x = -29
@@ -78,18 +79,21 @@ def fairlead_body():
          The far rib moved from z 88..92 (the switch body was in its way) to z 93..97, past the plate
          end, and runs rail to bottom edge unbroken. The bottom edge is one line at y 108.
     Every member starts on the x = -36 face, which is the print bed, so nothing needs support."""
-    rail  = bx(-36, -25, 3, 9, 20, 93)                     # glue footprint 11 x 73, 6 thick; ends at the pad's edge (z 93)
-    web   = bx(-36, -32, 9, BOT_Y, 54, RIB2_Z1)            # back plate, 4 mm, rail to the bottom edge
+    rail  = bx(-36, -25, 3, 9, 20, 93)                     # mounting rail 11 x 73, 6 thick; ends at the pad's edge (z 93)
+    web   = bx(-36, -32, 3, BOT_Y, 54, RIB2_Z1)            # back plate, 4 mm, mounting face to the bottom edge
     lower = bx(-36, -32, 70, BOT_Y, 39, 54)                # back plate under the block, line side; stays 4 mm (the 8 mm stop bead passes at x -29..-21)
     slab  = bx(-36, SW_X0, 62, BOT_Y, 54, RIB2_Z0)         # hinge boss (M2 bolt threads 7 mm) + switch plate, one flat face at x = -29
     guss  = yz_prism([(54, 58), (54, 70), (39, 70)], -36, -31)   # 5 mm gusset over the block, line side
-    rib1  = bx(-36, RIB_X1, 8, 70, 54, 58)                 # rib, spool side of the plate, rail to the block top
+    # Ribs run flush up to the bracket's underside (owner 2026-09-26: they stopped 5 mm short):
+    # y 3 under the pad (x <= -24), y 4 under the bracket base (x > -24).
+    def rib(y1, z0, z1): return U(bx(-36, -24, 3, y1, z0, z1), bx(-24, RIB_X1, 4, y1, z0, z1))
+    rib1  = rib(70, 54, 58)                                 # rib, spool side of the plate, mounting face to the block top
     rib1b = bx(-36, RIB_X1, RIB1B_Y0, BOT_Y, 54, 58)       # same rib under the flap, to the bottom edge
-    rib2  = bx(-36, RIB_X1, 8, BOT_Y, RIB2_Z0, RIB2_Z1)    # far rib, rail to the bottom edge; 2 mm past the switch body end (z 91)
+    rib2  = rib(BOT_Y, RIB2_Z0, RIB2_Z1)                   # far rib, mounting face to the bottom edge; 2 mm past the switch body end (z 91)
     block = bx(-36, -19, 70, STOP_Y, 39, 62)               # fairlead + hard stop face (unchanged)
     rest  = bx(-36, -26, STOP_Y, HY - FT / 2 - 0.2, 63.5, 67.5)   # rest stop above the flap tail, 4.6 thick
     b = U(rail, web, lower, slab, guss, rib1, rib1b, rib2, block, rest)
-    cuts = [vcyl(1.7, 10, 0, -32, 28), vcyl(1.7, 10, 0, -32, 83),        # alignment pin holes
+    cuts = [vcyl(1.25, 10, 0, -32, 28), vcyl(1.25, 10, 0, -32, 83),      # 2.5 pilots: M3 flat-head screws from the ceiling side thread in
             bx(-37, -31, 9, 20, 80.5, 85.5),                                # notch in the plate so the z 83 pin hole stays open
             trumpet(),
             xcyl(0.95, -37, -28, PY, HZ),                                   # 1.9: the M2 hinge bolt threads itself in
