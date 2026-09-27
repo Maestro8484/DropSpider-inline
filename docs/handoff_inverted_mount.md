@@ -6,7 +6,12 @@
 
 Steps 1 and 2 below are done (2026-09-27). `python inverted.py` passes every check: block watertight, mounting face one plane at y 0, no clashes (braces included), line path clear through the base hole, bore and flap slot, spool clearance 0, hard stop 14.75 degrees, roller push 4.33 (needs 3.4), both screw heads clear. Two fixes were needed: the braces became 6 in stand-ins at z 8 and z 106 with no holes, and the fairlead block was trimmed to z 24 to 93 (far rib dropped) to clear them; the face check was rewritten because it wrongly counted the block's own inner steps as mounting faces. `render.inverted_png()` makes the picture above. The full rebuild (`tools\regen_cad.ps1`) was not run: `generate.py` is untouched, and it rewrites every image while another session was live.
 
-Owed from the owner: approve the mockup (then step 3), and say where along the base the two braces go (drawn at the ends, z 8 and z 106; the 106 one hangs 8 mm past the base's end).
+Owner's corrections, 2026-09-27, applied the same day and re-checked (all checks above still pass):
+- "the mmwave sensor must be attached and part of the device": the ceiling design's fork, cradle and radar are turned over and glued under the base's servo end, looking back toward the beam and down at doc 03's 50 degree tilt. The report now shows 0% of the radar's view blocked by the device, and its centre line passing under the beam's bottom edge (403 below the ceiling against 254). The radar hangs about 30 mm past the base's far end. The hanging spider sits in its view.
+- "does that design allow room for the pcb board and esp32": yes. The pad (the base's device side at the beam end, now facing up) is untouched; a 52 x 75 x 30 stand-in box there clears every part.
+- Braces "rotated the other way": the flat leg under the base, the other leg standing UP the beam's face beside the device. The base now sits 160 below the ceiling (was 70); the bead rests 179 below it; the beam's bottom edge is 254.
+
+Owed from the owner: approve the mockup (then step 3), and say where along the base the two braces go (drawn at the ends, z 8 and z 106; the 106 one hangs 8 mm past the base's end). An 8 in brace's flat leg would reach 36 mm past the base's far end.
 
 ## First job: the mockup, for the owner to check
 

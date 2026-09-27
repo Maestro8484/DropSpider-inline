@@ -10,7 +10,7 @@ base, which is now the floor side.
 What is new:
   bracket_inverted   the printed bracket with 5 holes the owner drills: 5 mm for the line at
                      (x 25, z 45); 2x 3.4 at (x 32, z 28) and (x 32, z 83) for the fairlead block;
-                     nothing else. (The radar goes under the beam, so no holes for it.)
+                     nothing else. (The radar fork is glued, so no holes for it.)
   fairlead_base      the fairlead + flap hard stop + KW12-3 switch plate, as a block on the base's
                      OUTER face at the line. Built from doc 09's geometry moved by one rigid
                      transform T (180 degrees about z, then +69 in y): the same flared bore, the
@@ -18,8 +18,14 @@ What is new:
                      Two M3 screws from inside the base thread into 2.5 pilots.
   corner braces      2x steel L brackets, 6 in legs, 1 in wide (stand-ins for pictures and clash
                      checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
-                     at the base's ends, vertical legs screwed to the beam.
-  radar              ld2450_fork_screw (cad/wall_mount.py) under the beam, looking out and down.
+                     at the base's ends. The owner's orientation (2026-09-27): the flat leg under the
+                     base, the other leg standing UP the beam's face beside the device, screwed to it.
+  radar              part of the device (owner 2026-09-27): the same ld2450_fork, cradle and radar,
+                     turned over and glued under the base at the servo end, looking back toward the
+                     beam (the approach) and down, under the fairlead block.
+  electronics        the controller board stays where it is in the ceiling design: on the pad, the
+                     base's device side at the beam end, now facing up. A 52 x 75 x 30 stand-in box
+                     is clash-checked.
 
 Coordinates: the device's own frame from generate.py (y = 0 the base's outer face, +y INTO the
 device). In the porch, +y is UP. The ceiling is at y = CEILING_Y above the device's top; the beam's
@@ -43,11 +49,12 @@ BRACE_LEG, BRACE_W, BRACE_T = 152.0, 25.0, 1.5  # 6 in x 1 in steel corner brace
 BEAM_GAP = 4.0                       # pad edge (x -88) to the beam's face
 X_BEAM = -88.0 - BEAM_GAP            # -92
 DEVICE_TOP = 62.0                    # bearing plate top; the tallest thing above the base
-CEILING_Y = DEVICE_TOP + 8.0         # base sits 70 below the ceiling
+CEILING_Y = BRACE_LEG + 8.0          # the braces' upright legs stand under the ceiling: base 160 below it
 BEAM_DEPTH = 254.0
 BEAM_BOTTOM_Y = CEILING_Y - BEAM_DEPTH   # -184
-RADAR_X_IN = 25.0
-RADAR_TILT = 30.0
+RADAR_TILT = 50.0                    # doc 03's tilt, below level; the cradle adjusts
+RADAR_SHIFT = (130.0, 4.0)           # after turning over: fork plate from x -74..-62 to x 56..68, glue face onto y 0
+PCB_BOX = (-88.0, -36.0, 4.0, 34.0, 18.0, 93.0)   # electronics stand-in on the pad (x, y, z ranges)
 
 # T: doc 09's fairlead geometry (line at x -25, bore y 69..78.5, flap at y 84 below it) moved to
 # the base's outer face at x +25: 180 degrees about z (x -> -x, y -> -y), then y + 69 so the bore's
@@ -113,20 +120,25 @@ def corner_braces():
     for i, zc in enumerate(BRACE_Z):
         z0, z1 = zc - BRACE_W / 2, zc + BRACE_W / 2
         horiz = G.bx(X_BEAM, X_BEAM + BRACE_LEG, -BRACE_T, 0, z0, z1)
-        vert = G.bx(X_BEAM, X_BEAM + BRACE_T, -BRACE_LEG, 0, z0, z1)
+        vert = G.bx(X_BEAM, X_BEAM + BRACE_T, -BRACE_T, BRACE_LEG - BRACE_T, z0, z1)   # stands UP the beam beside the device
         out[f"brace_{i}"] = G.U(horiz, vert)
     return out
 
 
-def radar_under_beam(tilt=RADAR_TILT):
-    """Fork with screw holes on the beam's underside, looking toward the approach (-x) and down (-y here)."""
+def radar_on_base(tilt=RADAR_TILT):
+    """The ceiling design's fork, cradle and radar turned over (180 degrees about z) and moved under the
+    base's servo end: glued to the base's outer face, looking toward the beam (-x) and down (-y)."""
+    import sensor_mount as S
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
-    for k, m in (("ld2450_fork_screw", WM.ld2450_fork_screw()), ("ld2450_cradle", __import__("sensor_mount").ld2450_cradle(tilt)),
-                 ("ld2450_radar", __import__("sensor_mount").ld2450_board(tilt))):
-        mm = m.copy(); mm.apply_transform(R)
-        mm.apply_translation([X_BEAM - RADAR_X_IN + 68.0, BEAM_BOTTOM_Y + 4.0, 0]); out[k] = mm   # rotated pivot at x -68, plate face y -4
+    for k, m in (("ld2450_fork", S.ld2450_fork()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
+        mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0]); out[k] = mm
     return out
+
+
+def pcb_box():
+    x0, x1, y0, y1, z0, z1 = PCB_BOX
+    return G.bx(x0, x1, y0, y1, z0, z1)
 
 
 def line_and_bead(drop=120.0):
@@ -139,7 +151,7 @@ def assembly_inverted():
     A = {k: v for k, v in G.assembly().items() if k not in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12") and not k.startswith("ld2450")}
     A["bracket"] = bracket_inverted()
     A["fairlead_base"] = fairlead_base(); A["fairlead_flap"] = flap_installed(); A["switch_kw12"] = switch_installed()
-    A.update(corner_braces()); A.update(radar_under_beam())
+    A.update(corner_braces()); A.update(radar_on_base()); A["electronics"] = pcb_box()
     return A
 
 
@@ -163,14 +175,26 @@ if __name__ == "__main__":
     print(f"mounting face is one plane at y 0: {abs(body.bounds[1][1]) < 0.01} (nothing above y 0; contact area {body.area_faces[at0].sum():.0f} mm2)")
     A = assembly_inverted()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
-    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar"]
+    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork", "ld2450_cradle", "ld2450_radar", "electronics"]
     bad = False
     for k in new:
         for j, part in A.items():
-            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"}: continue      # the roller rests on the flap tail by design
+            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"} or {k, j} <= {"ld2450_fork", "ld2450_cradle", "ld2450_radar"}: continue   # roller on flap tail; radar sits in its cradle
             v = G.I(A[k], part).volume
             if v > 0.5: print(f"CLASH {k} x {j}: {v:.1f}"); bad = True
-    if not bad: print("block, flap, switch, braces and radar clear every part")
+    if not bad: print("block, flap, switch, braces, radar and the 52 x 75 x 30 electronics box clear every part")
+    # radar view: rays over +-60 across and +-35 along the board from its centre; what share hits the device or its braces
+    Rb = A["ld2450_radar"]; t = math.radians(RADAR_TILT)
+    nb = np.array([-math.cos(t), -math.sin(t), 0.0]); ab = np.array([math.sin(t), -math.cos(t), 0.0]); zb = np.array([0, 0, 1.0])
+    c = Rb.bounds.mean(0) + nb * 2.0
+    solid = G.U(*[m for k2, m in A.items() if not k2.startswith("ld2450") and k2 != "electronics"])
+    dirs = [math.cos(math.radians(e)) * (math.cos(math.radians(a2)) * nb + math.sin(math.radians(a2)) * zb) + math.sin(math.radians(e)) * ab
+            for a2 in range(-60, 61, 5) for e in range(-35, 36, 5)]
+    dirs = np.array(dirs); hit = solid.ray.intersects_any(np.repeat([c], len(dirs), 0), dirs)
+    core = [abs(a2) <= 20 and abs(e) <= 15 for a2 in range(-60, 61, 5) for e in range(-35, 36, 5)]
+    print(f"radar view blocked by the device: {100 * hit.mean():.0f}% of the full cone, {100 * hit[core].mean():.0f}% of the middle (+-20 by +-15)")
+    yb = c[1] + nb[1] * (X_BEAM - c[0]) / nb[0]
+    print(f"radar centre line reaches the beam's face {CEILING_Y - yb:.0f} below the ceiling (beam bottom edge {BEAM_DEPTH:.0f}): {'passes under the beam' if CEILING_Y - yb > BEAM_DEPTH else 'HITS the beam'}")
     path = G.vcyl(1.0, 100, -60, LINE_X, LINE_Z)                                    # 2 mm rod from the barrel down past the flap
     lb, lf, lk = G.I(path, body).volume, G.I(path, flap).volume, G.I(path, A["bracket"]).volume
     print(f"line path clear through the base hole: {lk < 0.01} ({lk:.2f}), the block's bore: {lb < 0.01} ({lb:.2f}), the flap slot: {lf < 0.01} ({lf:.2f})")
