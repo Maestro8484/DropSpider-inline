@@ -16,7 +16,7 @@ pip install trimesh manifold3d shapely numpy matplotlib      # once
 | Step | Script | Writes | What it does |
 |---|---|---|---|
 | 1 | `cad/generate.py` | `cad/stl/*.stl` | Builds each part from boxes and cylinders, adds and cuts them (boolean operations, via manifold3d), turns each part to its print orientation, exports STL, then runs checks and prints a report |
-| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install, wall_exploded | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
+| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
 | 3 | `docs/diagrams.py` | `docs/img/wiring.png`, `install.png` | Flat drawings made with matplotlib |
 
 Same code, same output: the pictures and STLs are rebuilt identically every time.
@@ -28,7 +28,8 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: fork glued under the servo end, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
-| `wall_mount.py` | Wall install (doc 06 alternative): shelf, wall plate and two braces in one part, plus the radar fork with screw holes for the beam's underside. `assembly_wall()` places the device, the mount and the radar under the beam. Run it on its own for its report: watertight, clash against every part, nut pockets open, straight screwdriver paths, radar clear at every tilt, print overhang, strength numbers |
+| `wall_hinge.py` | Wall install draft (doc 06 alternative, the owner's plan): hinge plate for the beam, two clips for the pad, cords. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, pin alignment, swing, cord pull |
+| `wall_mount.py` | Fallback wall install: one braced shelf (212 cm3) that keeps the device at the ceiling with no cords, plus `ld2450_fork_screw` for putting the radar under the beam. Not in the print list; `python wall_mount.py` for its report |
 | `render.py` | All 3D pictures. One function per picture |
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/ |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
@@ -55,7 +56,7 @@ Units: millimeters.
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
 | Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
-| Wall mount: clears every part, 6 nut pockets open, 4 screwdriver paths clear, radar clear at tilt 0 to 60, braces under 1 MPa | `python wall_mount.py` | `wall_mount clears every device part`, `nut pockets are open on all 6 holes: True`, four `clear` screw lines, seven `clear` tilt lines |
+| Wall hinge: plate, clips, pins and cords clear every part; pins line up; the device swings 0 to 90 degrees clear of the plate | `python wall_hinge.py` | `clear every device part`, `pin holes line up ... True`, four `clear of the plate` lines |
 
 ## Changing a part: the routine
 

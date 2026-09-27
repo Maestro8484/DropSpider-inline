@@ -75,11 +75,9 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ## G. Wall install only (device on the beam's face, doc 06)
 
-![Wall mount exploded](img/wall_exploded.png)
-
-23. Print `wall_mount.stl` and `ld2450_fork_screw.stl` (settings in doc 01). Skip `ld2450_fork.stl`: the radar goes under the beam, not on the device.
-24. Tap 6 M3 nuts into the hex pockets on the shelf's top. Set the device's ceiling face against the shelf's underside, pad end at the wall plate, and drive 6x M3 x 10 to 12 up from below into the nuts (fit note for the x 65, z 20 bolt in doc 06).
-25. Fasten per doc 06: 4 screws through the plate into the beam, 2 through the radar fork into the beam's underside. Then `07_commissioning.md` as usual.
+23. Print `hinge_plate.stl` (one) and `hinge_clip.stl` (two); settings in doc 01.
+24. Bolt each clip on top of the pad, knuckle past the pad's edge, 2x M3 with nuts under the pad (the x -80 and x -56 holes of one row). The board goes on foam tape.
+25. On the ladder, per doc 06: plate to the beam, knuckles into the forks, M3 x 25 pins, cords to the eyes, pins tightened. Then `07_commissioning.md` as usual.
 
 ## Base layout reference
 

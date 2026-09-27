@@ -199,8 +199,9 @@ PARTS = {
     "shim_2mm": lambda: tube(2),
     "ld2450_fork": ld2450_fork_print,
     "ld2450_cradle": ld2450_cradle_print,
-    "wall_mount": lambda: __import__("wall_mount").wall_mount_print(),                 # wall install only (docs/06)
-    "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # wall install only: radar fork with screw holes
+    "hinge_plate": lambda: __import__("wall_hinge").hinge_plate_print(),               # wall install only (docs/06): one
+    "hinge_clip": lambda: __import__("wall_hinge").hinge_clip_print(),                 # wall install only: print two
+    "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # wall install only: radar fork with screw holes for the beam's underside
 }
 
 # ---------------- installed assembly ----------------

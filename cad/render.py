@@ -12,7 +12,8 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
        "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
-       "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b"}
+       "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
+       "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "cord": "#111827"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
@@ -21,7 +22,9 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
          "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x #4 screws into the beam's underside)",
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
-         "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw"}
+         "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw",
+         "hinge_plate": "hinge_plate.stl (4x #4 screws into the beam)", "hinge_clip": "hinge_clip.stl x2 (2x M3 each, on the pad)",
+         "pin": "hinge pin: M3 x 25 bolt + nut, x2", "cord": "thin cord or light chain, x2"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
@@ -166,16 +169,17 @@ def fairlead_exploded_png():
     fig.savefig(os.path.join(IMG, "fairlead_exploded.png"), dpi=100, bbox_inches="tight"); plt.close(fig)
 
 def wall_png():
-    """The device hanging from the beam's inside face on the wall mount, radar under the beam."""
-    import wall_mount as WM
-    A = WM.assembly_wall(); P = WM.porch()
+    """The owner's hinge-and-cord mount on the beam's inside face; the radar stays drawn on the device."""
+    import wall_hinge as WH
+    A = WH.assembly_hinge(); P = WH.porch()
     items = [(rview(P["ceiling"]), COL["ceiling"]), (rview(P["beam"]), COL["beam"])]
-    items += [(rview(m), COL[k]) for k, m in A.items()]
-    img, proj = raster.render(items, elev=-22, azim=-38, W=1300, H=1150)
-    labels = [lbl(proj, (WM.LINE_X, WM.LINE_Z, -125), 10, 20, f"line falls {WM.LINE_X - WM.X_OUT:.0f} mm from the beam's face"),
-              lbl(proj, (WM.X_OUT - WM.RADAR_X_IN, 62, -(WM.BEAM_BOTTOM_Y + 50)), 20, 10, "radar under the beam, looking out and down")]
-    save(img, "wall_install.png", "Wall install: device on the beam's inside face, pad end at the wall, ceiling face up against the shelf (view from below, inside the porch)",
-         labels, keys=["wall_mount", "bracket", "fairlead_body", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"])
+    key = lambda k: k if k in COL else k.rsplit("_", 1)[0]          # hinge_clip_0, pin_1, cord_28 share their family's color
+    items += [(rview(m), COL[key(k)]) for k, m in A.items()]
+    img, proj = raster.render(items, elev=-18, azim=-42, W=1300, H=1000)
+    labels = [lbl(proj, (WH.LINE_X, 45, -125), 10, 20, f"line falls {WH.LINE_X - WH.X_OUT:.0f} mm from the beam's face"),
+              lbl(proj, (WH.X_IN, 55, WH.PLATE_H), 30, -10, f"hinge at the bottom, eyes at the top: device {WH.PLATE_H:.0f} mm below the ceiling")]
+    save(img, "wall_install.png", "Wall install (draft): hinge plate on the beam's inside face, clips on the pad, two cords hold the far end (view from below, inside the porch)",
+         labels, keys=["hinge_plate", "hinge_clip", "pin", "cord", "bracket", "beam", "ceiling"])
 
 def wall_exploded_png():
     """Wall mount lifted off the device, bolts below, nuts above, wood screws pulled out of the plate."""
@@ -198,5 +202,5 @@ def wall_exploded_png():
          (), keys=["wall_mount", "nut", "bolt", "screw", "bracket"])
 
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png(); wall_exploded_png()
+    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png()
     print("renders written to", os.path.abspath(IMG))

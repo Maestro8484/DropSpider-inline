@@ -33,33 +33,29 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 - Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 6 lb mono the peak pull is about 12 N (1.2 kg) and can never pass about 27 N, where the line snaps. Never hang it on braid without an elastic snubber.
 - The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead's two screws are countersunk flush).
 
-## Alternative: hanging from the beam's inside face (wall mount)
+## Alternative: hanging from the beam's inside face (wall install, draft)
 
 ![Wall install](img/wall_install.png)
 
-For a porch where the device should sit on the beam itself, out of sight from the walkway, instead of on the ceiling behind it. Designed 2026-09-27, CAD-checked, **not yet printed or load-tested** (open item V18). The device is unchanged; it bolts up into a printed shelf exactly as it screws up into the ceiling.
+The owner's plan (2026-09-27): keep the printed bracket, hinge its pad end to a plate on the beam, hold the far end up with two cords. Three small flat prints, two M3 bolts, cord you have. Designed and CAD-checked the same day, **not yet printed or hung** (open item V18). Source `cad/wall_hinge.py`; run it for the report.
 
-**The part.** `wall_mount.stl`, one print: a shelf that takes the ceiling's place, a wall plate hanging from the shelf's wall edge, and two braces under the shelf at its ends, outside the device. The braces carry the load (a knee brace: a diagonal prop). Source `cad/wall_mount.py`; run it for the fit, clash and strength report.
+**Parts.** `hinge_plate.stl` (one, 88 x 46 mm, 18 cm3): a strip screwed to the beam's inside face, two forks along its bottom edge, two eyes along its top edge. `hinge_clip.stl` (two, 2 cm3 each): each bolts on top of the pad through the x -80 and x -56 holes at one hole row (2x M3 with nuts under the pad; the controller board then sits on foam tape, not zip ties) and carries a knuckle past the pad's edge. Hinge pin: an M3 x 25 bolt through fork, knuckle, fork, with a nut; tighten it once the cords are on and the hinge is locked. Cords: thin cord (2 mm micro cord passes the 3.4 mm holes) or light chain from the base's two mount holes at the servo end (x 65, z 20 and z 90; or round an M3 bolt dropped in each) up to the plate's eyes.
 
-**Where.** On the beam's inside face (the door side), the plate's top edge against the ceiling, centered on the walkway. The pad end of the device (the electronics end) goes at the wall, 6 mm off the plate. Rod parallel to the beam as before. Both ends open, so the motor and the servo stay reachable.
+**Why the device hangs 45 mm below the ceiling.** A cord can only pull, so its anchor must be above the hinge, and nothing can be above the ceiling. The plate is 45 tall, the hinge at its bottom, the eyes at its top. The cords rise 40 mm over 159 (14 degrees). `PLATE_H` in `cad/wall_hinge.py` sets it: lower means the spider hides better and the cords pull harder.
 
-| Point | Wall install |
+| Point | Wall install (draft) |
 |---|---|
-| Line (the fairlead) | 74 mm from the beam's face (ceiling install: 305 mm) |
-| Device top | 5 mm below the ceiling (the shelf) |
-| Lowest point of the device | 117 mm below the ceiling |
-| Spider retracted, bottom | about 220 mm below the ceiling; the beam's bottom edge is 254, so it stays hidden by about 34 mm |
-| Spider at rest, lowest point on a motor fault | as the ceiling table, 5 mm lower. Line length formula: use (ceiling - 5) for the ceiling height |
+| Line (the fairlead) | 77 mm from the beam's face (ceiling install: 305 mm) |
+| Device top | 45 mm below the ceiling |
+| Spider retracted, bottom | spider height + 160 mm below the ceiling. Beam edge at 254: a spider up to about 90 mm tall stays hidden |
+| Cord pull | 12 N standing across both cords, 63 N if the line snaps (2 mm micro cord holds about 400 N, paracord over 2000) |
+| Line length | the ceiling-install formula with (ceiling - 45) for the ceiling height |
 
-**The radar moves.** On the device it would look toward the door, away from people walking in, and turned round it would look into the beam. So it goes on the beam's underside: `ld2450_fork_screw.stl` (the same fork with a 44 mm plate and two #4 screw holes; the cradle is unchanged) screwed up into the beam's bottom face about 25 mm in from the inside edge, the radar looking out toward the approach and down. Start at 30 degrees down; nothing blocks the view there. Its lead runs up the beam's face to the controller, about 350 mm (BOM N10). The model checks the cradle clears the beam, the plate and the device at every tilt from 0 to 60.
+**Radar.** On the device it looks toward the door, away from people walking in. Either accept a late trigger for the first walk test, or screw `ld2450_fork_screw.stl` (the fork with a 44 mm plate and two #4 holes, `cad/wall_mount.py`) up into the beam's underside and put the cradle on it looking out and down; the lead then runs up the beam's face (about 350 mm, BOM N10).
 
-**Fastening.**
+**Order.** Bench: bolt the two clips to the pad. Ladder: screw the plate to the beam with 4x #4 x 1 in (2 mm pilots; holes at 45 and 67 mm along, two rows), top edge against the ceiling, forks down. Lift the device, drop each knuckle between its fork, push the two M3 x 25 pins through and nut them loosely. Swing the far end up level, tie the cords to the eyes, then tighten the pins. Nothing is glued.
 
-- Bench: tap the 6 M3 nuts into the hex pockets on the shelf's top (drawn 5.8 mm, prints about 5.6: snug, no glue). Bolt the device to the shelf's underside with 6x M3 x 10 to 12 from below through its own ceiling holes (the two x = -80 and two x = -56 pad holes, the two x = 65 base holes). The fairlead's flat heads sit under the solid shelf. At x 65, z 20 a round bolt head touches the servo tower's face by under 1 mm: use a socket-head bolt, file one flat, or leave that bolt out (five carry the load with margin; numbers below). The controller board must not overhang the pad's wall edge by more than 5 mm, and put its USB port toward the open side.
-- Ladder: hold the assembly up with the plate's top edge against the ceiling and drive 4x #4 x 1 in screws through the plate's holes into the beam (2 mm pilots first). Each screw's axis has a straight clear path along the rod direction past the device, checked in the model for a 6 mm driver shaft: use a screwdriver with a shaft of 180 mm or more, or a bit in a long holder.
-- If the beam's face leans, shim the plate's top or bottom edge with washers. A lean of a degree or two only tilts the rod; the line still hangs plumb through the fairlead's flared bore.
-
-**Load, from `cad/wall_mount.py` (estimates, not measured).** Device about 480 g at 89 mm out plus a 27 N line snap at 69 mm out, times a safety factor of 3: 6.9 N m at the wall. The two braces see 0.7 MPa where PLA's weakest direction holds about 20: a margin of 30. The top screw row is pulled at 52 N per screw; a #4 in softwood holds a few hundred. Each device bolt carries 16 N with six in, 24 N with four. PLA creeps under a permanent load; the permanent part here is the 4.7 N weight, small against those margins, but print it in PETG if any is loaded.
+**Checked in the model.** Plate, clips, pins and cords clear every part; the pin holes line up through both forks and the knuckle; the device swings from hanging straight down to level without touching the plate; both prints have under 100 mm2 of unsupported overhang. A one-piece braced shelf that needs no cords and keeps the device at the ceiling is in `cad/wall_mount.py` (212 cm3 print) if this draft flexes or sags.
 
 ## Sensor
 
