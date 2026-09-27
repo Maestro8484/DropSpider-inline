@@ -141,7 +141,12 @@ def finger():
     bevel.apply_translation([0, 0, -1])
     return D(f, cyl(SOCKET_D / 2, tip - hub_bot + 0.1, hub_bot - 0.1),   # spline socket, floor at the spline tip
              cyl(1.25, 3, tip - 1),                                         # 2.5 mm screw hole through the 1.5 mm floor
-             cyl(HEAD_D / 2, T - (tip + 1.5) + 1, tip + 1.5),               # screw-head recess from the top
+             cyl(HEAD_D / 2, T - (tip + 1.4) + 1, tip + 1.4),               # screw-head recess from the top, 7.6 deep
+             # Stepped bridging: printed top-down, the floor is a roof over the recess. Its first 0.4 mm
+             # bridges the recess as two strips beside a 2.5 slot, the next 0.4 bridges the slot leaving a
+             # 2.5 square, then the round hole: every layer rests on the one below, nothing floats.
+             bx(-HEAD_D / 2, HEAD_D / 2, -1.25, 1.25, tip + 1.0, tip + 1.4 + 0.01),
+             bx(-1.25, 1.25, -1.25, 1.25, tip + 0.6, tip + 1.0 + 0.01),
              bevel)
 
 def finger_print():
