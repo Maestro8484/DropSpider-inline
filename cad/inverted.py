@@ -131,7 +131,7 @@ def corner_braces():
 
 def radar_on_base(tilt=RADAR_TILT):
     """The ceiling design's fork, cradle and radar turned over (180 degrees about z) and moved under the
-    base's servo end: glued to the base's outer face, looking toward the beam (-x) and down (-y)."""
+    base's servo end: bolted to the base's outer face with 2x M3, looking toward the beam (-x) and down (-y)."""
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
     for k, m in (("ld2450_fork_screw", S.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
