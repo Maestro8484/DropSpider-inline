@@ -39,7 +39,9 @@ def I(a, b): return trimesh.boolean.intersection([a, b], engine="manifold")
 AXIS_Y = 40.0
 BARREL_D = 50.0                 # line winds on this diameter
 TOOTH_TIP_R, TOOTH_ROOT_R, TEETH = 33.0, 29.0, 12
-HF0612_BORE = 10.0              # 10.0 OD one-way bearing; printed holes come out 0.1 to 0.2 small, which is the press (9.9 risked squeezing the rollers, fit check 2026-09-26)
+HF0612_OD = 10.0                # the one-way bearing itself, 6 x 10 x 12
+HF0612_BORE = 10.7              # its press hole in spool_body. 10.0 would not take the bearing, and the 10.6 disk hole took it only after sanding (owner 2026-09-28): prints come out about 0.6 small here, so 10.7 is a tight press
+HF0612_STUB_HOLE = 11.0         # the disk's center hole over the bearing's 2 mm stub: slip fit, the spool body holds the bearing (owner 2026-09-28; was 10.6)
 BEARING_606 = 17.0              # 17.0 OD 606ZZ drawn at size: holes print 0.1 to 0.2 small, which is the press (16.8 would not go in even with the bearing heated, owner 2026-09-27)
 Z_RATCHET = 36.0                # ratchet disk motor-side face (disk z 36..42); finger plate z 35..42
 SERVO_SHAFT_X = 49.7            # SG90 output spline, spline end of servo toward the spool
@@ -61,7 +63,7 @@ def ratchet_poly():
 def spool_ratchet():
     """Part coords = installed orientation. z0 face = screw heads, faces the motor."""
     d = extrude_polygon(ratchet_poly(), 6.0)
-    return D(d, cyl(5.3, 8, -1), cyl(15.25, 2, 4.5),        # 10.6 hole over the HF0612 stub, 30.5 recess over the 30 boss (fit check 2026-09-26)
+    return D(d, cyl(HF0612_STUB_HOLE / 2, 8, -1), cyl(15.25, 2, 4.5),        # hole over the HF0612 stub, 30.5 recess over the 30 boss (fit check 2026-09-26)
              *[cyl(1.65, 8, -1, x, y) for x, y in BOLTS],
              *[cyl(3.1, 3.5, -0.5, x, y) for x, y in BOLTS])
 
@@ -166,7 +168,7 @@ def finger_print():
     m = finger(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0]))
     m.apply_translation(-m.bounds[0]); return m        # flat top face down: recesses face up, no floating regions
 
-SPACER_A_R = 6.0   # 12 OD: stops on the ratchet disk's face at z 36 (a 9.6 spacer fell into the 10.6 hole and left 2 mm of end play)
+SPACER_A_R = 6.0   # 12 OD: stops on the ratchet disk's face at z 36 (a 9.6 spacer fell into the disk's center hole, then 10.6, and left 2 mm of end play)
 SPACER_B_R = 4.8   # 9.6 OD on the spool body face
 SPACER_B_NOSE = 4.0   # 8.0 OD, last 1 mm at the 606ZZ end: bears on the inner ring only, not the shield
 def tube(L, r=SPACER_A_R): return D(cyl(r, L, 0), cyl(3.25, L + 2, -1))
@@ -225,6 +227,7 @@ def assembly():
     A["spacer_A"] = D(cyl(SPACER_A_R, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
     sb = spacer_b(); sb.apply_translation([0, AXIS_Y, 50]); A["spacer_B"] = sb
     A["bearing_606"] = D(cyl(8.5, 6, 100, 0, AXIS_Y), cyl(3, 8, 99, 0, AXIS_Y))
+    A["hf0612"] = D(cyl(HF0612_OD / 2, 12, 38, 0, AXIS_Y), cyl(3, 14, 37, 0, AXIS_Y))   # one-way bearing 6 x 10 x 12, flush with the spool flange (z 50), 2 mm stub into the disk (doc 05 step 1)
     A["motor_nema11"] = U(bx(-14, 14, AXIS_Y - 14, AXIS_Y + 14, -32, 0), cyl(2.5, 20, 0, 0, AXIS_Y))
     # stand-in, not measured: the tabs sit on the tower (they fit, owner), the case top and spline
     # follow the owner's observation (spline 3.4 mm, tip about 2 mm short of the ledge)

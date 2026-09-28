@@ -9,6 +9,8 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 - `ROADMAP.md`, this changelog, and a doc map in the README: each file has one job.
 
 ### Changed
+- HF0612 one-way bearing holes opened (owner: 10.0 would not take it, the disk's 10.6 took the stub only after sanding): `spool_body` 10.7 tight press, `spool_ratchet` center hole 11.0 slip. Both STLs re-exported; reprint both.
+- Build guide: the HF0612 labelled as the one-way bearing everywhere, drawn as its own part in the exploded view, and a new cut-away picture of every part on the rod; the title bar is plain text again.
 - Build guide covers only the inverted install; the ceiling install stays in doc 06. Web page picture matched to the firmware; radar chip marked not live until task 2; finger angles 85 and 50.
 - Build guide: no separate power board. The expansion board and the 5 V buck are hot-glued beside the main board; 12 V runs straight from the jack.
 - Task 1 handoff cut down to the work still to do.

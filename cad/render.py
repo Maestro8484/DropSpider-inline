@@ -9,17 +9,17 @@ IMG = os.path.join(G.HERE, "..", "docs", "img"); os.makedirs(IMG, exist_ok=True)
 COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff",
        "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "fairlead_flap_inv": "#d946ef", "switch_kw12": "#111111",
        "finger": "#e5534b", "rod_6mm": "#444", "coupler": "#d4a72c", "spacer_A": "#2da44e", "spacer_B": "#2da44e",
-       "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
+       "bearing_606": "#57606a", "hf0612": "#f59e0b", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
        "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
        "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
        "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b",
        "fairlead_base": "#8b5cf6", "brace": "#6b7280", "line": "#111111", "bead": "#f59e0b", "electronics": "#16a34a"}
-LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612 one-way bearing",
+LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl (the HF0612 presses into it)",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)", "fairlead_flap_inv": "fairlead_flap_inv.stl (flap with the tab under the switch)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
-         "bearing_606": "606ZZ ball bearing", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
+         "bearing_606": "606ZZ ball bearing", "hf0612": "HF0612 one-way bearing (clutch), pressed into spool_body", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
          "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
          "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x M3 through the base, no glue)",
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
@@ -62,7 +62,7 @@ def exploded_png():
     # (dx, dy, dz) in assembly frame; +dy moves toward the floor
     off = {"bracket": (0, 0, 0), "servo_sg90": (0, 0, 0), "finger": (0, 0, 22),
            "motor_nema11": (0, 90, -95), "coupler": (0, 90, -45), "spacer_A": (0, 90, -8),
-           "spool_ratchet": (0, 90, 20), "spool_body": (0, 90, 55), "spacer_B": (0, 90, 95),
+           "spool_ratchet": (0, 90, 20), "hf0612": (0, 90, 38), "spool_body": (0, 90, 55), "spacer_B": (0, 90, 95),
            "bearing_606": (0, 90, 150), "rod_6mm": (0, 150, 20),
            "fairlead_body": (-110, 40, -40), "fairlead_flap": (-110, 40, -40), "switch_kw12": (-110, 40, -40),
            "ld2450_fork": (40, 20, 20), "ld2450_cradle": (70, 60, 20), "ld2450_radar": (100, 75, 20)}
@@ -70,7 +70,8 @@ def exploded_png():
     for k, m in A.items():
         mm = m.copy(); mm.apply_translation(off.get(k, (0, 0, 0))); items.append((rview(mm), COL[k]))
     img, proj = raster.render(items, elev=-12, azim=-30, W=1600, H=1050)
-    save(img, "exploded.png", "Exploded view. Rod order from motor: coupler, spacer A, ratchet disk, spool body, spacer B, 606ZZ", (), keys=list(A.keys()))
+    labels = [lbl(proj, (0, 82, -(G.AXIS_Y + 90) - 5), 170, 120, "HF0612 one-way bearing (the clutch):\npresses into spool_body", True)]
+    save(img, "exploded.png", "Exploded view. Rod order from motor: coupler, spacer A, ratchet disk, HF0612 one-way bearing in spool body, spacer B, 606ZZ", labels, keys=list(A.keys()))
 
 def lock_png():
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -126,8 +127,8 @@ def steps_png():
     rd = ("ld2450_fork", "ld2450_cradle", "ld2450_radar")
     steps = [("Step 1: press 606ZZ into the end plate, motor onto the motor plate", base, ["bearing_606", "motor_nema11"]),
              ("Step 2: coupler onto the motor shaft (set screw on the 5 mm side)", base + ["bearing_606", "motor_nema11"], ["coupler"]),
-             ("Step 3: hold spacer A, spool, spacer B in the gap, disk toward the motor", base + ["bearing_606", "motor_nema11", "coupler"], ["spacer_A", "spool_ratchet", "spool_body", "spacer_B"]),
-             ("Step 4: push the rod in from the 606ZZ end, through everything, into the coupler", base + ["bearing_606", "motor_nema11", "coupler", "spacer_A", "spool_ratchet", "spool_body", "spacer_B"], ["rod_6mm"]),
+             ("Step 3: hold spacer A, spool, spacer B in the gap, disk toward the motor", base + ["bearing_606", "motor_nema11", "coupler"], ["spacer_A", "spool_ratchet", "hf0612", "spool_body", "spacer_B"]),
+             ("Step 4: push the rod in from the 606ZZ end, through everything, into the coupler", base + ["bearing_606", "motor_nema11", "coupler", "spacer_A", "spool_ratchet", "hf0612", "spool_body", "spacer_B"], ["rod_6mm"]),
              ("Step 5: SG90 into the tower, finger pressed onto its spline", [k for k in A if k not in ("servo_sg90", "finger") + fl + rd], ["servo_sg90", "finger"]),
              ("Step 6: fairlead with flap and limit switch, glued to the pad", [k for k in A if k not in fl + rd], list(fl)),
              ("Step 7: radar fork glued under the servo end, cradle on one M3 bolt, radar slid in", [k for k in A if k not in rd], list(rd))]
@@ -207,6 +208,31 @@ def inverted_fairlead_png(elev=-12, azim=35, name="inverted_fairlead.png"):
     save(img, name, "Inverted install, fairlead v2: switch above the flap, legs up, flap lowest (only the base is drawn above it)",
          labels, keys=["fairlead_base", "fairlead_flap_inv", "switch_kw12", "bead"], loc="lower left")
 
+def rod_section_png(elev=8, azim=12):
+    """Every part on the rod cut in half along the rod, so the HF0612 one-way bearing inside the spool shows (owner 2026-09-28)."""
+    A = G.assembly()
+    keys = ["bracket", "motor_nema11", "coupler", "rod_6mm", "spacer_A", "spool_ratchet", "hf0612", "spool_body", "spacer_B", "bearing_606"]
+    items = []
+    for k in keys:
+        m = A[k]
+        if k == "bracket": m = G.I(m, G.bx(-40, 40, 12, 80, -5, 110))
+        if k == "coupler": m = G.D(m, A["rod_6mm"], G.cyl(2.5, 20, 0, 0, G.AXIS_Y))
+        cut = trimesh.intersections.slice_mesh_plane(m, plane_normal=[-1, 0, 0], plane_origin=[0, 0, 0], cap=True)
+        items.append((rview(cut), "#d6d9dc" if k == "bracket" else COL[k]))
+    img, proj = raster.render(items, elev=elev, azim=azim, W=1700, H=900)
+    Y = G.AXIS_Y
+    P = lambda y, z: (0, z, -y)
+    labels = [lbl(proj, P(Y + 10, -16), -40, 150, "NEMA 11 motor", True),
+              lbl(proj, P(Y + 5.5, 22), -60, 190, "5-to-6 mm coupler", True),
+              lbl(proj, P(Y + 4.5, 33), -20, 230, "spacer A", True),
+              lbl(proj, P(Y + 28, 39), -40, 120, "ratchet disk (spool_ratchet)", True),
+              lbl(proj, P(Y - 4, 44), 40, -330, "HF0612 ONE-WAY BEARING (the clutch)\npressed into spool_body, flush with its flange,\n2 mm stub into the ratchet disk", True),
+              lbl(proj, P(Y + 20, 48), 60, 110, "spool_body (line winds on the 50 mm barrel)", True),
+              lbl(proj, P(Y + 4.5, 75), 40, 170, "spacer B", True),
+              lbl(proj, P(Y + 7, 103), 20, 120, "606ZZ ball bearing in the end plate", True),
+              lbl(proj, P(Y, 112), -40, -120, "6 mm rod", True)]
+    save(img, "rod_section.png", "Cut through the rod: every part on it, motor on the left, 606ZZ end on the right", labels)
+
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
+    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); rod_section_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
     print("renders written to", os.path.abspath(IMG))
