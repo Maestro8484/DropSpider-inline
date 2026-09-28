@@ -98,7 +98,7 @@ a{color:var(--accent)}
 <main>
 <header class="top">
   <h1>DropSpider build guide, Rev C.1</h1>
-  <p class="dim">One page, top to bottom: wire the 30-pin ESP32 DevKit V1, assemble the device, power it up, then set it up and test it from its own web page. The repo docs (02, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
+  <p class="dim">One page, top to bottom: wire the 30-pin ESP32 DevKit V1, assemble the device, power it up, then set it up and test it from its own web page. It covers the install you are building: the device turned over on two steel corner braces on the porch beam's inside face. The ceiling install is in doc 06 only. The repo docs (02, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
   <div class="legend">
     <span><b class="chip ready">READY TODAY</b> works with the firmware on the board now</span>
     <span><b class="chip t2">AFTER TASK 2</b> needs the LD2450 radar firmware</span>
@@ -122,7 +122,7 @@ a{color:var(--accent)}
         <li>30-pin ESP32 DevKit V1 (the 38-pin NodeMCU-32S works too, same GPIO numbers)</li>
         <li>TMC2209 driver on the expansion board</li>
         <li>NEMA 11 stepper motor, 4 wires</li>
-        <li>Micro servo (SG90 or MG90S)</li>
+        <li>Micro servo (yours is an MG90, about 90 degrees of swing, checked 2026-09-27)</li>
         <li>KW12-3 roller micro switch</li>
         <li>HLK-LD2450 radar with its 4-pin 1.25 mm cable</li>
         <li>MP1584EN mini buck module, fixed 5 V out</li>
@@ -138,7 +138,9 @@ a{color:var(--accent)}
         <li>Soldering iron, solder, heat gun or lighter for heat shrink</li>
         <li>Small Phillips, small flat screwdriver (driver current pot)</li>
         <li>1.5 mm and 2 mm hex keys (coupler set screws)</li>
-        <li>Vise or clamp, CA glue, blue threadlocker</li>
+        <li>Vise or clamp, CA glue (line knot only), blue threadlocker</li>
+        <li>Drill with a 3.4 mm and a 7 mm (or 1/4 in) bit: five holes in the base</li>
+        <li>Hot glue gun: expansion board and buck onto the pad, nothing else</li>
         <li>A phone or PC on the same WiFi as the board</li>
       </ul>
     </div>
@@ -376,11 +378,15 @@ a{color:var(--accent)}
     <li><div><h3>Measure, then stack</h3><p>Motor plate outer face to the coupler's free end: 30 mm means use <code>spacer_A_6mm</code> as is; 27 to 29 mm add shims. Hold spacer A, spool (ratchet toward the motor), spacer B in line in the frame.</p><figure class="shot"><img src="img:step3" alt="Step 3 render"></figure></div></li>
     <li><div><h3>Rod in</h3><p>From outside the 606ZZ plate, through everything into the coupler until it bottoms; turn the spool its free way as the rod enters the needles. Threadlocker, tighten. Check: spool free counterclockwise from the 606ZZ end, clockwise drags the motor. End play no more than 0.5 mm.</p><figure class="shot"><img src="img:step4" alt="Step 4 render"></figure></div></li>
     <li><div><h3>Servo and finger</h3><p>Servo into the tower pocket, spline toward the spool, two tab screws. No horn: the finger presses straight onto the spline later, at 90 degrees, during calibration (section 09), and the horn screw holds it.</p><figure class="shot"><img src="img:step5" alt="Step 5 render"></figure><figure class="shot"><img src="img:lock_detail" alt="Lock detail section"><figcaption>Locked: finger level in the teeth, the tooth pushes it up onto the ledge, not into the servo.</figcaption></figure></div></li>
-    <li><div><h3>Fairlead, flap and switch</h3><p>Clear the bore with a 3 mm drill by hand. KW12-3 on the switch plate, roller toward the fairlead, 2x M2 finger-tight. Flap on an M2 bolt (16 to 20 mm), free in the flap, threaded into the body, not clamped. Slide the switch until the roller just touches the flap tail, back off a paper's thickness, tighten. Print the flap from files dated 2026-09-27 or later: the prong beside the line slot is 3.8 mm wide (the earlier 1.2 mm one was too thin). Lift the flap by hand: click at about 2 mm, then it stops flat.</p><figure class="shot"><img src="img:fairlead_exploded" alt="Fairlead parts"></figure></div></li>
-    <li><div><h3>Screw on the fairlead, thread the line</h3><p>Fairlead body screwed to the pad: 2x M3 countersunk screws, 8 to 10 mm, from the ceiling side through the two pad holes nearest the base, heads flush. On an already printed bracket, countersink those two holes first by twisting an 8 mm drill bit by hand. No glue. Wind the line counterclockwise from the 606ZZ end, down through the fairlead, into the flap's slot. Below: 8 mm bead, swivel, spider (60 g at most).</p><figure class="shot"><img src="img:step6" alt="Step 6 render"></figure></div></li>
-    <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to bead, line straight but not pulled: that number is <b>Line length</b> on the web page.</p><figure class="shot"><img src="img:fairlead_home" alt="Spider home: bead lifts the flap"><figcaption>Spider home: the bead lifts the flap, the flap's tail presses the roller.</figcaption></figure></div></li>
-    <li><div><h3>Radar mount</h3><p>No glue. Drill two 3.4 mm holes through the base at the servo end (x 68, z 45 and z 79) and countersink them from the ceiling side. Bolt <code>ld2450_fork_screw</code> under the servo end, ears hanging down: 2x M3 x 10 countersunk from the ceiling side, heads flush, nuts on the fork. Put <code>ld2450_cradle</code>'s round knuckle between the ears and push an M3 bolt (25 to 30 mm) through, nut on the far side, snug enough to hold an angle. Its open side faces out toward the approach, away from the fairlead end. Slide the LD2450 up into the grooves from the bottom, <b>antenna side against the face plate</b> (the side with the windows), <b>pin-header end last</b> so the headers sit at the bottom, open at the back; a small zip tie round the cradle's bottom end keeps it from sliding out. Set the tilt on site: 50 degrees down for your porch (the beam blocks shallower rays).</p><figure class="shot"><img src="img:step7" alt="Step 7 render: radar holder under the servo end"></figure></div></li>
-    <li><div><h3>Controller on the pad</h3><p>The protoboard with the ESP32 on the electronics pad (the flat area at the motor-plate end, x -88 to -36), foam tape or zip ties through the x = -80 holes. The expansion board and the buck hot-glued beside it on the pad, clear of the spool. Ceiling install: keep the x = -56 holes and the two at the servo end clear, they are the ceiling screws.</p><figure class="shot"><img src="img:base_layout" alt="Base layout with mounting holes"></figure></div></li>
+    <li><div><h3>Printed parts for this install</h3><p><code>fairlead_base</code> (the fairlead block under the base; <code>fairlead_body</code> is the ceiling install's and is not used), <code>fairlead_flap</code> from files dated 2026-09-27 or later (the prong beside the line slot is 3.8 mm; the earlier 1.2 mm one was too thin), <code>ld2450_fork_screw</code> and <code>ld2450_cradle</code>.</p></div></li>
+    <li><div><h3>Drill the base</h3><p>Print <code>cad/bracket_footprint_inverted.svg</code> at 100% and tape it to the base's flat outer face. Five holes: <b>7 mm</b> for the line (a 1/4 in bit is close enough), <b>3.4 mm x2</b> for the fairlead block (the pair nearest the spool on the servo side), <b>3.4 mm x2</b> for the radar fork (at the servo end). Sand the 7 mm hole smooth inside and on both edges: the line runs through it.</p></div></li>
+    <li><div><h3>Flap and switch onto the block</h3><p>Clear the block's bore with a 3 mm drill by hand. KW12-3 on the switch plate, roller toward the bore, 2x M2 finger-tight. Flap on an M2 bolt (16 to 20 mm), free in the flap, threaded into the block, not clamped. Slide the switch until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the block.</p></div></li>
+    <li><div><h3>Block onto the base</h3><p>Flat face of the block against the base's outer face, its bore under the 7 mm hole. 2x <b>M3 x 12</b> from inside the base (heads on the device side), cutting their own thread into the block. Snug, not tight: the thread is plastic. Look down through the 7 mm hole: you must see straight through the bore. No glue.</p><figure class="shot"><img src="img:inverted_fairlead" alt="Fairlead block under the base seen from below: flap, bead, switch and the two screws"></figure></div></li>
+    <li><div><h3>Thread the line</h3><p>Wind the line counterclockwise seen from the 606ZZ end, and lead it off the spool's <b>servo side</b>, down through the 7 mm hole and the block's bore, then slide it into the flap's slot from the flap's free end. Below: 8 mm bead, swivel, spider (60 g at most).</p></div></li>
+    <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to bead, line straight but not pulled: that number is <b>Line length</b> on the web page.</p></div></li>
+    <li><div><h3>Check by hand</h3><p>Pull the bead up against the flap: the flap swings toward the base, the switch clicks, the flap stops flat against the block. That is "spider home". Let go: the flap drops back to its rest stop and the switch opens.</p></div></li>
+    <li><div><h3>Radar mount</h3><p>No glue. <code>ld2450_fork_screw</code> under the base at the servo end, ears hanging down: 2x M3 x 10 up through the fork and the base, nuts inside. Put <code>ld2450_cradle</code>'s round knuckle between the ears and push an M3 bolt (25 to 30 mm) through, nut on the far side, snug enough to hold an angle. The cradle's open side faces back toward the beam. Slide the LD2450 up into the grooves from the bottom, <b>antenna side against the face plate</b> (the side with the windows), <b>pin-header end last</b> so the headers sit at the bottom, open at the back; a small zip tie round the cradle's bottom end keeps it from sliding out. Tilt 50 degrees down to start; set it on site (section 11).</p></div></li>
+    <li><div><h3>Controller on the pad</h3><p>The pad is the flat area at the motor-plate end (x -88 to -36), on the device side of the base, now facing up. The protoboard with the ESP32 on it, foam tape or zip ties through the x = -80 holes. The expansion board and the buck hot-glued beside it, clear of the spool. Switch and radar leads run round the base's far (servo) end and back along the top to the board, about 15 cm and 25 cm, tied to the base so the spool cannot catch them.</p></div></li>
   </ol>
 </section>
 
@@ -403,32 +409,34 @@ a{color:var(--accent)}
   <div class="ui" aria-label="Mockup of the board's web page">
     <div class="c"><div class="h">Status</div><div class="st">ready</div>
       <div><span class="ch ok">armed</span><span class="ch wa">switch open, spider not home</span><span class="ch ok">radar: clear</span></div>
-      <div class="r"><span>Drops so far</span><b>0</b></div><div class="r"><span>Last rewind</span><b>none yet</b></div><div class="r"><span>Running for</span><b>2 min 14 s</b></div></div>
+      <div class="r"><span>Drops so far</span><b>0</b></div><div class="r"><span>Last fired by</span><b>-</b></div><div class="r"><span>Last rewind</span><b>-</b></div><div class="r"><span>Last drop, measured by the rewind</span><b>-</b></div><div class="r"><span>Running for</span><b>2 min 14 s</b></div></div>
     <div class="c"><div class="h">Run</div><div class="b"><i class="p">Drop it now</i><i>Disarm</i><i class="d">Stop</i><i>Motor and servo off</i><i>Clear fault</i></div></div>
-    <div class="c"><div class="h">Bench: finger servo</div><div class="big">90° holding</div><div class="b"><i>-5°</i><i>+5°</i><i>-1°</i><i>+1°</i><i>Store as lock</i><i>Store as release</i></div></div>
-    <div class="c"><div class="h">Bench: motor</div><div class="b"><i>-1 turn</i><i>+1 turn</i><i>-1/8</i><i>+1/8</i><i>Rewind</i><i>Lock</i></div></div>
-    <div class="c"><div class="h">Settings</div><div class="r"><span>Finger lock angle</span><b>90</b></div><div class="r"><span>Line length</span><b>720</b></div><div class="r"><span>Limit switch fitted</span><b>1</b></div><div class="b"><i class="p">Save settings</i><i>Factory values</i></div></div>
+    <div class="c"><div class="h">Bench: finger servo</div><div class="big">85° holding</div><div class="b"><i>-5°</i><i>-1°</i><i>+1°</i><i>+5°</i><i>Go to lock angle</i><i>Go to release angle</i><i>Store as lock</i><i>Store as release</i></div></div>
+    <div class="c"><div class="h">Bench: motor</div><div class="b"><i>-1 turn</i><i>-1/8</i><i>+1/8</i><i>+1 turn</i><i>Rewind</i><i>Lock</i><i>Release</i></div></div>
+    <div class="c"><div class="h">Settings</div><div class="r"><span>Finger lock angle</span><b>85</b></div><div class="r"><span>Line length</span><b>636</b></div><div class="r"><span>Limit switch fitted</span><b>1</b></div><div class="b"><i class="p">Save settings</i><i>Factory values</i></div></div>
     <div class="c"><div class="h">Console</div><pre>&gt; jog 200
 [jog] ran 200 steps
 [done] jog (motor stays on)
 &gt; off
 [done] off: motor and servo off</pre></div>
+    <div class="c"><div class="h">Network</div><div class="r"><span>Network name, password</span><b>Save and restart</b></div></div>
+    <div class="c"><div class="h">Firmware</div><div class="r"><span>Update over the network</span><b>Open the update page</b></div></div>
   </div>
-  <p class="dim">What the chips mean: <b>armed</b> means the radar may fire it. <b>Motor powered</b> appears whenever the driver is on. <b>Spider home</b> is the limit switch. A red chip is a fault, with its reason; three in a row and it stops until you press Clear fault.</p>
+  <p class="dim">What the chips mean: <b>armed</b> means a radar signal may fire it. Nothing drives the radar input today (the LD2450 needs task 2; the LD2410C backup is not fitted), so the radar chip always reads clear and only <b>Drop it now</b> or the BOOT button fire it. <b>Motor powered</b> appears whenever the driver is on. <b>Spider home</b> is the limit switch. A red chip is a fault, with its reason; three in a row and it stops until you press Clear fault.</p>
 </section>
 
 <!-- ============================================================ -->
 <section id="calibrate">
   <h2><span class="n">09</span>Calibrate from the web page, in this order</h2>
-  <p class="dim">Bench first: device base-down on the table edge, spool hanging over so the line can drop about 0.7 m. Any bench move disarms the radar on purpose; step 10 re-arms it. Record each result in the commissioning log.</p>
+  <p class="dim">Bench first: device base-down on the table, slid out over the edge until the fairlead block and the radar under the base hang free, held or clamped, so the line can drop about 0.7 m to the floor. Any bench move disarms the radar on purpose; step 10 re-arms it. Record each result in the commissioning log.</p>
   <ol class="steps">
     <li><div><h3>Page loads <b class="chip ready">READY TODAY</b></h3><p>State reads "ready" or "waiting for the doorway to clear". The Console card shows the start-up lines.</p></div></li>
     <li><div><h3>Limit switch reads right <b class="chip ready">READY TODAY</b></h3><p>Lift the fairlead flap by hand and let go, watching the status chip change between "reads pressed" and "reads open". If it is backwards, type <code>liminv 1</code> in the Console. Then set <b>Limit switch fitted</b> to 1 and press <b>Save settings</b>.</p></div></li>
     <li><div><h3>Motor turns cleanly <b class="chip ready">READY TODAY</b></h3><p>Hands and line clear. Bench: motor, <b>+1 turn</b> then <b>-1 turn</b>. One smooth turn each way. Stutters or buzzes: this is the logic-level check (open item V1); see doc 02.</p></div></li>
-    <li><div><h3>Finger angles <b class="chip ready">READY TODAY</b></h3><p>Bench: finger servo. With the servo at 90, press the finger onto the spline pointing at the rod, horn screw in. Nudge until the finger sits level in the teeth: <b>Store as lock</b>. Nudge toward the floor until it is clear of the teeth: <b>Store as release</b>. <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Finger angles <b class="chip ready">READY TODAY</b></h3><p>Set 2026-09-27 and saved: lock 85, release 50 (finger on the spline, ratchet not yet on the rod). Recheck with the ratchet in place: <b>Go to lock angle</b>, the finger must sit level in the teeth; <b>Go to release angle</b>, it must be clear of them. If not, nudge, <b>Store as lock</b> or <b>Store as release</b>, <b>Save settings</b>.</p></div></li>
     <li><div><h3>Rewind direction <b class="chip ready">READY TODAY</b></h3><p>Spider hanging. <b>+1/8</b>: the spool should wind the line up. If the motor turns but the spool slips, set <b>Rewind direction</b> to the other value and try again. If neither way winds, the clutch is still in the Rev C direction: flip it (assembly step 1).</p></div></li>
-    <li><div><h3>Line length <b class="chip ready">READY TODAY</b></h3><p>Enter the measured number in <b>Line length</b>, <b>Save settings</b>.</p></div></li>
-    <li><div><h3>Release under load, drop, rewind, lock <b class="chip ready">READY TODAY</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. New settings arrive with it: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
+    <li><div><h3>Line length <b class="chip ready">READY TODAY</b></h3><p>First set <b>Drop distance</b> to no more than the line minus 85 mm (636 line: 551), or the page refuses the new line: the factory drop, 620, only fits the old 720 line. Then enter the measured number in <b>Line length</b>, <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Release under load, drop, rewind, lock <b class="chip ready">READY TODAY</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. Not yet run with the motor and spool fitted. Its settings: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
     <li><div><h3>Five full drops <b class="chip ready">READY TODAY</b></h3><p>All complete, no tangles, finger always relocks. After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
     <li><div><h3>Radar live view <b class="chip t2">AFTER TASK 2</b></h3><p>See section 10. Walk toward the door, away, and across; confirm it fires only walking in.</p></div></li>
     <li><div><h3>Arm and save <b class="chip ready">READY TODAY</b></h3><p>Press <b>Arm</b>, then <b>Save settings</b> so it stays armed after a power cut.</p></div></li>
@@ -449,7 +457,7 @@ a{color:var(--accent)}
       <tr><td>Finger servo angle and whether it is holding</td><td>Bench: finger servo</td><td><b class="chip ready">READY TODAY</b></td></tr>
       <tr><td>Motor powered, last rewind steps, measured line length</td><td>Status card</td><td><b class="chip ready">READY TODAY</b></td></tr>
       <tr><td>Every event the board logs</td><td>Console card</td><td><b class="chip ready">READY TODAY</b></td></tr>
-      <tr><td>Radar yes/no</td><td>Status chip (LD2410C pin only)</td><td><b class="chip ready">READY TODAY</b></td></tr>
+      <tr><td>Radar yes/no</td><td>Status chip. Today it reads GPIO33, the unfitted LD2410C's pin, so it always says clear</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
       <tr><td>LD2450 people: position, speed, arrival time</td><td>Radar card, about 5 times a second</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
       <tr><td>"Would fire now" lamp</td><td>Radar card</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
     </tbody>
@@ -461,7 +469,7 @@ a{color:var(--accent)}
       <text x="30" y="36" fill="#9a93a8" font-size="11" letter-spacing="1">RADAR, TOP VIEW OF THE HALLWAY (PLANNED)</text>
       <!-- sensor and fov -->
       <path d="M290 60 L60 330 A 330 330 0 0 0 520 330 Z" fill="rgba(122,92,255,.10)" stroke="#3a3548"/>
-      <rect x="275" y="52" width="30" height="10" fill="#7a5cff"/><text x="290" y="50" fill="#9a93a8" font-size="10" text-anchor="middle">LD2450 above the door</text>
+      <rect x="275" y="52" width="30" height="10" fill="#7a5cff"/><text x="290" y="50" fill="#9a93a8" font-size="10" text-anchor="middle">LD2450 on the device</text>
       <!-- door window -->
       <rect x="240" y="62" width="100" height="300" fill="rgba(74,196,122,.12)" stroke="#4ac47a" stroke-dasharray="5 4"/>
       <text x="290" y="378" fill="#4ac47a" font-size="10" text-anchor="middle">door width window (doorwidth 1000 mm)</text>
@@ -496,60 +504,36 @@ a{color:var(--accent)}
 
 <!-- ============================================================ -->
 <section id="place">
-  <h2><span class="n">11</span>Placement under the porch</h2>
-  <figure class="shot"><img src="img:install" alt="Side section under the porch showing the beam, the device, the drop and what the radar can see"></figure>
+  <h2><span class="n">11</span>On the beam: braces and placement</h2>
+  <p class="dim">Your plan, approved 2026-09-27, doc 06. The device upside down, base at the bottom, sitting on the flat legs of two 6 in steel corner braces whose other leg stands up the beam's inside face. Checked in the CAD model; <b>not yet built or hung.</b></p>
+  <figure class="shot"><img src="img:inverted_install" alt="Device turned over on two corner braces on the beam's inside face, line out through the base, radar under the servo end"></figure>
   <div class="two">
     <div class="tw"><table>
       <thead><tr><th>Point (8 ft porch ceiling, beam 10 in deep)</th><th>Height</th></tr></thead>
       <tbody>
         <tr><td>Porch ceiling</td><td>2440 mm (96 in)</td></tr>
         <tr><td>Bottom of the front beam</td><td>2184 mm (86 in)</td></tr>
-        <tr><td>Spider, retracted</td><td>bottom about 2230 mm, hidden above the beam</td></tr>
+        <tr><td>Device's base</td><td>about 2280 mm (160 below the ceiling)</td></tr>
+        <tr><td>Bead at home</td><td>about 2261 mm (179 below the ceiling)</td></tr>
+        <tr><td>Spider, retracted</td><td>hidden behind the beam only if it is 45 mm tall or less</td></tr>
         <tr><td>Spider at rest after the drop</td><td>1550 mm (61 in)</td></tr>
-        <tr><td>Lowest, if the motor loses grip and the line's stretch catches it</td><td>about 1450 mm (57 in)</td></tr>
       </tbody>
     </table></div>
     <div class="panel">
       <ul class="tight">
-        <li>On the porch ceiling, <b>behind the front beam</b>: spider line <b>305 mm (12 in) behind the beam</b>, centred on the walkway.</li>
-        <li>Rod parallel to the beam. <b>Servo end (radar) toward the beam</b>, fairlead end away from it.</li>
-        <li>4 screws: the 2 at the servo end, the 2 pad holes at x = -56. Joist: #4 x 1 in wood screws. Drywall only: ribbed anchors or small toggles.</li>
-        <li>LD2450: on the device, in its tilting cradle under the servo end, looking out from under the porch at people walking in; tilt 50 degrees down for your porch (8 ft ceiling, beam 10 in deep, device 12 in behind it), fine-tuned in the walk test. Mount the device with its servo end toward the porch's open side. Upright (manual figure 6). Check on the bench: walk across in front of it and X must change. Lead about 10 cm to the controller.</li>
-        <li><b>Not through metal.</b> The radar sees through wood, drywall and plastic, but aluminum siding or trim blocks it completely, however thin. If the beam is clad in aluminum, the radar only sees people under the beam's bottom edge, and the metal can bounce back phantom targets. Tilt steeper if it fires late or fires on nothing.</li>
+        <li><b>Braces</b>: yours to place and drill. Upright legs up the beam's inside face, tops about 8 mm under the ceiling; flat legs under the base. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; at the motor end also within 12 mm of the rod. Never within 20 mm of the rod at the 606ZZ end: the bearing plate stands there.</li>
+        <li>Rod parallel to the beam, the pad's edge (the electronics side) against the beam. The line falls 117 mm out from the beam's face, centred on the walkway.</li>
+        <li>LD2450: under the base at the servo end, looking back toward the beam and down. Start at 50 degrees; if it fires late or fires on nothing, go to 55 or 60 (the cradle clears to 65). Check on the bench: walk across in front of it and X must change.</li>
+        <li><b>Not through metal.</b> The radar sees through wood, drywall and plastic, but aluminum siding or trim blocks it completely, however thin. If the beam is clad in aluminum, the radar only sees people under the beam's bottom edge, and the metal can bounce back phantom targets. Tilt steeper.</li>
+        <li>The spider hangs inside the radar's view. If the radar counts it as a person, the device would sit waiting for the doorway to clear after each scare; the first walk test shows it.</li>
         <li>12 V adapter stays at an outdoor-safe outlet; DC extension up the post. Keep the electronics out of blowing rain.</li>
       </ul>
     </div>
   </div>
   <div class="panel">
-    <h3>Line length for your ceiling</h3>
-    <p style="margin-top:6px" class="mono">line = (ceiling - 85) - (rest height + spider height + 30) + 45</p>
-    <p class="dim" style="margin-top:6px">All in mm. Example: (2440 - 85) - (1550 + 100 + 30) + 45 = 720. Tie it long, enter it as Line length, then shorten on site until the resting height is right.</p>
-  </div>
-
-  <h3 style="margin-top:28px">Inverted install: turned over on the beam's inside face</h3>
-  <p class="dim">Your plan, approved 2026-09-27, doc 06. The device upside down, base at the bottom, sitting on the flat legs of two 6 in steel corner braces whose other leg stands up the beam. The line leaves through a hole in the base. Same mechanism, same firmware. Checked in the CAD model; <b>not yet built or hung.</b></p>
-  <figure class="shot"><img src="img:inverted_install" alt="Device turned over on two corner braces on the beam's inside face, line out through the base, radar under the servo end"></figure>
-  <h3 style="margin-top:18px">Inverted install, step by step</h3>
-  <ol class="steps">
-    <li><div><h3>Print</h3><p><code>fairlead_base</code> (the fairlead block, instead of fairlead_body), <code>fairlead_flap</code> (the 2026-09-27 one with the 3.8 mm prong) and <code>ld2450_fork_screw</code>. Everything else carries over.</p></div></li>
-    <li><div><h3>Drill the base</h3><p>Print <code>cad/bracket_footprint_inverted.svg</code> at 100% and tape it to the base's flat outer face. Five holes: <b>7 mm</b> for the line (a 1/4 in bit is close enough), <b>3.4 mm x2</b> for the fairlead block (the pair nearest the spool on the servo side), <b>3.4 mm x2</b> for the radar fork (at the servo end). Sand the 7 mm hole smooth inside and on both edges: the line runs through it.</p></div></li>
-    <li><div><h3>Flap and switch onto the block</h3><p>Exactly as for the ceiling fairlead (section 06): clear the bore with a 3 mm drill by hand; KW12-3 on the switch plate, roller toward the bore, 2x M2 finger-tight; flap on the M2 hinge bolt, free, not clamped; slide the switch until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the block.</p></div></li>
-    <li><div><h3>Block onto the base</h3><p>Flat face of the block against the base's outer face, its bore under the 7 mm hole. 2x <b>M3 x 12</b> from inside the base (heads on the device side), cutting their own thread into the block. Snug, not tight: the thread is plastic. Look down through the 7 mm hole: you must see straight through the bore.</p><figure class="shot"><img src="img:inverted_fairlead" alt="Fairlead block under the base seen from below: flap, bead, switch and the two screws"></figure></div></li>
-    <li><div><h3>Thread the line</h3><p>Wind the line counterclockwise seen from the 606ZZ end, same as always, but lead it off the spool's <b>servo side</b>, down through the 7 mm hole and the block's bore, then slide it into the flap's slot from the flap's free end. Below: 8 mm bead, swivel, spider.</p></div></li>
-    <li><div><h3>Check by hand</h3><p>Pull the bead up against the flap: the flap swings toward the base, the switch clicks, the flap stops flat against the block. Let go: it drops back to its rest stop and the switch opens. The web page's switch chip must follow.</p></div></li>
-    <li><div><h3>Radar and wires</h3><p>Radar fork under the servo end: 2x M3 x 10 up through the fork and the base, nuts inside. Cradle on its pivot bolt, 50 degrees down to start, looking back toward the beam. Switch and radar leads round the base's far (servo) end and back over the top to the board, about 15 and 25 cm, tied clear of the spool.</p></div></li>
-    <li><div><h3>Braces</h3><p>Yours to place and drill. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; never within 20 mm of the rod at the 606ZZ end (the bearing plate stands there).</p></div></li>
-  </ol>
-  <div class="two">
-    <div class="panel">
-      <ul class="tight">
-        <li>Base about 160 mm below the ceiling with the braces' upright legs topping out just under it.</li>
-        <li>Bead at home about 179 mm below the ceiling. The retracted spider hides behind a 10 in beam only if it is 45 mm tall or less.</li>
-        <li>Line falls 117 mm from the beam's face.</li>
-        <li>Line length = (ceiling - 179) - (rest height + spider height + 30) + 55, all in mm.</li>
-        <li>The spider sits inside the radar's view. If the radar counts it as a person, the device would sit waiting for the doorway to clear after each scare; the first walk test shows it.</li>
-      </ul>
-    </div>
+    <h3>Line length for your porch</h3>
+    <p style="margin-top:6px" class="mono">line = (ceiling - 179) - (rest height + spider height + 30) + 55</p>
+    <p class="dim" style="margin-top:6px">All in mm. Example: (2440 - 179) - (1550 + 100 + 30) + 55 = 636. Tie it long, enter it as Line length, then shorten on site until the resting height is right. Order on the day: device finished on the bench (section 06), braces to the beam, device onto their flat legs, bolted through your holes.</p>
   </div>
 </section>
 
@@ -565,8 +549,8 @@ a{color:var(--accent)}
 </section>
 
 <footer>
-  <div><b>How this was checked, 2026-09-25; inverted install, bearing seat, flap and aluminum note added 2026-09-27; separate power board removed, inverted fairlead steps and firmware status 2026-09-28 (firmware status from docs/commissioning_log.md).</b> Inverted install numbers from <code>python cad/inverted.py</code> (every check passes, radar cradle clear to 65 degrees). Radar and metal: Hi-Link's LD2450 manual and install guides, plus the skin depth of aluminum at 24 GHz. Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. 30-pin header order from the Last Minute Engineers ESP32 DevKit pinout, checked against the pin names in doc 02. LD2450 pin order and 200 mA supply from Hi-Link's manual. Assembly, placement and heights from docs 05, 06 and 09. Web page cards copied from <code>src/web.cpp</code>. Board on COM13 read by esptool: ESP32-D0WD-V3, 4 MB flash; flashed by the standard USB upload and joins the home WiFi at 192.168.1.138.</div>
-  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25. <b>Not checked.</b> Nothing here has been watched working with the motor, servo, switch or radar connected. Everything marked AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
+  <div><b>How this was checked, 2026-09-25; inverted install, bearing seat, flap and aluminum note added 2026-09-27; separate power board removed, inverted fairlead steps and firmware status 2026-09-28; page turned over to the inverted install, web page picture matched to <code>src/web.cpp</code>, finger angles and servo from <code>docs/commissioning_log.md</code>, 2026-09-28.</b> Inverted install numbers from <code>python cad/inverted.py</code> (every check passes, radar cradle clear to 65 degrees). Radar and metal: Hi-Link's LD2450 manual and install guides, plus the skin depth of aluminum at 24 GHz. Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. 30-pin header order from the Last Minute Engineers ESP32 DevKit pinout, checked against the pin names in doc 02. LD2450 pin order and 200 mA supply from Hi-Link's manual. Assembly, placement and heights from docs 05, 06 and 09; inverted heights, brace bolt zones and line formula from doc 06 and <code>cad/inverted.py</code>. Web page cards copied from <code>src/web.cpp</code>. Board on COM13 read by esptool: ESP32-D0WD-V3, 4 MB flash; flashed by the standard USB upload and joins the home WiFi at 192.168.1.138.</div>
+  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25. <b>Not checked.</b> The servo has been watched moving and holding (2026-09-27); nothing else here has been watched working with the motor, switch or radar connected, and the inverted install has not been built. Everything marked AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
 </footer>
 </main>
 
