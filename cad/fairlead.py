@@ -102,8 +102,11 @@ def fairlead_body():
                  bx(-37, -27, SW_HOLE_Y - SW_SLIDE, SW_HOLE_Y + SW_SLIDE, z - 1.2, z + 1.2)]
     return D(b, *cuts)
 
+FORK_X0, FORK_Z1 = -30.5, 50.0   # the slot's outer prong widened from 1.2 to 3.8 mm (owner 2026-09-27: too thin); stops 1.5 short of the body's lower wall (x -32, z 39..54)
+
 def fairlead_flap():
-    plate = bx(-27.9, -17, HY - FT / 2, HY + FT / 2, 33, 78)              # free end z 33, tail to z 78
+    plate = U(bx(-27.9, -17, HY - FT / 2, HY + FT / 2, 33, 78),           # free end z 33, tail to z 78
+              bx(FORK_X0, -27.8, HY - FT / 2, HY + FT / 2, 33, FORK_Z1))  # the outer prong beside the line slot, widened
     knuckle = U(xcyl(3.0, -27.9, -17, PY, HZ), bx(-27.9, -17, PY, HY + FT / 2, HZ - 3, HZ + 3))   # flat bottom, prints flat
     f = U(plate, knuckle)
     slot = U(bx(LX - 1.7, LX + 1.7, HY - 4, HY + 4, 30, LZ),

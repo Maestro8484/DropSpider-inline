@@ -15,7 +15,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 |---|---|
 | `fairlead_body.stl` | Screws to the pad in the old line guide's spot (2x M3 countersunk from the ceiling side). Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
 | Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the line to saw on. Centered on the spool's line channel |
-| `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied |
+| `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the bead and swivel are tied. The prong on the switch side of the slot is 3.8 mm wide (was 1.2, too thin, owner 2026-09-27) |
 | KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
 | Hinge pin | M2 bolt, 16 to 20 mm: free in the flap, threads itself into the body |
 
