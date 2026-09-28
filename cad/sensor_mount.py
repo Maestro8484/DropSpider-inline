@@ -14,7 +14,7 @@ and their dupont plugs (24 mm deep checked) clear everything at 30 to 60 degrees
 Header end at the top would hit the bracket above 40 degrees. A dab of hot glue
 keeps the board in.
 
-Hardware: one M3 bolt 20 to 25 mm long and a nut (a nylon-insert nut holds the
+Hardware: one M3 bolt 25 to 30 mm long (the fork is 21.4 across its 4 mm ears) and a nut (a nylon-insert nut holds the
 angle best).
 
 Installed coordinates use the assembly frame in generate.py:
@@ -50,10 +50,10 @@ PIVOT_U, PIVOT_W = -10.5, 0.0  # pivot position in the cradle's local frame
 
 # fork
 KNUCKLE_HALF = 6.4             # cradle knuckle half width; the ears sit 0.3 mm outside it
-EAR_T = 2.0                    # lightweight fork (owner's pick 2026-09-26): 2 mm ears
-EAR_R = 4.5
+EAR_T = 4.0                    # 4 mm ears (owner 2026-09-27: the 2 mm lightweight ears were far too slim)
+EAR_R = 6.0                    # 12 mm across the ear, 4.3 mm of wall round the 3.4 bolt hole; the fork plate is 12 wide
 PLATE_T = 2.0                  # 2 mm glue plate
-FORK_HALF = KNUCKLE_HALF + 0.3 + EAR_T   # 8.7
+FORK_HALF = KNUCKLE_HALF + 0.3 + EAR_T   # 10.7: ears z 51.3 to 72.7, clear of the screw fork's screws at z 45 and 79
 
 
 def _along_v(m):
