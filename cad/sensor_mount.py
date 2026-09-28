@@ -122,6 +122,29 @@ def ld2450_fork():
     return G.D(G.U(plate, *ears), G.cyl(M3_CLEAR, 40, Z_CENTER - 20, px, py))
 
 
+# bolted fork (the only radar fork since 2026-09-27: no glue): the same ears on a longer plate with two holes
+FORK_PLATE_T = 3.0
+FORK_Z_HALF = 22.0             # plate z 40..84 about Z_CENTER 62
+FORK_SCREW_DZ = 17.0           # holes at z 45 and 79, outside the ears (z 51.3..72.7) and the cradle's swing
+FORK_SCREW_D = 3.6             # M3 clearance; prints about 3.3 to 3.4
+
+
+def ld2450_fork_screw():
+    """The radar fork with a 3 mm plate, 44 long along z, and two holes for M3. Same ears and pivot as
+    ld2450_fork, so the cradle is unchanged. Drawn in its ceiling-install place (y 4 = the face against
+    the bracket's base); inverted.py turns it over under the base."""
+    z0, z1 = Z_CENTER - FORK_Z_HALF, Z_CENTER + FORK_Z_HALF
+    plate = G.bx(62, 74, 4, 4 + FORK_PLATE_T, z0, z1)
+    m = G.U(ld2450_fork(), plate)
+    return G.D(m, *[G.vcyl(FORK_SCREW_D / 2, 10, 0, 68, Z_CENTER + s * FORK_SCREW_DZ) for s in (-1, 1)])
+
+
+def ld2450_fork_screw_print():
+    m = ld2450_fork_screw()
+    m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
+    m.apply_translation(-m.bounds[0]); return m
+
+
 def ld2450_fork_print():
     """Glue face down: the ears stand up as walls, the bolt hole runs sideways."""
     m = ld2450_fork()

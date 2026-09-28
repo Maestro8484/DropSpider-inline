@@ -21,7 +21,7 @@ What is new:
                      checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
                      at the base's ends. The owner's orientation (2026-09-27): the flat leg under the
                      base, the other leg standing UP the beam's face beside the device, screwed to it.
-  radar              part of the device (owner 2026-09-27): ld2450_fork_screw (cad/wall_mount.py,
+  radar              part of the device (owner 2026-09-27): ld2450_fork_screw (cad/sensor_mount.py,
                      same ears as ld2450_fork, no glue), cradle and radar, turned over and bolted
                      under the base at the servo end with 2x M3, looking back toward the beam (the
                      approach) and down, under the fairlead block.
@@ -40,7 +40,7 @@ import numpy as np, trimesh
 
 import generate as G
 import fairlead as F
-import wall_mount as WM
+import sensor_mount as S
 
 # ---------------- dimensions (mm) ----------------
 LINE_X, LINE_Z = 25.0, 45.0          # line exit: the barrel's +x tangent, straight to the base
@@ -56,7 +56,7 @@ BEAM_DEPTH = 254.0
 BEAM_BOTTOM_Y = CEILING_Y - BEAM_DEPTH   # -94
 RADAR_TILT = 50.0                    # doc 03's tilt, below level; the cradle adjusts
 RADAR_SHIFT = (130.0, 4.0)
-RADAR_SCREWS = [(130.0 - 68.0, 62.0 - WM.FORK_SCREW_DZ), (130.0 - 68.0, 62.0 + WM.FORK_SCREW_DZ)]   # (x, z): the fork's 2 holes, turned over: x 62, z 45 and 79           # after turning over: fork plate from x -74..-62 to x 56..68, glue face onto y 0
+RADAR_SCREWS = [(130.0 - 68.0, 62.0 - S.FORK_SCREW_DZ), (130.0 - 68.0, 62.0 + S.FORK_SCREW_DZ)]   # (x, z): the fork's 2 holes, turned over: x 62, z 45 and 79
 PCB_BOX = (-88.0, -36.0, 4.0, 34.0, 18.0, 93.0)   # electronics stand-in on the pad (x, y, z ranges)
 
 # T: doc 09's fairlead geometry (line at x -25, bore y 69..78.5, flap at y 84 below it) moved to
@@ -132,10 +132,9 @@ def corner_braces():
 def radar_on_base(tilt=RADAR_TILT):
     """The ceiling design's fork, cradle and radar turned over (180 degrees about z) and moved under the
     base's servo end: glued to the base's outer face, looking toward the beam (-x) and down (-y)."""
-    import sensor_mount as S
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
-    for k, m in (("ld2450_fork_screw", WM.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
+    for k, m in (("ld2450_fork_screw", S.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
         mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0]); out[k] = mm
     return out
 

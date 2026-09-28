@@ -66,7 +66,7 @@ Line length (barrel knot to bead) = (ceiling - 179) - (target rest height + spid
 
 **Order.** Bench: drill the five holes, screw the fairlead block on (doc 09, inverted install), bolt the radar fork under the servo end, board on the pad, leads round the far end, line threaded down through the base hole. Ladder: braces to the beam, device onto their flat legs, bolted through the owner's holes. Then `07_commissioning.md` as usual.
 
-The hinge-and-strut wall draft (`cad/wall_hinge.py`, `hinge_plate.stl`, `hinge_clip.stl`, `tie_bar.stl`, `strut.stl`) and the braced shelf (`cad/wall_mount.py`) are superseded by this and kept for reference only. Do not print them.
+Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf. Their code and STLs are in `cad/retired/`, their handoff and picture in `docs/retired/`. Do not print them.
 
 ## Sensor
 

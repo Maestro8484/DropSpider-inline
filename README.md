@@ -1,7 +1,7 @@
 # dropspider-inline
 
 **DropSpider, Mechanism A: In-Line Single-Axle Clutch Spool (ISCS), Rev C.1.**
-A ceiling-mounted Halloween prop that drops a foam spider 0.5 to 1.2 m when someone walks toward a doorway, then winds it back up and re-arms on its own. Zero power while waiting.
+A Halloween prop, mounted on a porch ceiling or turned over on the porch beam's inside face (doc 06), that drops a foam spider 0.5 to 1.2 m when someone walks toward a doorway, then winds it back up and re-arms on its own. Zero power while waiting.
 
 Sibling project name reserved: `dropspider-tiltspool` (Mechanism B, servo-driven tilt-spool free-fall). Not started. This repo is Mechanism A only.
 
@@ -26,7 +26,7 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 | `docs/09_fairlead_switch.md` | fairlead, hinged flap and KW12-3 limit switch |
 | `docs/M1_fix_handoff.md`, `docs/handoff_sensor_bearings.md` | Rev C.1 owner handoffs: clutch fix and motor-led drop; LD2450 and bearing care |
 | `cad/generate.py`, `cad/fairlead.py`, `cad/inverted.py` | source of truth for every printed part (`inverted.py`: the device turned over on the porch beam, doc 06) (`tools\regen_cad.ps1` rebuilds STLs and images) |
-| `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts: do not print |
+| `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts and their code, `docs/retired/` obsolete docs and pictures: do not print or follow them |
 | `platformio.ini`, `src/`, `include/` | firmware, standard PlatformIO layout, 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works) |
 | `secrets.ini.example` | template for `secrets.ini`: WiFi name, password, update password (never committed) |
 | `docs/commissioning_log.md` | every bench and install result, dated |

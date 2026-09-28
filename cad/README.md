@@ -16,7 +16,7 @@ pip install trimesh manifold3d shapely numpy matplotlib      # once
 | Step | Script | Writes | What it does |
 |---|---|---|---|
 | 1 | `cad/generate.py` | `cad/stl/*.stl` | Builds each part from boxes and cylinders, adds and cuts them (boolean operations, via manifold3d), turns each part to its print orientation, exports STL, then runs checks and prints a report |
-| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, wall_install, inverted_install | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
+| 2 | `cad/render.py` | `docs/img/` assembly, exploded, step1 to step6, lock_detail, base_layout, fairlead_rest, fairlead_home, fairlead_exploded, inverted_install | Places every part where it sits in the real device and draws shaded pictures with `raster.py` (a small built-in renderer, no graphics card needed). Takes 1 to 3 minutes |
 | 3 | `docs/diagrams.py` | `docs/img/wiring.png`, `install.png` | Flat drawings made with matplotlib |
 
 Same code, same output: the pictures and STLs are rebuilt identically every time.
@@ -27,15 +27,13 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 |---|---|
 | `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
-| `sensor_mount.py` | LD2450 radar mount: the fork's ears and the cradle (the fork itself prints as `ld2450_fork_screw` from `wall_mount.py`, bolted, no glue), cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
+| `sensor_mount.py` | LD2450 radar mount: the fork's ears and the cradle and `ld2450_fork_screw`, the bolted fork (2x M3, no glue), the only radar fork, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
 | `inverted.py` | Inverted install (doc 06 alternative, approved 2026-09-27): the device turned over on two steel corner braces. `bracket_inverted()` (the 3 drilled holes), `fairlead_base()` (doc 09's unit as a block under the base, exported as `fairlead_base.stl`), the radar turned over under the servo end, brace stand-ins, a board box, `assembly_inverted()`, `porch()` and `view_inv()` (pictures with the floor down). Run it on its own for its report: watertight, face flat, clash (braces and board box included), radar view, line path, spool clearance, flap stops and roller push, screw heads, loads, heights |
-| `wall_hinge.py` | Superseded by `inverted.py`, kept for reference. Wall install draft (the owner's earlier plan): hinge plate frame for the beam, two clips for the pad, a tie bar across the device's far end, two struts. `assembly_hinge()` places them on the device. Run it on its own for its report: watertight, clash, six pins, screwdriver paths, swing, strut load and buckling |
-| `wall_mount.py` | Superseded, kept for reference. Fallback wall install: one braced shelf (212 cm3) that keeps the device at the ceiling with no cords, plus `ld2450_fork_screw` for putting the radar under the beam. Not in the print list; `python wall_mount.py` for its report |
+| `retired/` | Obsolete parts and their code: `line_guide`, the glued `ld2450_fork`, the wall-install drafts (`wall_hinge.py` with hinge_plate, hinge_clip, tie_bar, strut; `wall_mount.py`, the braced shelf). Kept for reference, not run, not printed |
 | `render.py` | All 3D pictures. One function per picture |
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
-| `retired/` | Obsolete parts kept for reference. Do not print |
 
 ## The coordinate frame (every doc uses it)
 
@@ -58,7 +56,6 @@ Units: millimeters.
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
 | Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
-| Wall hinge: plate, clips, tie bar and struts clear every part and each other; six pins line up; four screwdriver paths clear; swing clear to 65 degrees | `python wall_hinge.py` | `clear every device part and each other`, `all 6 pins ... True`, four `clear` screw lines, `swing: clear ... down to 65 degrees` |
 
 ## Changing a part: the routine
 

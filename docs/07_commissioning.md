@@ -1,4 +1,4 @@
-# 07 - Commissioning (bench first, then ceiling)
+# 07 - Commissioning (bench first, then installed)
 
 Do every step on the bench, device base-down, spool hanging over the table edge so the line can drop about 0.7 m. Each step has a pass condition; do not go on until it passes. Record every result in `commissioning_log.md`.
 

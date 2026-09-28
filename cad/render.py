@@ -176,39 +176,6 @@ def fairlead_exploded_png():
                        mp.Patch(color="#57606a", label="2x M2 x 12 screw + nut")], loc="lower left", fontsize=10)
     fig.savefig(os.path.join(IMG, "fairlead_exploded.png"), dpi=100, bbox_inches="tight"); plt.close(fig)
 
-def wall_png():
-    """The owner's hinge-and-cord mount on the beam's inside face; the radar stays drawn on the device."""
-    import wall_hinge as WH
-    A = WH.assembly_hinge(); P = WH.porch()
-    items = [(rview(P["ceiling"]), COL["ceiling"]), (rview(P["beam"]), COL["beam"])]
-    key = lambda k: k if k in COL else ("pin" if k.startswith("pin") else k.rsplit("_", 1)[0])   # hinge_clip_0, strut_1, pin_h0 share their family's color
-    items += [(rview(m), COL[key(k)]) for k, m in A.items()]
-    img, proj = raster.render(items, elev=-18, azim=-42, W=1300, H=1000)
-    labels = [lbl(proj, (WH.LINE_X, 45, -125), 10, 20, f"line falls {WH.LINE_X - WH.X_OUT:.0f} mm from the beam's face"),
-              lbl(proj, (WH.X_IN, WH.STRUT_Z[0], -WH.STRUT_LOW_Y), -60, 30, "hinge at the top, a pushed bar at 40 degrees at each end")]
-    save(img, "wall_install.png", "Wall install (draft, the owner's plan): plate hinged to the pad end, tie bar across the far end, one strut per side (view from below, inside the porch)",
-         labels, keys=["hinge_plate", "hinge_clip", "tie_bar", "strut", "pin", "bracket", "beam", "ceiling"])
-
-def wall_exploded_png():
-    """Wall mount lifted off the device, bolts below, nuts above, wood screws pulled out of the plate."""
-    import wall_mount as WM
-    A = WM.assembly_wall(); H = WM.hardware()
-    items = []
-    for k, m in A.items():
-        if k.startswith("ld2450"): continue
-        mm = m.copy()
-        if k == "wall_mount": mm.apply_translation([0, -70, 0])
-        items.append((rview(mm), COL[k]))
-    for k, m in H.items():
-        mm = m.copy(); kind = k.split("_")[0]
-        if kind == "bolt": mm.apply_translation([0, 30, 0])
-        elif kind == "nut": mm.apply_translation([0, -100, 0])
-        else: mm.apply_translation([28, -70, 0])
-        items.append((rview(mm), COL[kind]))
-    img, proj = raster.render(items, elev=24, azim=-40, W=1400, H=1000)
-    save(img, "wall_exploded.png", "Wall mount exploded: nuts tap into the shelf's top pockets at the bench, the device bolts up from below, 4 wood screws into the beam",
-         (), keys=["wall_mount", "nut", "bolt", "screw", "bracket"])
-
 def inverted_png():
     """The owner's inverted install: device turned over on two 6 in corner braces standing up the beam, line out through the base."""
     import inverted as INV
@@ -224,5 +191,5 @@ def inverted_png():
          labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
 
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png(); inverted_png()
+    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
     print("renders written to", os.path.abspath(IMG))

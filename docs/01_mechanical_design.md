@@ -78,10 +78,6 @@ The same swing means the knot can end up to half a turn either side of the botto
 | finger.stl | 1 (+1 spare) | as exported (flat top face down, hub standing up) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | spacer_A_6mm.stl, spacer_B_50mm.stl | 1 each | on end | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | shim_1mm.stl, shim_2mm.stl | only if needed (05 step 8) | flat | rectilinear 100% | 4 | none | none |
-| hinge_plate.stl | 1, wall install draft, superseded: do not print (doc 06) | as exported (beam face down, forks standing; 181 x 159 footprint) | gyroid 40% | 4 | none | 5 mm |
-| hinge_clip.stl | 2, wall install draft, superseded: do not print | as exported (on its end, pin hole vertical) | rectilinear 100% | 4 | none | 3 mm (small footprint) |
-| tie_bar.stl | 1, wall install draft, superseded: do not print | as exported (top face down, lugs standing) | gyroid 40% | 4 | none | none |
-| strut.stl | 2, wall install draft, superseded: do not print | as exported (flat on its side, 8 mm tall) | rectilinear 100% | 4 | none | none |
 | fairlead_base.stl | 1, inverted install only (doc 06), instead of fairlead_body | as exported (17 mm tall) | gyroid 40% | 4 | none | 5 mm |
 | ld2450_fork_screw.stl | 1, both installs: the only radar fork, bolted with 2x M3, no glue (the glued ld2450_fork is retired) | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
 
