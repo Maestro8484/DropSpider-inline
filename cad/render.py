@@ -15,11 +15,11 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
        "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b",
        "fairlead_base": "#8b5cf6", "brace": "#6b7280", "line": "#111111", "bead": "#f59e0b", "electronics": "#16a34a"}
-LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
+LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612 one-way bearing",
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)", "fairlead_flap_inv": "fairlead_flap_inv.stl (flap with the tab under the switch)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
-         "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
+         "bearing_606": "606ZZ ball bearing", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
          "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
          "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x M3 through the base, no glue)",
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
