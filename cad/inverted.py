@@ -103,17 +103,23 @@ SWV_BODY_BOT = FLAP_TOP + 0.3 + 9.8   # lever face of the body: -20.7 (lever and
 SWV_BODY_TOP = SWV_BODY_BOT + (F.SW_BODY_BOT - F.SW_BODY_TOP)   # -10.5; legs up to -4.1
 SWV_HOLE_Y = SWV_BODY_TOP - 2.9       # mounting holes 2.9 in from the leg side, as doc 09
 SWV_HOLES_Z = (SWV_Z0 + 5.25, SWV_Z0 + 5.25 + 9.5)
+BORE_R = 2.0                          # bore throat radius (4.0 mm)
+SW_PILOT_D, SW_PILOT_DEPTH = 1.8, 6.5 # owner 2026-09-28: switch on 2x M2 x 12 self-tapping into the plastic, holes 6.5 deep; 1.8 drawn prints about 1.6
+REST_SHAVE = 1.25                     # owner 2026-09-28: rest pad shortened 1.25 mm
 
 
 def bore_inv():
-    """Line bore through the column, y 0 down to the stop face: 3.2 mm throat, rounded flares at both ends."""
+    """Line bore through the column, y 0 down to the stop face, rounded flares at both ends. Owner 2026-09-28:
+    wider and more forgiving (less fraying): 4.0 mm throat (was 3.2), top mouth 7 mm to meet the base's
+    7 mm hole, bottom mouth 9 mm, each flare 6 mm long. Walls to the column's sides stay 1.5 mm or more."""
     h = -STOP_Y_INV + 0.5
+    r0, rt, rb, L = BORE_R, 3.5, 4.5, 6.0
     prof = [(0, 0.0)]
     for k in range(9):
-        t = k / 8; prof.append((1.6 + 3.0 * (1 - t) ** 2, 5.0 * t))
-    prof.append((1.6, h - 5.0))
+        t = k / 8; prof.append((r0 + (rt - r0) * (1 - t) ** 2, L * t))
+    prof.append((r0, h - L))
     for k in range(1, 9):
-        t = k / 8; prof.append((1.6 + 1.4 * t ** 2, h - 5.0 + 5.0 * t))
+        t = k / 8; prof.append((r0 + (rb - r0) * t ** 2, h - L + L * t))
     prof.append((0, h))
     v = trimesh.creation.revolve(np.array(prof), sections=64)                     # axis z, 0 to h
     v.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))   # z -> -y
@@ -131,15 +137,12 @@ def fairlead_base():
     bosses = [bx(28.5, 36, -11, 0, z - 4, z + 4) for _, z in BLOCK_SCREWS]   # 11 mm of thread for each M3
     column = bx(x0, x1, STOP_Y_INV, 0, z0, z1)
     hinge = bx(29.0, 36.0, PIN_Y - 2.5, 0, HINGE_Z - 3.0, HINGE_Z + 3.0)     # M2 hinge bolt threads 7 mm; 1.1 clear of the knuckle (x 27.9)
-    rest = bx(24.0, x1, FLAP_TOP + 0.2, STOP_Y_INV, 63.5, 67.5)          # rest stop over the flap tail, as doc 09
-    splate = bx(PLATE_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])
-    bridges = [bx(GAP_X[0], GAP_X[1], PLATE_Y0, 0, z - 1, z + 1) for z in (PLATE_Z[0] + 1, PLATE_Z[1] - 1)]
-    body = G.U(plate, *bosses, column, hinge, rest, splate, *bridges)
+    rest = bx(24.0, x1, FLAP_TOP + 0.2 + REST_SHAVE, STOP_Y_INV, 63.5, 67.5)   # rest stop over the flap tail, shortened 1.25 (owner)
+    splate = bx(GAP_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])   # solid from the column to the switch face (x 31 to 37), no nut gap
+    body = G.U(plate, *bosses, column, hinge, rest, splate)
     cuts = [bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
-    for z in SWV_HOLES_Z:                                               # 2.4 wide slots, +-2.5 in y; M2 x 12, nuts in the gap
-        cuts += [F.xcyl(1.2, GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y - F.SW_SLIDE, z),
-                 F.xcyl(1.2, GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y + F.SW_SLIDE, z),
-                 bx(GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y - F.SW_SLIDE, SWV_HOLE_Y + F.SW_SLIDE, z - 1.2, z + 1.2)]
+    for z in SWV_HOLES_Z:                                               # M2 x 12 self-tapping, 6.5 deep from the switch face
+        cuts += [F.xcyl(SW_PILOT_D / 2, PLATE_X[1] - SW_PILOT_DEPTH, PLATE_X[1] + 1, SWV_HOLE_Y, z)]
     cuts += [G.vcyl(1.25, 12, -11, x, z) for x, z in BLOCK_SCREWS]      # 2.5 pilots, 11 deep from the mounting face
     return G.D(body, *cuts)
 
@@ -280,7 +283,7 @@ if __name__ == "__main__":
             a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(HINGE_Z - SWV_ROLLER_Z) * math.sin(a) - 0.3:.2f} mm past touching (switch needs 3.4)")
     rest_flap = rotate_flap(flap, -deg if False else 0)
     lows = {"flap (at rest)": None, "block": body.bounds[0][1], "switch body and roller": switch_installed().bounds[0][1]}
-    for dd in np.arange(0, 3.0, 0.25):
+    for dd in np.arange(0, 25.0, 0.25):
         if G.I(rotate_flap(flap, -dd), body).volume > 0.2: break
     lows["flap (at rest)"] = rotate_flap(flap, -dd).bounds[0][1]
     print("lowest points (y, mm below the base): " + ", ".join(f"{k} {v:.1f}" for k, v in lows.items()))

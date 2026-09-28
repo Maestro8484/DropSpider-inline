@@ -52,15 +52,17 @@ One flap is needed; a second is a spare.
 
 ![Fairlead v2](img/inverted_fairlead.png)
 
+Owner's edits the same day: the line bore widened (4.0 mm throat, was 3.2; mouths 7 mm at the base and 9 mm at the flap, each flare 6 mm long); the switch plate solid with two self-tapping M2 holes instead of slots and nuts; the rest pad shortened 1.25 mm, so the flap hangs at 9.5 degrees at rest (was 1.75) and the roller sits about 3 mm clear of the tab until the bead lifts it.
+
 Owner's redesign ask, 2026-09-28: the switch faces outward, its legs and wires point up toward the spool instead of hanging under the flap, and the flap is the lowest point. So the switch now sits above the flap on the block's outer side, legs up, and its roller rests on a tab added to the flap's free-end side. The bead lifts the free end; the tab lifts the roller. Source `fairlead_base()` and `flap_inv_local()` in `cad/inverted.py`. Stacking the switch above the flap takes about 30 mm under the base, so the flap hangs 32 mm under it (v1: 15 mm, with the switch hanging to 43).
 
-Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap watertight; mounting face one plane; clear of every part (braces, radar, board box); line path clear through the base hole, the bore and the flap slot; hard stop 14.75 degrees, rest stop 1.75; roller pushed 4.03 mm past touching (needs 3.4, same as v1); lowest points below the base: flap 34.0, block 32.7, switch 30.5; switch legs end 4.1 mm under the base; 2 mm clear of the spool; screw heads clear. Not printed or fitted yet.
+Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap watertight; mounting face one plane; clear of every part (braces, radar, board box); line path clear through the base hole, the bore and the flap slot; hard stop 14.75 degrees; roller pushed 4.03 mm past touching (needs 3.4, same as v1); lowest points below the base: flap 37.3 at rest, block 32.7, switch 30.5; switch legs end 4.1 mm under the base; 2 mm clear of the spool; screw heads clear. Not printed or fitted yet.
 
 | Step | What to do |
 |---|---|
 | Print | `fairlead_base.stl` (mounting face on the bed, 33 mm tall, no supports) and `fairlead_flap_inv.stl` (prints flat like the old flap). The old `fairlead_flap.stl` does not fit this block: it has no tab |
 | Holes in the base | Same as before: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (block screws). Drawing `cad/bracket_footprint_inverted.svg`, 1:1 |
-| Switch | KW12-3 on the block's outer face (the side away from the rod), lever and roller DOWN, legs UP toward the base. 2x M2 x 12 through the switch and the slots in the switch plate; the nuts go in the slot behind the plate, pushed in from underneath with tweezers. Slide it until the roller just touches the flap's tab, then back off a paper's thickness and tighten |
+| Switch | KW12-3 on the block's outer face (the side away from the rod), lever and roller DOWN, legs UP toward the base. 2x **M2 x 12 screws** through the switch, threading straight into the plastic (holes 6.5 mm deep, no nuts, no slots: the switch position is fixed) |
 | Wires | Solder before mounting. The legs end about 4 mm under the base: lead the wires sideways off the legs, then round the base's far end to the board |
 | Flap | M2 bolt, 20 mm, in from the rod side through the flap's knuckle and threaded into the hinge boss, not clamped. The tab goes under the roller |
 | Screw on | 2x **M3 x 12** from inside the base (heads on the device side) into the block's 2.5 mm pilots. Flat face against the base's outer face |
