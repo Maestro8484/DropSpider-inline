@@ -190,6 +190,23 @@ def inverted_png():
     save(img, "inverted_install.png", "Inverted install (the owner's plan): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
          labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
 
+def inverted_fairlead_png():
+    """Close-up for the build guide: the fairlead block under the base, flap, switch, both block screws, line and bead."""
+    import inverted as INV
+    A = INV.assembly_inverted(); L = INV.line_and_bead(drop=45)
+    base = G.I(A["bracket"], G.bx(0, 55, -60, 12, 10, 105))                  # just the base around the block
+    screws = [G.U(G.vcyl(1.5, 12, -8.0, x, z), G.vcyl(2.75, 2.0, 4.0, x, z)) for x, z in INV.BLOCK_SCREWS]   # M3 x 12 from inside the base
+    items = [(INV.view_inv(base), "#d0d3d6")]
+    items += [(INV.view_inv(A[k]), COL[k]) for k in ("fairlead_base", "fairlead_flap", "switch_kw12")]
+    items += [(INV.view_inv(m), "#57606a") for m in screws] + [(INV.view_inv(L["line"]), "#111111"), (INV.view_inv(L["bead"]), COL["bead"])]
+    img, proj = raster.render(items, elev=-45, azim=120, W=1300, H=1000)
+    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -40), 80, 30, "line: down through the 7 mm hole, the block's bore, the flap's slot", True),
+              lbl(proj, (INV.LINE_X, -INV.LINE_Z, -20), -420, -60, "bead: lifts the flap at home", True),
+              lbl(proj, (26, -80, -30), 60, 20, "KW12-3: roller on the flap's tail", True),
+              lbl(proj, (32, -83, -8), 80, -60, "M3 x 12 from inside the base (x2)", True)]
+    save(img, "inverted_fairlead.png", "Inverted install: fairlead block under the base, seen from below (only the base is drawn above it)",
+         labels, keys=["fairlead_base", "fairlead_flap", "switch_kw12", "bead"], loc="lower left")
+
 if __name__ == "__main__":
     base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
     print("renders written to", os.path.abspath(IMG))

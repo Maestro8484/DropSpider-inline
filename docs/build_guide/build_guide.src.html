@@ -92,7 +92,7 @@ a{color:var(--accent)}
 </style>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#powerboard">Power board</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
+  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
 </nav>
 
 <main>
@@ -101,7 +101,6 @@ a{color:var(--accent)}
   <p class="dim">One page, top to bottom: wire the 30-pin ESP32 DevKit V1, assemble the device, power it up, then set it up and test it from its own web page. The repo docs (02, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
   <div class="legend">
     <span><b class="chip ready">READY TODAY</b> works with the firmware on the board now</span>
-    <span><b class="chip t1">AFTER TASK 1</b> needs the Rev C.1 drop firmware</span>
     <span><b class="chip t2">AFTER TASK 2</b> needs the LD2450 radar firmware</span>
     <span><b class="chip plan">PLANNED</b> designed, not written yet</span>
   </div>
@@ -110,7 +109,7 @@ a{color:var(--accent)}
     <span><b class="j">PLUG</b> dupont jumper or the part's own plug</span>
     <span><b class="j">SCREW</b> screw terminal</span>
   </div>
-  <div class="banner">The board still runs the Rev C firmware. Until the task 1 update, do not press Drop it now or Release, and do not type <code>drop</code> or <code>rel</code>: they drop with the motor off, which Rev C.1 forbids.</div>
+  <div class="banner">The board runs the Rev C.1 firmware (flashed 2026-09-27): motor-led drop, release under load, seat move on lock. None of it has been watched working with the motor and the spool fitted yet (tests T1 to T8); run section 09 on the bench before anything goes overhead.</div>
 </header>
 
 <!-- ============================================================ -->
@@ -332,7 +331,7 @@ a{color:var(--accent)}
 <!-- ============================================================ -->
 <section id="proto">
   <h2><span class="n">05b</span>Protoboard layout, one quarter</h2>
-  <p>The ESP32 sits on one quarter of the snappable protoboard (17 holes across, 19 down). Underneath, the copper joins the holes in <b>groups of three</b> across, with a <b>15-hole rail</b> down each side. So each ESP32 pin shares its group with two more holes: a male pin two holes outward is already connected to it, no wire needed. One rail carries 5 V, the other ground. The second quarter, to its right, is the power board (below). The expansion board mounts on its own.</p>
+  <p>The ESP32 sits on one quarter of the snappable protoboard (17 holes across, 19 down). Underneath, the copper joins the holes in <b>groups of three</b> across, with a <b>15-hole rail</b> down each side. So each ESP32 pin shares its group with two more holes: a male pin two holes outward is already connected to it, no wire needed. One rail carries 5 V, the other ground. This is the only protoboard: the expansion board and the MP1584EN buck are hot-glued beside it on the pad, each on its own wires.</p>
   <figure class="fig">
   <svg id="protosvg" viewBox="0 0 960 560" role="img" aria-label="Protoboard quarter, top view, with the ESP32 sockets, signal pins, rails and solder bridges"></svg>
   <figcaption>Top view, parts side, USB end at the top edge so the cable reaches it. Faint gold bars show the copper groups on the underside. <b>From the solder side everything is mirrored left to right</b>: count holes from the rail, not from the edge you are looking at.</figcaption>
@@ -342,8 +341,8 @@ a{color:var(--accent)}
     <tbody>
       <tr><td>2 x 15-pin female socket strip</td><td>columns 3 and 13, rows 2 to 16 (10 holes apart)</td><td>ESP32 unplugs in seconds; one board has already failed</td></tr>
       <tr><td>Signal male pins</td><td>column 15 (VIN side) and column 1 (3V3 side), same row as their ESP32 pin</td><td>same copper group as the ESP32 pin, no wire; one pin per wire, servo wires separate</td></tr>
-      <tr><td>5 V rail, male pins</td><td>right rail, rows 13 to 15, plus a bridge at row 2</td><td>5 V in from the power board, servo red, LD2450 5V; servo current never passes through the ESP32</td></tr>
-      <tr><td>GND rail, male pins</td><td>left rail, rows 12 to 15, plus a bridge at row 3</td><td>GND in from the power board, servo brown, LD2450 GND, KW12-3 COM</td></tr>
+      <tr><td>5 V rail, male pins</td><td>right rail, rows 13 to 15, plus a bridge at row 2</td><td>5 V in from the buck's OUT+, servo red, LD2450 5V; servo current never passes through the ESP32</td></tr>
+      <tr><td>GND rail, male pins</td><td>left rail, rows 12 to 15, plus a bridge at row 3</td><td>GND in from the buck's OUT-, servo brown, LD2450 GND, KW12-3 COM</td></tr>
       <tr><td>Nothing else</td><td>-</td><td>switch and radar need no resistors; servo capacitor and logic buffer only if a test fails (2 free rail holes kept for the capacitor)</td></tr>
     </tbody>
   </table></div>
@@ -351,37 +350,14 @@ a{color:var(--accent)}
 </section>
 
 <!-- ============================================================ -->
-<section id="powerboard">
-  <h2><span class="n">05c</span>Power board, the second quarter</h2>
-  <p>12 V comes in on a screw terminal, feeds the MP1584EN, and leaves again on a second screw terminal for the expansion board. The MP1584EN's 5 V goes to the ESP32 board's rails on two jumpers. Same protoboard, same 3-hole copper groups, so most joints need no wire: only one red link on the underside.</p>
-  <figure class="fig">
-  <svg id="powersvg" viewBox="0 0 960 560" role="img" aria-label="Power board quarter, top view, with two screw terminals, the MP1584EN and the outputs to the ESP32 board"></svg>
-  <figcaption>Top view, parts side, placed to the right of the ESP32 board so its 5 V OUT pin sits next to the ESP32 board's 5 V rail. <b>From the solder side it is mirrored left to right.</b></figcaption>
-  </figure>
-  <div class="tw"><table>
-    <thead><tr><th>Part</th><th>Holes</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td>12 V IN screw terminal</td><td>column 15, rows 3 (+12 V) and 5 (GND)</td><td>wire openings toward the right edge; the DC jack's cable lands here</td></tr>
-      <tr><td>12 V OUT screw terminal</td><td>column 15, rows 13 (+12 V) and 15 (GND)</td><td>to the expansion board's VMOT and GND, 22 AWG</td></tr>
-      <tr><td>MP1584EN on 4 short wire legs</td><td>IN+ 13,3 · IN- 13,9 · OUT+ 3,3 · OUT- 3,9</td><td>resistor clippings make good legs; the exact pad spacing does not matter. Some modules share one GND pad: then both GND legs go to it</td></tr>
-      <tr><td>Red link, underside, 22 AWG</td><td>14,3 to 14,13</td><td>carries 12 V from the IN terminal to the OUT terminal</td></tr>
-      <tr><td>3 solder bridges to the right rail (GND)</td><td>rows 5, 9 and 15, column 15 to 16</td><td>all grounds on this board meet on that rail</td></tr>
-      <tr><td>2 male pins</td><td>5V OUT at 1,3 · GND OUT at 1,9</td><td>jumpers to the ESP32 board: 5 V rail input and GND rail input</td></tr>
-    </tbody>
-  </table></div>
-  <p class="dim">Before the ESP32 board is connected: 12 V into the IN terminal, meter on 5V OUT and GND OUT: 4.95 to 5.05 V. Meter on the OUT terminal: 12 V.</p>
-</section>
-
-<!-- ============================================================ -->
 <section id="solder">
   <h2><span class="n">05</span>Soldering, in order</h2>
   <ol class="steps">
     <li><div><h3>Header pins on the ESP32</h3><p>Solder full 15-pin header strips down both sides, pins pointing down from the underside, so every jumper plugs on. If you only do the ones this build uses: <b>VIN, GND, D13, D27, D26, D25, D32</b> on the top row (the row with VIN), and <b>GND, RX2, TX2</b> on the other row. Push the strip into a breadboard to hold it straight, solder one pin at each end, check it is square, then the rest. Each joint a shiny cone, no bridges to the next pin.</p></div></li>
-    <li><div><h3>Legs on the MP1584EN</h3><p>Tin the four pads and solder a short bare wire leg (a resistor clipping) into each, pointing down.</p></div></li>
-    <li><div><h3>Meter the buck before it goes in</h3><p>Hold its IN legs on the 12 V adapter's jack terminals (or clip them). Meter on the OUT legs: 4.95 to 5.05 V. Unplug.</p></div></li>
+    <li><div><h3>Wires on the MP1584EN</h3><p>Tin the four pads. IN+ and IN-: two 22 AWG wires long enough to reach the 12 V jack. OUT+ and OUT-: two wires ending in female dupont plugs for the protoboard's "5 V in" and "GND in" pins. Heat shrink every joint.</p></div></li>
+    <li><div><h3>Meter the buck before it goes in</h3><p>IN wires into the 12 V jack's screw terminals. Meter on the OUT wires: 4.95 to 5.05 V. Unplug.</p></div></li>
     <li><div><h3>Protoboard: sockets, pins, bridges</h3><p>Follow the protoboard drawing in section 05b: two 15-pin female sockets for the ESP32, single male pins beside the used signals and on the two rails, and two solder bridges (a blob of solder, or a short bare wire, across the gap between two neighbouring holes) that tie the ESP32's VIN to the 5 V rail and its GND to the GND rail.</p></div></li>
-    <li><div><h3>Power board</h3><p>Build it per section 05c: two screw terminals, the MP1584EN on wire legs, the red 12 V link, three bridges, two male pins. Check it alone on 12 V before anything else is connected.</p></div></li>
-    <li><div><h3>Power board to ESP32 board</h3><p>Two female-female jumpers: power board 5V OUT to the ESP32 board's "5 V in" rail pin, power board GND OUT to its "GND in" rail pin. 12 V OUT terminal to the expansion board's VMOT and GND.</p></div></li>
+    <li><div><h3>12 V and 5 V wiring</h3><p>The jack's screw terminals take two wires each: + to the expansion board's VMOT and to the buck's IN+, - to the expansion board's GND and to the buck's IN-, 22 AWG. The buck's OUT+ and OUT- plug onto the protoboard's "5 V in" and "GND in" rail pins.</p></div></li>
     <li><div><h3>KW12-3 legs</h3><p>Heat shrink on, one wire each to COM and NO, solder quickly (a slow iron melts the switch body), shrink. Female dupont ends: COM to the GND rail, NO to the LIMIT pin. Twist the two wires together along their length.</p></div></li>
     <li><div><h3>Check with the meter before power</h3><p>ESP32 out of its sockets. Continuity mode: 5 V rail to GND rail must NOT beep. Each signal pin to its socket hole must beep. No signal pin may beep to a rail. KW12-3 NO to COM beeps only while the lever is pressed.</p></div></li>
   </ol>
@@ -404,7 +380,7 @@ a{color:var(--accent)}
     <li><div><h3>Screw on the fairlead, thread the line</h3><p>Fairlead body screwed to the pad: 2x M3 countersunk screws, 8 to 10 mm, from the ceiling side through the two pad holes nearest the base, heads flush. On an already printed bracket, countersink those two holes first by twisting an 8 mm drill bit by hand. No glue. Wind the line counterclockwise from the 606ZZ end, down through the fairlead, into the flap's slot. Below: 8 mm bead, swivel, spider (60 g at most).</p><figure class="shot"><img src="img:step6" alt="Step 6 render"></figure></div></li>
     <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to bead, line straight but not pulled: that number is <b>Line length</b> on the web page.</p><figure class="shot"><img src="img:fairlead_home" alt="Spider home: bead lifts the flap"><figcaption>Spider home: the bead lifts the flap, the flap's tail presses the roller.</figcaption></figure></div></li>
     <li><div><h3>Radar mount</h3><p>No glue. Drill two 3.4 mm holes through the base at the servo end (x 68, z 45 and z 79) and countersink them from the ceiling side. Bolt <code>ld2450_fork_screw</code> under the servo end, ears hanging down: 2x M3 x 10 countersunk from the ceiling side, heads flush, nuts on the fork. Put <code>ld2450_cradle</code>'s round knuckle between the ears and push an M3 bolt (25 to 30 mm) through, nut on the far side, snug enough to hold an angle. Its open side faces out toward the approach, away from the fairlead end. Slide the LD2450 up into the grooves from the bottom, <b>antenna side against the face plate</b> (the side with the windows), <b>pin-header end last</b> so the headers sit at the bottom, open at the back; a small zip tie round the cradle's bottom end keeps it from sliding out. Set the tilt on site: 50 degrees down for your porch (the beam blocks shallower rays).</p><figure class="shot"><img src="img:step7" alt="Step 7 render: radar holder under the servo end"></figure></div></li>
-    <li><div><h3>Controller on the pad</h3><p>Board, expansion board and buck on the electronics pad with foam tape or zip ties through the x = -80 holes. Keep the x = -56 holes and the two at the servo end clear: those are the ceiling screws.</p><figure class="shot"><img src="img:base_layout" alt="Base layout with mounting holes"></figure></div></li>
+    <li><div><h3>Controller on the pad</h3><p>The protoboard with the ESP32 on the electronics pad (the flat area at the motor-plate end, x -88 to -36), foam tape or zip ties through the x = -80 holes. The expansion board and the buck hot-glued beside it on the pad, clear of the spool. Ceiling install: keep the x = -56 holes and the two at the servo end clear, they are the ceiling screws.</p><figure class="shot"><img src="img:base_layout" alt="Base layout with mounting holes"></figure></div></li>
   </ol>
 </section>
 
@@ -452,8 +428,8 @@ a{color:var(--accent)}
     <li><div><h3>Finger angles <b class="chip ready">READY TODAY</b></h3><p>Bench: finger servo. With the servo at 90, press the finger onto the spline pointing at the rod, horn screw in. Nudge until the finger sits level in the teeth: <b>Store as lock</b>. Nudge toward the floor until it is clear of the teeth: <b>Store as release</b>. <b>Save settings</b>.</p></div></li>
     <li><div><h3>Rewind direction <b class="chip ready">READY TODAY</b></h3><p>Spider hanging. <b>+1/8</b>: the spool should wind the line up. If the motor turns but the spool slips, set <b>Rewind direction</b> to the other value and try again. If neither way winds, the clutch is still in the Rev C direction: flip it (assembly step 1).</p></div></li>
     <li><div><h3>Line length <b class="chip ready">READY TODAY</b></h3><p>Enter the measured number in <b>Line length</b>, <b>Save settings</b>.</p></div></li>
-    <li><div><h3>Release under load, drop, rewind, lock <b class="chip t1">AFTER TASK 1</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. New settings arrive with it: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
-    <li><div><h3>Five full drops <b class="chip t1">AFTER TASK 1</b></h3><p>All complete, no tangles, finger always relocks. After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
+    <li><div><h3>Release under load, drop, rewind, lock <b class="chip ready">READY TODAY</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. New settings arrive with it: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
+    <li><div><h3>Five full drops <b class="chip ready">READY TODAY</b></h3><p>All complete, no tangles, finger always relocks. After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
     <li><div><h3>Radar live view <b class="chip t2">AFTER TASK 2</b></h3><p>See section 10. Walk toward the door, away, and across; confirm it fires only walking in.</p></div></li>
     <li><div><h3>Arm and save <b class="chip ready">READY TODAY</b></h3><p>Press <b>Arm</b>, then <b>Save settings</b> so it stays armed after a power cut.</p></div></li>
   </ol>
@@ -553,19 +529,18 @@ a{color:var(--accent)}
   <h3 style="margin-top:28px">Inverted install: turned over on the beam's inside face</h3>
   <p class="dim">Your plan, approved 2026-09-27, doc 06. The device upside down, base at the bottom, sitting on the flat legs of two 6 in steel corner braces whose other leg stands up the beam. The line leaves through a hole in the base. Same mechanism, same firmware. Checked in the CAD model; <b>not yet built or hung.</b></p>
   <figure class="shot"><img src="img:inverted_install" alt="Device turned over on two corner braces on the beam's inside face, line out through the base, radar under the servo end"></figure>
+  <h3 style="margin-top:18px">Inverted install, step by step</h3>
+  <ol class="steps">
+    <li><div><h3>Print</h3><p><code>fairlead_base</code> (the fairlead block, instead of fairlead_body), <code>fairlead_flap</code> (the 2026-09-27 one with the 3.8 mm prong) and <code>ld2450_fork_screw</code>. Everything else carries over.</p></div></li>
+    <li><div><h3>Drill the base</h3><p>Print <code>cad/bracket_footprint_inverted.svg</code> at 100% and tape it to the base's flat outer face. Five holes: <b>7 mm</b> for the line (a 1/4 in bit is close enough), <b>3.4 mm x2</b> for the fairlead block (the pair nearest the spool on the servo side), <b>3.4 mm x2</b> for the radar fork (at the servo end). Sand the 7 mm hole smooth inside and on both edges: the line runs through it.</p></div></li>
+    <li><div><h3>Flap and switch onto the block</h3><p>Exactly as for the ceiling fairlead (section 06): clear the bore with a 3 mm drill by hand; KW12-3 on the switch plate, roller toward the bore, 2x M2 finger-tight; flap on the M2 hinge bolt, free, not clamped; slide the switch until the roller just touches the flap's tail, back off a paper's thickness, tighten. Lift the flap's free end by hand: click at about 2 mm, then it stops flat against the block.</p></div></li>
+    <li><div><h3>Block onto the base</h3><p>Flat face of the block against the base's outer face, its bore under the 7 mm hole. 2x <b>M3 x 12</b> from inside the base (heads on the device side), cutting their own thread into the block. Snug, not tight: the thread is plastic. Look down through the 7 mm hole: you must see straight through the bore.</p><figure class="shot"><img src="img:inverted_fairlead" alt="Fairlead block under the base seen from below: flap, bead, switch and the two screws"></figure></div></li>
+    <li><div><h3>Thread the line</h3><p>Wind the line counterclockwise seen from the 606ZZ end, same as always, but lead it off the spool's <b>servo side</b>, down through the 7 mm hole and the block's bore, then slide it into the flap's slot from the flap's free end. Below: 8 mm bead, swivel, spider.</p></div></li>
+    <li><div><h3>Check by hand</h3><p>Pull the bead up against the flap: the flap swings toward the base, the switch clicks, the flap stops flat against the block. Let go: it drops back to its rest stop and the switch opens. The web page's switch chip must follow.</p></div></li>
+    <li><div><h3>Radar and wires</h3><p>Radar fork under the servo end: 2x M3 x 10 up through the fork and the base, nuts inside. Cradle on its pivot bolt, 50 degrees down to start, looking back toward the beam. Switch and radar leads round the base's far (servo) end and back over the top to the board, about 15 and 25 cm, tied clear of the spool.</p></div></li>
+    <li><div><h3>Braces</h3><p>Yours to place and drill. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; never within 20 mm of the rod at the 606ZZ end (the bearing plate stands there).</p></div></li>
+  </ol>
   <div class="two">
-    <div class="tw"><table>
-      <thead><tr><th>What to do</th><th>Detail</th></tr></thead>
-      <tbody>
-        <tr><td>Print (new)</td><td><code>fairlead_base</code> (replaces fairlead_body) and <code>ld2450_fork_screw</code> (the radar fork in both installs). Everything else carries over</td></tr>
-        <tr><td>Drill the base</td><td>5 holes, from the 1:1 template <code>cad/bracket_footprint_inverted.svg</code>: 7 mm for the line (a 1/4 in bit is close enough), 2x 3.4 mm for the fairlead block, 2x 3.4 mm for the radar fork</td></tr>
-        <tr><td>Fairlead block</td><td>Flap and switch fitted as above, then 2x M3 x 12 from inside the base</td></tr>
-        <tr><td>Radar</td><td>Fork bolted under the servo end, 2x M3 x 10, nuts inside, no glue. Looks back toward the beam and down, 50 degrees to start; clears up to 65</td></tr>
-        <tr><td>Line</td><td>Wound the same way, but led off the spool's servo side, down through the base hole, the block and the flap's slot</td></tr>
-        <tr><td>Wires</td><td>Switch and radar leads round the base's far (servo) end and back over the top to the board, about 15 and 25 cm, tied clear of the spool</td></tr>
-        <tr><td>Braces</td><td>Yours to place and drill. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; never within 20 mm of the rod at the 606ZZ end (the bearing plate stands there)</td></tr>
-      </tbody>
-    </table></div>
     <div class="panel">
       <ul class="tight">
         <li>Base about 160 mm below the ceiling with the braces' upright legs topping out just under it.</li>
@@ -582,7 +557,7 @@ a{color:var(--accent)}
 <section id="arm">
   <h2><span class="n">12</span>On site, then arm</h2>
   <ol class="steps">
-    <li><div><h3>Five drops in place <b class="chip t1">AFTER TASK 1</b></h3><p>Adjust Line length (and drop distance) until the spider stops at face height.</p></div></li>
+    <li><div><h3>Five drops in place <b class="chip ready">READY TODAY</b></h3><p>Adjust Line length (and drop distance) until the spider stops at face height.</p></div></li>
     <li><div><h3>Walk tests <b class="chip t2">AFTER TASK 2</b></h3><p>Walk in from 3 m: it fires and the spider arrives as you reach the doorway. Walk away, walk across, stand still: no drop.</p></div></li>
     <li><div><h3>No double scare <b class="chip ready">READY TODAY</b></h3><p>After a scare, stand in the doorway: nothing until you leave and 20 s pass (Lockout after a scare).</p></div></li>
     <li><div><h3>Before each night</h3><p>Check the knots, bead, flap and the line for nicks. Soft foam spider only, 60 g at most. Press Disarm, or unplug, when small children are about to run through.</p></div></li>
@@ -590,8 +565,8 @@ a{color:var(--accent)}
 </section>
 
 <footer>
-  <div><b>How this was checked, 2026-09-25; inverted install, bearing seat, flap and aluminum note added 2026-09-27.</b> Inverted install numbers from <code>python cad/inverted.py</code> (every check passes, radar cradle clear to 65 degrees). Radar and metal: Hi-Link's LD2450 manual and install guides, plus the skin depth of aluminum at 24 GHz. Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. 30-pin header order from the Last Minute Engineers ESP32 DevKit pinout, checked against the pin names in doc 02. LD2450 pin order and 200 mA supply from Hi-Link's manual. Assembly, placement and heights from docs 05, 06 and 09. Web page cards copied from <code>src/web.cpp</code>. Board on COM13 read by esptool: ESP32-D0WD-V3, 4 MB flash; flashed by the standard USB upload and joins the home WiFi at 192.168.1.138.</div>
-  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25. <b>Not checked.</b> Nothing here has been watched working with the motor, servo, switch or radar connected. Everything marked AFTER TASK 1, AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
+  <div><b>How this was checked, 2026-09-25; inverted install, bearing seat, flap and aluminum note added 2026-09-27; separate power board removed, inverted fairlead steps and firmware status 2026-09-28 (firmware status from docs/commissioning_log.md).</b> Inverted install numbers from <code>python cad/inverted.py</code> (every check passes, radar cradle clear to 65 degrees). Radar and metal: Hi-Link's LD2450 manual and install guides, plus the skin depth of aluminum at 24 GHz. Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. 30-pin header order from the Last Minute Engineers ESP32 DevKit pinout, checked against the pin names in doc 02. LD2450 pin order and 200 mA supply from Hi-Link's manual. Assembly, placement and heights from docs 05, 06 and 09. Web page cards copied from <code>src/web.cpp</code>. Board on COM13 read by esptool: ESP32-D0WD-V3, 4 MB flash; flashed by the standard USB upload and joins the home WiFi at 192.168.1.138.</div>
+  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25. <b>Not checked.</b> Nothing here has been watched working with the motor, servo, switch or radar connected. Everything marked AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
 </footer>
 </main>
 
@@ -684,12 +659,12 @@ a{color:var(--accent)}
     [15,8,"--wsig","DIR (D26): expansion board DIR"],
     [15,9,"--wsig","STEP (D25): expansion board STEP"],
     [15,11,"--wsw","LIMIT (D32): KW12-3 NO"],
-    [16,13,"--w5","5 V in: from power board 5V OUT"],
+    [16,13,"--w5","5 V in: from the buck OUT+"],
     [16,14,"--w5","5 V: servo red"],
     [16,15,"--w5","5 V: LD2450 5V"],
     [1,7,"--wrad","RX2 (GPIO16): LD2450 TX"],
     [1,8,"--wrad","TX2 (GPIO17): LD2450 RX"],
-    [0,12,"--wgnd","GND in: from power board GND OUT"],
+    [0,12,"--wgnd","GND in: from the buck OUT-"],
     [0,13,"--wgnd","GND: servo brown"],
     [0,14,"--wgnd","GND: LD2450 GND"],
     [0,15,"--wgnd","GND: KW12-3 COM"]
