@@ -10,7 +10,7 @@ Handoff from the lead mechanical engineer to the software/electrical team. Read 
 
 Firmware, doc 02, doc 04 and web help text are the team's to change. Rev C.1 rule from the owner: existing hardware only, no new purchases.
 
-**CAD and pictures:** read `cad/README.md` before touching any part, STL or image. It holds the coordinate frame, the rebuild routine (`tools\regen_cad.ps1`), the checks to read after every run, and the lessons already learned. After any CAD change, run the rebuild and confirm every check passes before committing.
+**CAD and pictures:** read `cad/README.md` before touching any part, STL or image. It holds the coordinate frame, the rebuild routine (`tools\regen_cad.ps1`), the checks to read after every run, and the lessons already learned. After a CAD change, update only what the change touches (owner 2026-09-27: "stop updating everything all at once - just the parts that need updating"): export only the changed part's STL, run the checks (they only print) and confirm they pass, change only a shared dimension if the owner named every part it affects. No full rebuild, no mass picture or build-guide regeneration unless he asks.
 
 ## Project
 

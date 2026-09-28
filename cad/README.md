@@ -63,8 +63,8 @@ Units: millimeters.
 ## Changing a part: the routine
 
 1. Edit the part's function in `generate.py` or `fairlead.py`. Keep dimensions as named constants at the top where they already are.
-2. Run `python generate.py` (and `python fairlead.py` for fairlead changes). Read the report. Any `CLASH`, `watertight=False`, or lost clearance means stop.
-3. Run `python render.py` and look at the affected pictures.
+2. Run the checks (`python fairlead.py`, `python inverted.py`, `python sensor_mount.py`, as the part needs; they only print) and read the report. Any `CLASH`, `watertight=False`, or lost clearance means stop. Export only the changed part's STL (`G.PARTS["name"]()`), not every STL (owner 2026-09-27: update only the parts that need it).
+3. Re-render a picture only if the owner asks for it.
 4. Update the doc that describes the part (01 for the spool, finger and bracket, 09 for the fairlead).
 5. Tell the owner which STL changed and whether an already-printed part is now out of date.
 6. Geometry changes need the owner's approval (CLAUDE.md hard constraints).
