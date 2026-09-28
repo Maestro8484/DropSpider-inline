@@ -9,6 +9,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 - `ROADMAP.md`, this changelog, and a doc map in the README: each file has one job.
 
 ### Changed
+- HF0612 hole in `spool_body` now 10.2 (owner: the 10.7 print measured 10.7 and was loose on the 10.0 bearing). Only `spool_body.stl` re-exported.
 - Spool body and ratchet disk spoked (3 spokes, 3 windows): 18.3 to 8.0 and 16.1 to 9.5 cm3, every mating face unchanged. Fairlead block rounded (column edges r 1.5, as the build123d trial) with 3 through-windows: 15.7 to 12.8 cm3, all inverted checks unchanged. Build guide pictures redrawn with both.
 - Every clockwise and counterclockwise in the docs, the build guide, the pictures and the firmware comment is now seen from behind the motor (owner): spider falling counterclockwise, winding clockwise, the HF0612 locks when the rod turns clockwise. Mirror of the old 606ZZ-end wording; nothing on the parts changed.
 - HF0612 one-way bearing holes opened (owner: 10.0 would not take it, the disk's 10.6 took the stub only after sanding): `spool_body` 10.7 tight press, `spool_ratchet` center hole 11.0 slip. Both STLs re-exported; reprint both.
