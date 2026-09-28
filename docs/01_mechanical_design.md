@@ -74,7 +74,6 @@ The same swing means the knot can end up to half a turn either side of the botto
 | bracket.stl | 1 | base down | gyroid 40% | 4 | tree, **not** build-plate-only | none |
 | fairlead_body.stl | 1 | as exported (flat side down) | gyroid 40% | 4 | none | 5 mm (big flat footprint, stops corner lift) |
 | fairlead_flap.stl | 1 (+1 spare) | as exported (flat side down) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
-| ld2450_fork.stl | 1 | as exported (glue face down, ears standing up) | gyroid 40% | 4 | none | none |
 | ld2450_cradle.stl | 1 | as exported (flat, face plate down, 6.7 mm tall) | gyroid 40% | 4 | none | none |
 | finger.stl | 1 (+1 spare) | as exported (flat top face down, hub standing up) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | spacer_A_6mm.stl, spacer_B_50mm.stl | 1 each | on end | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
@@ -84,7 +83,7 @@ The same swing means the knot can end up to half a turn either side of the botto
 | tie_bar.stl | 1, wall install draft, superseded: do not print | as exported (top face down, lugs standing) | gyroid 40% | 4 | none | none |
 | strut.stl | 2, wall install draft, superseded: do not print | as exported (flat on its side, 8 mm tall) | rectilinear 100% | 4 | none | none |
 | fairlead_base.stl | 1, inverted install only (doc 06), instead of fairlead_body | as exported (17 mm tall) | gyroid 40% | 4 | none | 5 mm |
-| ld2450_fork_screw.stl | 1, inverted install only (bolted under the base), instead of ld2450_fork | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
+| ld2450_fork_screw.stl | 1, both installs: the only radar fork, bolted with 2x M3, no glue (the glued ld2450_fork is retired) | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
 
 PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom layers. `cad/retired/line_guide.stl` is obsolete; do not print it.
 

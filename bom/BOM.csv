@@ -35,9 +35,10 @@ N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
 N11,soft foam spider <=60 g,1,any,,TO BUY,Rev C.1: motor must stop it
 N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
-PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
+PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork_screw / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
 PRINT-WALL,hinge_plate / hinge_clip x2 / tie_bar / strut x2,,printed,cad/stl,SUPERSEDED,wall install drafts replaced by the inverted install (doc 06); do not print
-PRINT-INV,fairlead_base (replaces fairlead_body) + ld2450_fork_screw (replaces ld2450_fork),1 each,printed,cad/stl,ONLY IF inverted install,doc 06 alternative and doc 09
+PRINT-INV,fairlead_base (replaces fairlead_body),1,printed,cad/stl,ONLY IF inverted install,doc 06 alternative and doc 09
 I1,M3 x 12 screw,2,any,,have?,inverted install only: fairlead_base to the base from inside; cuts its own thread
 I3,M3 x 10 bolt + M3 nut,2,any,,have?,inverted install only: ld2450_fork_screw to the base, nuts inside
+H10,M3 x 10 countersunk screw + M3 nut,2,any,,have?,ceiling install: ld2450_fork_screw to the base, heads flush with the ceiling face, nuts on the fork
 I2,steel corner brace 6 in + screws for the beam and bolts for the base,2,any,,owner has,inverted install only: the owner places and drills them

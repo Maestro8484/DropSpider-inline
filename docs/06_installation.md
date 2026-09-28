@@ -72,7 +72,7 @@ The hinge-and-strut wall draft (`cad/wall_hinge.py`, `hinge_plate.stl`, `hinge_c
 
 - Outdoors under a covered porch: keep the device and controller out of blowing rain; the LD2450 and the electronics are not waterproof.
 
-- **LD2450** (primary): on the device, in its tilting cradle under the servo end (`ld2450_fork.stl` glued, `ld2450_cradle.stl` on one M3 bolt), looking out from under the porch toward people walking in, standing upright. Set the tilt on site, starting at 20 degrees down (doc 03). Nothing to mount on the wall. Inverted install: the same parts glued under the base's servo end, see above.
+- **LD2450** (primary): on the device, in its tilting cradle under the servo end (`ld2450_fork_screw.stl` bolted with 2x M3, no glue; `ld2450_cradle.stl` on one M3 bolt), looking out from under the porch toward people walking in, standing upright. Set the tilt on site, starting at 20 degrees down (doc 03). Nothing to mount on the wall. Inverted install: the same parts bolted under the base's servo end, see above.
 - Its lead (4 wires, 1.25 mm plug at the sensor) runs about 10 cm across the device to the controller (inverted install: about 25 cm, round the base's far end).
 - Setup per `03_sensor.md`: no calibration needed; optional app check for firmware version and tracking; leave the app's zones off.
 - LD2410C (fallback only): top center of the opening, hallway side, aimed about 45 degrees down; settings in `03_sensor.md`.

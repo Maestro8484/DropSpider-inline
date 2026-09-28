@@ -197,13 +197,12 @@ PARTS = {
     "spacer_B_50mm": spacer_b,
     "shim_1mm": lambda: tube(1),
     "shim_2mm": lambda: tube(2),
-    "ld2450_fork": ld2450_fork_print,
     "ld2450_cradle": ld2450_cradle_print,
     "hinge_plate": lambda: __import__("wall_hinge").hinge_plate_print(),               # wall install only (docs/06): one
     "hinge_clip": lambda: __import__("wall_hinge").hinge_clip_print(),                 # wall install only: print two
     "tie_bar": lambda: __import__("wall_hinge").tie_bar_print(),                       # wall install only
     "strut": lambda: __import__("wall_hinge").strut_print(),                           # wall install only: print two
-    "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # wall install only: radar fork with screw holes for the beam's underside
+    "ld2450_fork_screw": lambda: __import__("wall_mount").ld2450_fork_screw_print(),   # the radar fork, both installs: 2x M3, no glue (owner 2026-09-27; the glued ld2450_fork is retired)
     "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),             # inverted install only (docs/06): fairlead block under the base
 }
 
@@ -216,7 +215,8 @@ def assembly():
     import fairlead as F
     A["fairlead_body"] = F.fairlead_body(); A["fairlead_flap"] = F.fairlead_flap(); A["switch_kw12"] = F.switch_model()
     import sensor_mount as S
-    A["ld2450_fork"] = S.ld2450_fork(); A["ld2450_cradle"] = S.ld2450_cradle(); A["ld2450_radar"] = S.ld2450_board()
+    A["ld2450_fork"] = __import__("wall_mount").ld2450_fork_screw();   # bolted fork (key kept for the checks below)
+    A["ld2450_cradle"] = S.ld2450_cradle(); A["ld2450_radar"] = S.ld2450_board()
     f = finger(); f.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1]))
     f.apply_translation([SERVO_SHAFT_X, AXIS_Y, FINGER_Z0]); A["finger"] = f
     A["rod_6mm"] = cyl(3, 100, 20, 0, AXIS_Y)
