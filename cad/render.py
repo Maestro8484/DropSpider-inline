@@ -98,7 +98,7 @@ def lock_png():
     ax.annotate("tooth pushes finger\nUP onto the ledge", xy=(31, 37), xytext=(5, 12), fontsize=9,
                 arrowprops=dict(arrowstyle="->"))
     ax.set_aspect("equal"); ax.invert_yaxis(); ax.set_xlim(-95, 85); ax.set_ylim(118, -12)
-    ax.set_title("Lock detail: section through the ratchet disk, viewed from the MOTOR end, installed on a ceiling\n(same thing seen from the 606ZZ end is CLOCKWISE)")
+    ax.set_title("Lock detail: section through the ratchet disk, seen from behind the motor, ceiling install\n(every direction in the docs is seen from this side)")
     ax.grid(alpha=0.2)
     fig.savefig(os.path.join(IMG, "lock_detail.png"), dpi=120, bbox_inches="tight"); plt.close(fig)
 
@@ -234,36 +234,36 @@ def rod_section_png(elev=8, azim=12):
     save(img, "rod_section.png", "Cut through the rod: every part on it, motor on the left, 606ZZ end on the right", labels)
 
 def drive_direction_png():
-    """Ratchet disk and finger seen from the 606ZZ end: which way the rod drives the spool through the HF0612, and which tooth face meets the finger (owner 2026-09-28)."""
+    """Ratchet disk and finger seen from behind the motor (every direction in the docs is, owner 2026-09-28): which way the rod drives the spool through the HF0612, and which tooth face meets the finger (owner 2026-09-28)."""
     import matplotlib.patches as mp
     fig, ax = plt.subplots(figsize=(11, 9))
-    S = lambda x, y: (-np.asarray(x), -np.asarray(y))   # part frame to this view: seen from +z (the 606ZZ end), floor side down
+    S = lambda x, y: (np.asarray(x), -np.asarray(y))   # part frame to this view: seen from -z (behind the motor), floor side down
     P = G.ratchet_poly(); xs, ys = S(*P.exterior.xy)
     ax.fill(xs, ys, color="#1f6feb", alpha=0.18); ax.plot(xs, ys, "#1f6feb", lw=1.5)
     # the three faces of one tooth, picked out: long face (ramp) and steep face
     def pol(r, deg): a = math.radians(deg); return S(r * math.cos(a), r * math.sin(a))
-    ramp = np.array([pol(G.TOOTH_TIP_R + (G.TOOTH_ROOT_R - G.TOOTH_TIP_R) * k / 20, 30 + 27 * k / 20) for k in range(21)])
+    ramp = np.array([pol(G.TOOTH_TIP_R + (G.TOOTH_ROOT_R - G.TOOTH_TIP_R) * k / 20, 150 + 27 * k / 20) for k in range(21)])
     ax.plot(ramp[:, 0], ramp[:, 1], color="#16a34a", lw=5, solid_capstyle="round")
-    st = np.array([pol(G.TOOTH_ROOT_R, 60), pol(G.TOOTH_TIP_R, 60)])
+    st = np.array([pol(G.TOOTH_ROOT_R, 180), pol(G.TOOTH_TIP_R, 180)])
     ax.plot(st[:, 0], st[:, 1], color="#dc2626", lw=5, solid_capstyle="round")
-    x, y = pol(31, 43); ax.annotate("LONG CURVED FACE\n(the finger slides up it)", xy=(x, y), xytext=(-100, -22), fontsize=10, color="#16a34a", fontweight="bold", arrowprops=dict(arrowstyle="->", color="#16a34a"))
-    x, y = pol(31, 60); ax.annotate("STEEP FACE\n(stops against the finger)", xy=(x, y), xytext=(-78, -52), fontsize=10, color="#dc2626", fontweight="bold", arrowprops=dict(arrowstyle="->", color="#dc2626"))
+    x, y = pol(31, 163); ax.annotate("LONG CURVED FACE\n(the finger slides up it)", xy=(x, y), xytext=(-100, -30), fontsize=10, color="#16a34a", fontweight="bold", arrowprops=dict(arrowstyle="->", color="#16a34a"))
+    x, y = pol(31, 180); ax.annotate("STEEP FACE\n(stops against the finger)", xy=(x, y), xytext=(-100, 22), fontsize=10, color="#dc2626", fontweight="bold", arrowprops=dict(arrowstyle="->", color="#dc2626"))
     # rod, one-way bearing, spool hub
     ax.add_patch(plt.Circle((0, 0), G.HF0612_OD / 2, color="#f59e0b")); ax.add_patch(plt.Circle((0, 0), 3, color="#444"))
-    ax.annotate("rod inside the HF0612 one-way bearing (orange)", xy=(-3, 3), xytext=(-100, 48), fontsize=10, arrowprops=dict(arrowstyle="->"))
+    ax.annotate("rod inside the HF0612 one-way bearing (orange)", xy=(-3, 3), xytext=(-100, 50), fontsize=10, arrowprops=dict(arrowstyle="->"))
     # finger, locked, its tip against the steep face at part angle 0
     fx, fy = S(G.SERVO_SHAFT_X, 0); tx, _ = S(G.SERVO_SHAFT_X - 20.5, 0)
     ax.add_patch(plt.Rectangle((fx, fy - 3), tx - fx, 6, color="#e5534b")); ax.add_patch(plt.Circle((fx, fy), 5, color="#e5534b"))
-    ax.text(fx + 2, fy + 7, "finger (locked)", color="#e5534b", fontsize=10, ha="center")
+    ax.text(fx - 2, fy + 7, "finger (locked)", color="#e5534b", fontsize=10, ha="center")
     # the two directions
-    ax.add_patch(mp.FancyArrowPatch(pol(40, 200), pol(40, 250), connectionstyle="arc3,rad=0.25", arrowstyle="-|>,head_width=6,head_length=10", lw=3, color="#16a34a"))
-    ax.text(44, 58, "COUNTERCLOCKWISE: the rod DRIVES the spool.\nWinding the spider up. The bearing locks,\nthe finger rides up each long face and clicks\noff the tip: no tooth cuts into the finger.", fontsize=10, color="#16a34a", va="top")
-    ax.add_patch(mp.FancyArrowPatch(pol(40, 150), pol(40, 105), connectionstyle="arc3,rad=-0.25", arrowstyle="-|>,head_width=6,head_length=10", lw=3, color="#dc2626"))
-    ax.text(44, -48, "CLOCKWISE: the way the spider's weight pulls.\nA steep face lands on the finger: that is the HOLD.\nOn the drop the finger is out and the motor turns\nthis way; the spool can lag it but never outrun it.", fontsize=10, color="#dc2626", va="top")
-    ax.text(0, -78, "Hand check, spool on a spare rod, seen from this end: hold the rod still.\nThe spool must spin FREE counterclockwise and LOCK clockwise. If it is the other way round, press the HF0612 out and flip it.\nSeen from the motor end everything is mirrored. Same in the ceiling and the inverted install.",
+    ax.add_patch(mp.FancyArrowPatch(pol(40, 285), pol(40, 335), connectionstyle="arc3,rad=-0.25", arrowstyle="-|>,head_width=6,head_length=10", lw=3, color="#16a34a"))
+    ax.text(48, 58, "CLOCKWISE: the rod DRIVES the spool.\nWinding the spider up. The bearing locks,\nthe finger rides up each long face and clicks\noff the tip: no tooth cuts into the finger.", fontsize=10, color="#16a34a", va="top")
+    ax.add_patch(mp.FancyArrowPatch(pol(40, 75), pol(40, 25), connectionstyle="arc3,rad=0.25", arrowstyle="-|>,head_width=6,head_length=10", lw=3, color="#dc2626"))
+    ax.text(48, -40, "COUNTERCLOCKWISE: the way the spider's weight pulls.\nA steep face lands on the finger: that is the HOLD.\nOn the drop the finger is out and the motor turns\nthis way; the spool can lag it but never outrun it.", fontsize=10, color="#dc2626", va="top")
+    ax.text(0, -78, "Hand check, spool on a spare rod, seen from behind the motor: hold the rod still.\nThe spool must spin FREE clockwise and LOCK counterclockwise. If it is the other way round, press the HF0612 out and flip it.\nSame in the ceiling and the inverted install.",
             fontsize=10, ha="center", va="top", bbox=dict(fc="#fff7ed", ec="#f59e0b"))
     ax.set_aspect("equal"); ax.set_xlim(-102, 130); ax.set_ylim(-98, 62); ax.set_axis_off()
-    ax.set_title("Which way the rod drives the spool, seen from the 606ZZ end (the end away from the motor)", fontsize=12)
+    ax.set_title("Which way the rod drives the spool, seen from behind the motor (looking along the rod toward the spool)", fontsize=12)
     fig.savefig(os.path.join(IMG, "drive_direction.png"), dpi=110, bbox_inches="tight"); plt.close(fig)
 
 if __name__ == "__main__":

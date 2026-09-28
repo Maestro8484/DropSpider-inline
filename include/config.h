@@ -32,7 +32,7 @@
 #define RAMP_STEPS          600    // steps to reach full rewind speed from standstill
 
 // ---------- Rev C.1 motor-led drop ----------
-// + = rewind (CCW), - = unwind (CW), as everywhere in the firmware.
+// + = rewind (clockwise seen from behind the motor), - = unwind (counterclockwise), as everywhere in the firmware.
 #define UNLOAD_STEPS        (STEPS_PER_TURN / 12)          // wind up 1/12 turn while the finger swings out (M2)
 #define UNLOAD_RPM          120
 #define SEAT_STEPS          (STEPS_PER_TURN * 12 / 120)    // 1/12 turn x 1.2: lets the spool down onto a tooth

@@ -33,8 +33,10 @@ cd cad; python generate.py      # parts + clash checks only
 
 ## Hard constraints (do not change without the mechanical owner)
 
+- **Every clockwise or counterclockwise is seen from behind the motor**: standing behind the stepper motor, looking along the rod toward the spool and the 606ZZ (owner 2026-09-28). In that view the spider falling turns the spool counterclockwise, winding up is clockwise, and the one-way bearing (HF0612) locks when the rod turns clockwise. Never state a direction from the 606ZZ end.
+
 - Motor-led drop (Rev C.1): the motor is powered for the whole cycle and spins ahead of the spool on the drop; the HF0612 lets the spool lag but never overrun it. Never drop with the driver off: the owner measured too much drag on the unpowered motor.
-- Release under load must wind the spool CCW about 1/12 turn while the finger swings out (M2). A bare servo release with the spider hanging jams.
+- Release under load must wind the spool clockwise (seen from behind the motor) about 1/12 turn while the finger swings out (M2). A bare servo release with the spider hanging jams.
 - Servo on GPIO13, not GPIO14 (boot pulses would drop the spider).
 - Boot must never auto-rewind. Driver EN goes HIGH (off) first thing in `setup()`.
 - Armed idle = driver off and servo detached.

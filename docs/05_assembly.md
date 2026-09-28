@@ -13,7 +13,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 1. Press the **HF0612** into `spool_body` from the flange side. It ends up flush with the flange and sticking out about 2.5 mm on the boss side. That stub goes into the ratchet disk's center hole.
 2. Check its direction now: push a spare piece of the 6 mm rod in, hold the rod, and spin the body. It must spin freely one way and lock the other. Mark the free direction on the flange with a marker.
 3. Set `spool_ratchet` onto the boss, counterbored side facing away from the body. Drive **3x M3x8** into the body. Snug, do not strip.
-4. Look at the spool from the **plain flange side** (this side will face the 606ZZ end). The free direction marked in step 2 must be **counterclockwise** from this side, so it locks clockwise (Rev C.1; Rev C had this backwards). If not, press the bearing out and flip it.
+4. Look at the spool from the **ratchet disk side** (this side faces the motor, so this is the view from behind the motor). The free direction marked in step 2 must be **clockwise** from this side, so it locks counterclockwise (Rev C.1; Rev C had this backwards). If not, press the bearing out and flip it.
 5. Tie the **6 lb monofilament** straight to the barrel with an arbor knot (the knot anglers use on a reel spool), between the flanges, a drop of CA on the knot. No elastic, no braid.
 
 ## C. Frame and rod
@@ -34,7 +34,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 ![Step 4](img/step4.png)
 
 10. Push the **6 mm rod** in from the outside of the 606ZZ plate: through the bearing, spacer B, spool (rotate the spool its free way as the rod enters the needles), spacer A, into the coupler until it bottoms. Blue threadlocker, tighten the 6 mm set screw.
-11. Check: the spool spins freely by hand counterclockwise (from the 606ZZ end), and turning it clockwise drags the motor shaft round with it. The stack is snug with no end play above 0.5 mm.
+11. Check: the spool spins freely by hand clockwise (seen from behind the motor), and turning it counterclockwise drags the motor shaft round with it. The stack is snug with no end play above 0.5 mm.
 
 ## D. Servo and finger
 
@@ -60,7 +60,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 ![Step 6](img/step6.png)
 
 15. Screw `fairlead_body` to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
-16. Wind the line onto the spool by turning it counterclockwise (seen from the 606ZZ end). The free end leaves the spool on the pad side; thread it down through the fairlead, then slide it into the flap's slot from the flap's free end.
+16. Wind the line onto the spool by turning it clockwise (seen from behind the motor). The free end leaves the spool on the pad side; thread it down through the fairlead, then slide it into the flap's slot from the flap's free end.
 17. Below the flap, in order: **8 mm bead** (slides on the line; this is what lifts the flap), **barrel swivel** (tie the line to it with an improved clinch or palomar knot; the bead rests on it), **spider** tied to the swivel's other end.
 18. Unwind fully and measure from the barrel knot to the bead, line straight but not pulled. That is the `line` value for the firmware.
 
@@ -78,7 +78,7 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 23. Bracket printed from 2026-09-28 on: the five holes are already there, skip to 24. Older print: drill the base: 7 mm at x 25, z 45 (the line; a 1/4 in bit is close enough), 3.4 mm at x 32, z 28 and z 83 (the fairlead block), 3.4 mm at x 62, z 45 and z 79 (the radar fork). Print `cad/bracket_footprint_inverted.svg` at 100% as a template. Sand the 7 mm hole smooth. The brace bolt holes are the owner's; doc 06 says where they can go.
 24. Print `fairlead_base.stl` instead of `fairlead_body.stl`. Fit the flap and switch to it as in steps 15a to 15d, then screw it under the base with 2x M3 x 12 from inside the base.
 25. Bolt `ld2450_fork_screw.stl` under the base at the servo end, plate against the base, ears hanging down: 2x M3 x 10 up through the fork and the base, nuts inside. No glue. Cradle on one M3 bolt through the fork's ears, radar slid into the cradle (doc 03), looking back toward the pad end and down, 50 degrees to start.
-26. Wind the line counterclockwise (seen from the 606ZZ end) as in step 16, but lead it off the spool's **servo side**, down through the base hole, the block's bore and the flap's slot.
+26. Wind the line clockwise (seen from behind the motor) as in step 16, but lead it off the spool's **servo side**, down through the base hole, the block's bore and the flap's slot.
 27. Leads: the switch and radar leads go round the base's far (servo) end and back along the top to the board (about 15 and 25 cm), tied to the base clear of the spool.
 28. The braces and their holes are the owner's. Then `07_commissioning.md` as usual.
 

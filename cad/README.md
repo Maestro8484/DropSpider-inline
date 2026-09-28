@@ -42,7 +42,7 @@ Units: millimeters.
 - **z = 0** is the outer face of the motor plate. **+z** runs along the rod toward the 606ZZ bearing plate.
 - **Rod axis** at x = 0, y = 40. Servo tower on **+x**. Electronics pad on **-x**.
 - **Line** leaves the spool at x = -25, z = 45 and runs straight down (+y) through the fairlead.
-- "Clockwise seen from the 606ZZ end" = looking from +z toward the motor, x to the right, y up.
+- Every clockwise or counterclockwise is seen from behind the motor (owner 2026-09-28): looking from -z along the rod toward the 606ZZ end. Spider falling = counterclockwise, winding up = clockwise, the HF0612 locks when the rod turns clockwise.
 - Inverted install (`inverted.py`): the same frame, so y = 0 is the base's outer face and +y points UP in the porch. The line leaves the spool at x = 25, z = 45 and runs through the base (-y). Its pictures use `view_inv()` so the floor is down.
 
 ## Checks the scripts run (read the report every time)

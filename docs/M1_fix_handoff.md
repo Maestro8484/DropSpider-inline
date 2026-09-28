@@ -18,16 +18,16 @@ Date: 2026-09-24. Revision: Rev C.1 (no reprints, no new hardware).
 
 ## How the clutch works now
 
-All directions seen from the 606ZZ end. Spider falling = spool turns clockwise (CW). Winding up = counterclockwise (CCW).
+All directions seen from behind the motor (standing behind the stepper motor, looking along the rod toward the spool). Spider falling = spool turns counterclockwise (CCW). Winding up = clockwise (CW).
 
 | Situation | Spool vs rod | Clutch | Result |
 |---|---|---|---|
-| Rod held, spool turned CW by hand | spool CW relative | **locks** | assembly check |
-| Rod held, spool turned CCW by hand | spool CCW relative | free | assembly check |
-| Rewind: motor turns rod CCW, spider weight holds spool back | spool CW relative | **locks** | motor winds the spool up |
-| Drop: motor turns rod CW faster than the spool falls | spool CCW relative | free | spool falls at gravity, lagging the rod |
-| Drop: spool catches up to the rod's speed | spool CW relative | **locks** | fall speed capped at the motor's speed |
-| Lock seat: motor turns rod CW after a tooth lands on the finger | spool CCW relative | free | motor runs on harmlessly, spool stays on the tooth |
+| Rod held, spool turned CCW by hand | spool CCW relative | **locks** | assembly check |
+| Rod held, spool turned CW by hand | spool CW relative | free | assembly check |
+| Rewind: motor turns rod CW, spider weight holds spool back | spool CCW relative | **locks** | motor winds the spool up |
+| Drop: motor turns rod CCW faster than the spool falls | spool CW relative | free | spool falls at gravity, lagging the rod |
+| Drop: spool catches up to the rod's speed | spool CCW relative | **locks** | fall speed capped at the motor's speed |
+| Lock seat: motor turns rod CCW after a tooth lands on the finger | spool CW relative | free | motor runs on harmlessly, spool stays on the tooth |
 
 The spool can never travel faster than the motor. So the motor sets the top speed and the stopping point of every drop, and the knot never slams. The line's stretch (6 lb mono) is the backstop in case the motor loses its grip.
 
@@ -35,11 +35,11 @@ The spool can never travel faster than the motor. So the motor sets the top spee
 
 Found while reworking the sequence, not yet tested. With the spider hanging, the tooth presses the finger up onto the ledge. The release swing moves the finger tip toward the floor, straight into the same tooth's steep face. As drawn, the servo would be fighting the tooth.
 
-Fix: wind the spool CCW about 1/12 turn **while** the servo swings out. In that direction the finger rides up the tooth's ramp and out, the same way a ratchet clicks. The motor is already powered for the drop, so this costs about 100 ms.
+Fix: wind the spool CW about 1/12 turn **while** the servo swings out. In that direction the finger rides up the tooth's ramp and out, the same way a ratchet clicks. The motor is already powered for the drop, so this costs about 100 ms.
 
 ## Firmware spec (yours to implement in `src/machine.cpp`, settings, console, web)
 
-Directions below use the firmware's own convention: + = rewind (CCW), - = unwind (CW).
+Directions below use the firmware's own convention: + = rewind (CW), - = unwind (CCW).
 
 **Drop sequence (replaces `startCycle` / `ST_RELEASE`):**
 1. `driverOn()`.
@@ -83,7 +83,7 @@ Unit check for the team: one microstep = pi x 50 mm / 1600 = 0.098 mm of line. 1
 
 | # | Test | Pass |
 |---|---|---|
-| T1 | Clutch direction by hand, per the table above | Rod held: spool locks CW, free CCW |
+| T1 | Clutch direction by hand, per the table above | Rod held: spool locks CCW, free CW |
 | T2 | `rewind` from the bottom | Spool winds up, limit switch stops it |
 | T3 | Release under load (M2), 10 times | Finger clears every time, no servo buzz, spider starts falling |
 | T4 | Full `drop`, 5 times at 500 rpm; phone slow-motion video of the drop | 0.7 m in 0.7 s or less; no lost steps logged |

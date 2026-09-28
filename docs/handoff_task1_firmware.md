@@ -26,7 +26,7 @@ Same hash: nothing landed since. Different: re-run the checks below before trust
 
 ## Read first
 
-1. `CLAUDE.md` (repo root): hard constraints. The ones that bite here: motor-led drop, never drop with the driver off; release under load winds CCW about 1/12 turn while the finger swings out; servo on GPIO13; boot never auto-rewinds and EN goes HIGH first in `setup()`; armed idle = driver off, servo detached.
+1. `CLAUDE.md` (repo root): hard constraints. The ones that bite here: motor-led drop, never drop with the driver off; release under load winds clockwise (seen from behind the motor) about 1/12 turn while the finger swings out; servo on GPIO13; boot never auto-rewinds and EN goes HIGH first in `setup()`; armed idle = driver off, servo detached.
 2. `docs/M1_fix_handoff.md`: section "Bench tests" is T1 to T8; "Firmware spec" is what the firmware on the board implements.
 3. `docs/04_firmware.md`: firmware layout, console commands, update paths.
 4. `docs/09_fairlead_switch.md`: V14, the switch reads OPEN at rest after the lock seat by design; home comes from the last cycle.

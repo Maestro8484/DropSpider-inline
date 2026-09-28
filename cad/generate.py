@@ -58,7 +58,7 @@ def ratchet_poly():
             pts.append((r * math.cos(a), r * math.sin(a)))
         pts.append((TOOTH_ROOT_R * math.cos(a2), TOOTH_ROOT_R * math.sin(a2)))
     return Polygon(pts)
-# Viewed from +z (the 606ZZ end): ramps rise counterclockwise, steep faces block CLOCKWISE.
+# Seen from behind the motor (from -z): ramps rise clockwise, steep faces block COUNTERCLOCKWISE (the way the spider's weight turns the spool).
 
 def spool_ratchet():
     """Part coords = installed orientation. z0 face = screw heads, faces the motor."""
