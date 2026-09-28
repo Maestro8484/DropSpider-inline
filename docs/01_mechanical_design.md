@@ -91,7 +91,7 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 ## Press fits and fasteners
 
 - HF0612 into spool body: 10.0 mm bore for a 10.0 mm bearing; the printed hole comes out a little small, and that is the press (9.9 risked squeezing the rollers). Press in with a vise or clamp. Too tight: warm the hub with a hair dryer. Too loose: one drop of CA on the outside. Never glue near the rollers.
-- 606ZZ into bracket: 16.8 mm for 17.0 mm. Same method.
+- 606ZZ into bracket: drawn 17.0 mm for the 17.0 mm bearing; it prints 0.1 to 0.2 small, which is the press. Same method. (Was 16.8: would not go in even heated, owner 2026-09-27.)
 - Spool disk to body: 3x M3x8 self-tapping into 2.5 mm holes.
 - Fairlead body to pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below. Nothing may stand proud of the ceiling face, which is why the heads are countersunk. At home the motor's pull lands on the fairlead's flap stop, about 2 N.
 - KW12-3: 2x M2 x 12 + nuts through the slotted holes. Hinge pin: an M2 bolt, 16 to 20 mm, threaded into the body, free in the flap (filament was too tight, owner 2026-09-26).
