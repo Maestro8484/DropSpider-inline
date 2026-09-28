@@ -238,8 +238,24 @@ def drive_direction_png():
     import matplotlib.patches as mp
     fig, ax = plt.subplots(figsize=(11, 9))
     S = lambda x, y: (np.asarray(x), -np.asarray(y))   # part frame to this view: seen from -z (behind the motor), floor side down
+    # the spool body sits BEHIND the disk in this view: its flange (r 32) shows in the tooth gaps
+    ax.add_patch(plt.Circle((0, 0), 32, color="#c9d6e6", ec="#7d8fa6", lw=1, ls="--"))
+    ax.annotate("spool flange, behind the disk", xy=(-22, -24), xytext=(-100, -62), fontsize=9, color="#4b5d73", arrowprops=dict(arrowstyle="->", color="#4b5d73"))
     P = G.ratchet_poly(); xs, ys = S(*P.exterior.xy)
-    ax.fill(xs, ys, color="#1f6feb", alpha=0.18); ax.plot(xs, ys, "#1f6feb", lw=1.5)
+    ax.fill(xs, ys, color="#8fb6f7"); ax.plot(xs, ys, "#1f6feb", lw=1.5)
+    ax.text(0, -16, "ratchet disk\n(nearest you)", fontsize=9, color="#0b3d91", ha="center")
+    # side strip: where you stand and which way you look
+    zx = lambda z: -95 + (z + 32) * 1.05; yc, k = 82, 0.33
+    def bar(z0, z1, r, col, label=None, dy=0):
+        ax.add_patch(plt.Rectangle((zx(z0), yc - r * k), zx(z1) - zx(z0), 2 * r * k, color=col, ec="#333", lw=0.6))
+        if label: ax.text((zx(z0) + zx(z1)) / 2, yc + r * k + 1.5 + dy, label, fontsize=8, ha="center", va="bottom")
+    ax.plot([zx(-32), zx(106)], [yc, yc], color="#444", lw=1.5)
+    bar(-32, 0, 14, "#24292f", "motor"); bar(10, 30, 6, "#d4a72c", "coupler"); bar(30, 36, 6, "#2da44e")
+    bar(36, 42, 33, "#8fb6f7", "ratchet disk"); bar(42, 48, 25, "#c9d6e6"); bar(48, 50, 32, "#c9d6e6"); ax.text(zx(46), yc - 32 * k - 1.5, "spool", fontsize=8, ha="center", va="top")
+    bar(50, 100, 4.8, "#2da44e", "spacer B"); bar(100, 106, 8.5, "#57606a", "606ZZ")
+    ax.annotate("", xy=(zx(-34), yc), xytext=(zx(-34) - 14, yc), arrowprops=dict(arrowstyle="-|>", lw=2.5, color="k"))
+    ax.text(zx(-34) - 15, yc - 7, "you, behind the motor,\nlooking this way", fontsize=8, va="top")
+    ax.text(zx(-32), yc + 20, "Side view: where this picture is seen from (motor and coupler left out of the big view)", fontsize=9, color="#333")
     # the three faces of one tooth, picked out: long face (ramp) and steep face
     def pol(r, deg): a = math.radians(deg); return S(r * math.cos(a), r * math.sin(a))
     ramp = np.array([pol(G.TOOTH_TIP_R + (G.TOOTH_ROOT_R - G.TOOTH_TIP_R) * k / 20, 150 + 27 * k / 20) for k in range(21)])
@@ -262,7 +278,7 @@ def drive_direction_png():
     ax.text(48, -40, "COUNTERCLOCKWISE: the way the spider's weight pulls.\nA steep face lands on the finger: that is the HOLD.\nOn the drop the finger is out and the motor turns\nthis way; the spool can lag it but never outrun it.", fontsize=10, color="#dc2626", va="top")
     ax.text(0, -78, "Hand check, spool on a spare rod, seen from behind the motor: hold the rod still.\nThe spool must spin FREE clockwise and LOCK counterclockwise. If it is the other way round, press the HF0612 out and flip it.\nSame in the ceiling and the inverted install.",
             fontsize=10, ha="center", va="top", bbox=dict(fc="#fff7ed", ec="#f59e0b"))
-    ax.set_aspect("equal"); ax.set_xlim(-102, 130); ax.set_ylim(-98, 62); ax.set_axis_off()
+    ax.set_aspect("equal"); ax.set_xlim(-122, 130); ax.set_ylim(-98, 106); ax.set_axis_off()
     ax.set_title("Which way the rod drives the spool, seen from behind the motor (looking along the rod toward the spool)", fontsize=12)
     fig.savefig(os.path.join(IMG, "drive_direction.png"), dpi=110, bbox_inches="tight"); plt.close(fig)
 
