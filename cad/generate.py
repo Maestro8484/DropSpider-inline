@@ -60,17 +60,43 @@ def ratchet_poly():
     return Polygon(pts)
 # Seen from behind the motor (from -z): ramps rise clockwise, steep faces block COUNTERCLOCKWISE (the way the spider's weight turns the spool).
 
+# Light duty, so both spool parts are spoked to print fast (owner 2026-09-28): three spokes, one through each
+# screw, and three through-windows between them. Solid only where something bears: the hub around the HF0612,
+# a 1.6 skin under the line, the flange and the tooth ring. Through-windows need no bridging in either print
+# orientation, and every face the other part, the line, the finger or spacer A touches is unchanged.
+HUB_R = 9.0            # hub around the HF0612 (spool body) and the stub hole (disk); spacer A bears on the disk's hub
+SHELL_R = 23.4         # inside of the barrel skin; the line sits at r 25, so the disk stays solid from here out too
+SPOKE_W = 5.0
+WINDOW_FILLET = 1.5    # rounded corners where spokes meet hub and rim
+
+def spoke_windows(boss_r, z0, h):
+    """The three windows between hub and skin, as solids to cut, leaving spokes and a boss_r ring round each screw."""
+    from shapely.geometry import Point, box as sbox
+    from shapely.affinity import rotate
+    from shapely.ops import unary_union
+    ring = Point(0, 0).buffer(SHELL_R, 256).difference(Point(0, 0).buffer(HUB_R, 256))
+    keep = unary_union([rotate(sbox(0, -SPOKE_W / 2, SHELL_R + 1, SPOKE_W / 2), math.degrees(math.atan2(y, x)), origin=(0, 0)) for x, y in BOLTS]
+                       + [Point(x, y).buffer(boss_r, 64) for x, y in BOLTS])
+    win = ring.difference(keep).buffer(-WINDOW_FILLET, 64).buffer(WINDOW_FILLET, 64)
+    out = []
+    for p in getattr(win, "geoms", [win]):
+        s = extrude_polygon(p, h); s.apply_translation([0, 0, z0]); out.append(s)
+    return out
+
 def spool_ratchet():
     """Part coords = installed orientation. z0 face = screw heads, faces the motor."""
     d = extrude_polygon(ratchet_poly(), 6.0)
     return D(d, cyl(HF0612_STUB_HOLE / 2, 8, -1), cyl(15.25, 2, 4.5),        # hole over the HF0612 stub, 30.5 recess over the 30 boss (fit check 2026-09-26)
              *[cyl(1.65, 8, -1, x, y) for x, y in BOLTS],
-             *[cyl(3.1, 3.5, -0.5, x, y) for x, y in BOLTS])
+             *[cyl(3.1, 3.5, -0.5, x, y) for x, y in BOLTS],
+             *spoke_windows(4.6, -1, 8))                                    # 1.5 wall round each screw-head counterbore
 
 def spool_body():
-    """Installed orientation: boss z 4.5..6 (in disk recess), barrel 6..12, flange 12..14."""
+    """Installed orientation: boss z 4.5..6 (in disk recess), barrel 6..12, flange 12..14. The windows leave the boss
+    as the hub plus three spoke ends, whose rounded ends at r 15 still centre it in the disk's recess."""
     b = U(cyl(BARREL_D / 2, 6, 6), cyl(32, 2, 12), cyl(9, 8, 6), cyl(15, 1.5, 4.5))
-    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, 4.4, x, y) for x, y in BOLTS])   # M3x8 tip reaches z 11; pilot to 12.4
+    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, 4.4, x, y) for x, y in BOLTS],   # M3x8 tip reaches z 11; pilot to 12.4
+             *spoke_windows(3.5, 3, 12))                                    # 2.25 wall round each screw pilot
 
 def spool_body_print():
     b = spool_body().copy()
