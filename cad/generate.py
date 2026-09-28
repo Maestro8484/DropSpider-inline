@@ -106,7 +106,11 @@ def bracket():
             vcyl(1.7, 10, -1, 65, 20), vcyl(1.7, 10, -1, 65, 90),                           # mount holes
             *[vcyl(1.6, 10, -1, x, z) for x in (-80, -56, -32) for z in (28, 83)],           # pad: 6 holes
             *[csk(-32, z) for z in (28, 83)],                                                 # fairlead screws: flat heads flush with the ceiling face
-            bx(-12, 12, -1, 5, 30, 90)]                                                      # window
+            bx(-12, 12, -1, 5, 30, 90),                                                      # window
+            # inverted install (inverted.py, doc 06), printed in rather than drilled (owner 2026-09-28):
+            vcyl(3.5, 10, -1, 25, 45),                                                       # line pass-through, 7 mm, under the barrel's servo edge
+            *[vcyl(1.8, 10, -1, 32, z) for z in (28, 83)],                                   # fairlead block, 2x M3 (3.6 prints about 3.4)
+            *[vcyl(1.8, 10, -1, 62, z) for z in (45, 79)]]                                   # radar fork, 2x M3
     return D(b, *cuts)
 
 def bracket_print():

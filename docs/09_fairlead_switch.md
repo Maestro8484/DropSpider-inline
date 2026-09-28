@@ -55,7 +55,7 @@ For the inverted install (doc 06), the same fairlead, stops and switch plate com
 | Step | What to do |
 |---|---|
 | Print | `fairlead_base.stl` as exported, 17 mm tall, same settings as `fairlead_body.stl` (68 mm2 of overhang, no supports) |
-| Drill | the base: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (drawing `cad/bracket_footprint_inverted.svg`, 1:1). Sand the 7 mm hole's edges smooth: the line runs through it |
+| Drill | nothing on a `bracket.stl` printed from 2026-09-28 on (holes printed in); on an older print, the base: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (drawing `cad/bracket_footprint_inverted.svg`, 1:1). Sand the 7 mm hole's edges smooth: the line runs through it |
 | Flap and switch | Assembly steps 1 to 5 above, unchanged |
 | Screw on | 2x **M3 x 12** from inside the base (heads on the device side), cutting their own thread into the block's 2.5 mm pilots. The block's flat face against the base's outer face |
 | Line | From the spool's servo side down through the base hole, the bore, then the flap's slot |
