@@ -32,6 +32,10 @@ def data_uri(name):
 
 def main():
     html = open(SRC, encoding="utf-8").read()
+    # Plain ASCII only: a stray symbol showed as Chinese characters in the title bar (owner 2026-09-28)
+    bad = sorted({c for c in html if ord(c) > 127})
+    if bad:
+        raise SystemExit(f"non-ASCII characters in {SRC}: {bad}")
     names = sorted(set(re.findall(r'src="img:([\w-]+)"', html)))
     for n in names:
         html = html.replace(f'src="img:{n}"', f'src="{data_uri(n)}"')
