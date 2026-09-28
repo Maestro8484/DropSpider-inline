@@ -13,6 +13,8 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 
 ## Repo map
 
+Each doc has one job, marked in bold below where it matters: a **handoff** holds only work still to do, finished work goes to the **changelog**, the order of future work is the **roadmap**, problems go to the **issues** list, bench results to the **log**, and everything else describes the device as it is now.
+
 | Path | What |
 |---|---|
 | `docs/01_mechanical_design.md` | design spec, stack-up, lock mechanism, direction rules, print settings |
@@ -22,14 +24,18 @@ Stepper motor to coupler to 6 mm rod. The spool rides the rod on a one-way clutc
 | `docs/05_assembly.md` | step-by-step assembly with pictures |
 | `docs/06_installation.md` | doorway geometry, heights, fastening, safety |
 | `docs/07_commissioning.md` | bench and on-site test checklist with pass criteria |
-| `docs/08_open_items.md` | what is verified, what is not, risks |
+| `docs/08_open_items.md` | **issues:** what is verified, what is not, risks; closed items one line each |
 | `docs/09_fairlead_switch.md` | fairlead, hinged flap and KW12-3 limit switch |
-| `docs/M1_fix_handoff.md`, `docs/handoff_sensor_bearings.md` | Rev C.1 owner handoffs: clutch fix and motor-led drop; LD2450 and bearing care |
+| `ROADMAP.md` | **roadmap:** every piece of work still to do, in order, one line each |
+| `CHANGELOG.md` | **changelog:** finished work, newest first |
+| `docs/handoff_task1_firmware.md` | **handoff:** bench tests T1 to T8, and the spool-to-flap fix before them |
+| `docs/handoff_sensor_bearings.md` | **handoff:** the LD2450 radar as the trigger (the name is historical; bearing care is in doc 01) |
+| `docs/M1_fix_handoff.md` | **reference:** the Rev C.1 clutch fix and motor-led drop, why it works, and the T1 to T8 test table (the name is historical) |
 | `cad/generate.py`, `cad/fairlead.py`, `cad/inverted.py` | source of truth for every printed part (`inverted.py`: the device turned over on the porch beam, doc 06) (`tools\regen_cad.ps1` rebuilds STLs and images) |
 | `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts and their code, `docs/retired/` obsolete docs and pictures: do not print or follow them |
 | `platformio.ini`, `src/`, `include/` | firmware, standard PlatformIO layout, 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works) |
 | `secrets.ini.example` | template for `secrets.ini`: WiFi name, password, update password (never committed) |
-| `docs/commissioning_log.md` | every bench and install result, dated |
+| `docs/commissioning_log.md` | **log:** every bench and install result, dated, failures included |
 | `bom/BOM.csv` | every part, ordered or still to buy |
 | `scripts/update_firmware.bat` | double-click to update the firmware, by WiFi or by USB |
 | `tools/esptool_noreset.py` | USB flashing helper the update script uses |

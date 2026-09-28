@@ -1,6 +1,6 @@
 # Handoff: vertical-face mount (draft designed to the owner's plan, print is the next step)
 
-**Retired 2026-09-28.** Superseded by the inverted install (`docs/handoff_inverted_mount.md`, doc 06). The code it names is now in `cad/retired/`; its picture is `img/wall_install.png` beside this file. Kept for reference only.
+**Retired 2026-09-28.** Superseded by the inverted install (`docs/retired/handoff_inverted_mount.md`, doc 06). The code it names is now in `cad/retired/`; its picture is `img/wall_install.png` beside this file. Kept for reference only.
 
 What this is for: the record of the wall install draft for hanging the DropSpider from the inside face of the porch's front beam, and what the next session does once the owner has printed and hung it. The design lives in `cad/wall_hinge.py`; the owner-facing description is the "Alternative: hanging from the beam's inside face" section of `06_installation.md`.
 

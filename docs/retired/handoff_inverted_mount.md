@@ -1,6 +1,8 @@
 # Handoff: inverted device on metal corner braces (owner's redesign, 2026-09-27)
 
-![Inverted install mockup](img/inverted_install.png)
+**Retired 2026-09-28.** Everything this handoff asked for is done: design, checks, mockup, docs, Fable check (see `CHANGELOG.md`, 2026-09-27). The install itself is doc 06 and the build guide; building and hanging it is on `ROADMAP.md`; the radar and spider questions are in `docs/handoff_sensor_bearings.md`. Kept for reference only.
+
+![Inverted install mockup](../img/inverted_install.png)
 
 ## Where it stands: mockup sent, waiting on the owner
 

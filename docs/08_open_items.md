@@ -38,30 +38,24 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V15 | LD2450 as the trigger: tracking through the door frame, speed sign, approach-only firing, arrival timing | S1 to S5 in `handoff_sensor_bearings.md` | widen or narrow `doorwidth`, tune `leadms`; `sensor 2410` fallback |
 | V16 | Printed fits on the owner's printer after the fit-check fixes: finger on the spline (5.0 drawn), spacers, ratchet over the HF0612 stub, flap on the M2 bolt, cradle grooves | test fit at assembly | open the hole with a drill by hand; adjust the drawn size in code |
 | V18 | Inverted install (doc 06 alternative, the owner's plan approved 2026-09-27): device turned over on two steel corner braces, `fairlead_base.stl` under the base, radar fork bolted under the servo end (`ld2450_fork_screw.stl`), five holes drilled in the base. CAD-checked 2026-09-27 (`python cad/inverted.py`: watertight, clears every part including a 52 x 75 x 30 board box, line path clear, flap and switch as doc 09, radar view not blocked by the device). **Not printed, not hung**; the braces and their holes are the owner's | build it, hang it on the bench, run commissioning steps 9 and 12, then walk test S3 (does the radar see the spider?) | radar tilt; the spider-in-view question is open |
-| V17 | The fitted SG90 is a 180 degree positioning servo, not a 360 continuous one (the owner's spare has no hard stop) | `servo 90`, `servo 30`, `servo 150`, no finger fitted: must move and hold | swap the servo |
 | V20 | Finger height on the real spline (was a second V18, renumbered 2026-09-27): plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
 | V19 | Reinforced fairlead body strength and the flat switch face on a real print; switch mounts with no washers | assembly steps 15 to 15d | 6 walls on that part |
-| V12 | Board on COM13 is an ESP32 with 4 MB flash. **Closed 2026-09-25:** first the 38-pin NodeMCU-32S, now the 30-pin DevKit V1 in use, both ESP32-D0WD-V3, 4 MB, read by esptool | chip read by esptool during the first USB flash | it would not enter flash mode on its own on 2026-09-24; hold BOOT, tap EN, let go of BOOT |
 
 ## Closed
 
 | ID | Item | Result |
 |---|---|---|
 | V8 | Firmware on PlatformIO's current esp32 core (3.x) | Closed by pinning, not by testing 3.x: `platform = espressif32@6.7.0` (Arduino core 2.0.16) builds clean, 2026-09-24. Moving to core 3.x is a deliberate future change, not an accident of a fresh install |
+| V12 | Board on COM13 is an ESP32 with 4 MB flash | Closed 2026-09-25: the 30-pin DevKit V1 in use, ESP32-D0WD-V3, 4 MB, read by esptool |
+| V17 | Fitted servo is a positioning one, not a 360 | Closed 2026-09-27: `servo 90`, `30`, `150` moved and held; the owner's MG90, about 90 degrees of swing (commissioning log) |
 
 ## Known limits of Rev C.1
 
-- Ceiling mount is the default. The inverted install on the beam's face (doc 06, V18) is CAD-checked, not built.
+- The owner is building the inverted install on the beam's face (doc 06, V18): CAD-checked, not built. The ceiling install stays documented in doc 06.
 - No stall sensing; the expansion board hides the TMC2209 UART pin.
 - Static IP address not set yet; DHCP only.
 - One shared update password, from `secrets.ini`. Fine on a home network.
 
-## Done in firmware since the handoff
-
-- Rewind no longer blocks the console: the machine runs on its own task and FastAccelStepper makes the step pulses.
-- Web page (console, bench controls, settings, network setup), network firmware updates, limit switch hard cut-off, three-strike fault stop.
-
 ## Candidate Rev D items (not started)
 
-- Wall-mount variant with a relocated fairlead: done as the inverted install (doc 06, V18), not yet built.
 - Enclosure for the controller board.

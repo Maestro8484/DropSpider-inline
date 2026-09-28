@@ -1,13 +1,14 @@
-# Handoff: sensor change and bearing guidance (Rev C.1 addendum)
+# Handoff: task 2, LD2450 radar as the trigger
 
-Date: 2026-09-24. From: mechanical owner. To: software/electrical team.
-Do this **after** `M1_fix_handoff.md` tests T1 to T8 pass.
+From the mechanical owner to the software/electrical team, written 2026-09-24. Future work only; what is already done is in `CHANGELOG.md`.
+
+**Before you start:** T1 to T8 in `M1_fix_handoff.md` must pass. Check: `docs/commissioning_log.md` has a PASS row for each.
 
 ## 1. Sensor: switch the trigger to the HLK-LD2450
 
 ### Decision
 
-The owner already has an LD2450. It becomes the primary trigger. The LD2410C stays wired on GPIO33 as a selectable fallback. No purchases.
+The owner already has an LD2450. It becomes the primary trigger. The LD2410C is the fallback on GPIO33 (`sensor 2410`), fitted only if a named test fails; it is not fitted today. No purchases.
 
 ### Why
 
@@ -28,7 +29,7 @@ Owner concern raised: "mmWave can be finicky without a clear visual picture." An
 - 4 pins: 5 V, GND, TX, RX. No OUT pin. Connector is 4-pin, 1.25 mm pitch; check the owner has the cable.
 - UART 256000 baud, 8N1, hardware UART only. About 10 frames per second, up to 3 targets, X/Y/speed in mm and cm/s per the Hi-Link protocol (confirm units against the library you pick).
 - Field of view about plus or minus 60 degrees horizontal, 35 vertical, range about 6 m.
-- Wiring: LD2450 TX to GPIO16 (UART2 RX), RX to GPIO17 (UART2 TX). Both pins exist on the 38-pin NodeMCU-32S in use.
+- Wiring: LD2450 TX to GPIO16 (UART2 RX), RX to GPIO17 (UART2 TX). On the 30-pin ESP32 DevKit V1 in use they are the pins printed RX2 and TX2.
 
 ### Firmware spec
 
@@ -54,21 +55,19 @@ Owner concern raised: "mmWave can be finicky without a clear visual picture." An
 | S4 | Walk away, walk past across the hallway, stand still in the window | no trigger |
 | S5 | Unplug the radar's TX wire while armed | fault logged within 1 s; fallback per setting |
 
-## 2. Bearings: care and what each one is for
+### Inverted install: four things the firmware must handle (added 2026-09-28)
 
-| Bearing | Job | Care |
-|---|---|---|
-| HF0612 one-way needle bearing, pressed into `spool_body` | The clutch between rod and spool. Rev C.1 orientation: rod held, spool **locks clockwise** seen from the 606ZZ end. Lets the spool lag behind the motor on the drop, lets the motor wind it up on rewind | **Do not clean with carb cleaner or any solvent spray.** It strips the factory grease and attacks the plastic roller cage; dry needles can skid instead of locking. If gritty or sticky: flush with isopropyl alcohol only, dry, one drop of light machine oil. Never grease it |
-| 606ZZ, pressed into the bracket end plate | Supports the rod's far end | Shielded and greased for life. Leave it alone; load is tiny. Carb cleaner would wash grease out with no way to repack |
+The owner is building the inverted install (doc 06, V18): the device turned over on two steel corner braces on the porch beam's inside face. The mechanism, the winding sense, `dir` and the switch logic do not change. These four things do. Numbers from `cad/inverted.py` and doc 06; none of them has been seen on real hardware yet.
 
-If the drop feels sluggish, check in this order: spool end play (should slide 0.3 to 0.5 mm between spacers; sand a spacer if tight), line dragging in the eyelet, then the HF0612 by hand. Solvents are never the first fix.
+1. **Radar placement and axes.** The LD2450 hangs in its cradle under the base at the servo end, about 154 mm out from the beam's face, looking back toward the beam and 50 degrees down (55 to 60 if the walk test asks; the cradle clears to 65). People approach from outside, under the beam, toward the radar. Its X axis runs along the rod, which is parallel to the beam, so X is across the walkway, and the line falls at about X = 0. Which way is +X depends on which end of the device the owner puts where. Do not hard-code the sign: add a setting (for example `xflip`, 0 or 1) or confirm it in S2 and store it. The radar sits about 2.28 m up and tilted, so Y is not the floor distance to the doorway; tune `leadms` and the clear distance on the porch, not on the bench.
+2. **The spider is inside the radar's view.** Retracted it hangs a few cm below the base and about 37 mm toward the beam from the radar, near X = 0 at short range; dropped, it hangs near the lower edge of the view. It moves during the drop and the rewind and swings after. As written, rule 4 (clear = no target in the window under 3 m for 2 s) could see the spider as a person and hold the device in "waiting for the doorway to clear" after every scare. Design for it: in S2, read the spider's X, Y and speed on the live readout at rest, dropped and swinging, then exclude it (for example a `minrange` setting below which targets are ignored, or ignore targets in a small box around the line during the cycle and for a few seconds after). Check the exclusion does not also hide a person standing in the doorway.
+3. **Aluminum blocks the radar.** At 24 GHz, aluminum siding or trim stops the signal completely, however thin. If the beam is clad, the radar sees people only once they are under the beam's bottom edge, and the flat metal can bounce back phantom targets or jumpy positions. Keep the 2-consecutive-frame rule; do not loosen it to cure late firing. The owner's fix is a steeper tilt.
+4. **Line between the spool and the flap is longer.** `include/config.h` has `SPOOL_TO_EYELET_MM 40.0f` (its comment still says braid; the line is 6 lb mono). Doc 06 gives 45 mm for the ceiling install and 55 mm for the inverted one. With 40 the drop-distance limit (`dropMmMax()` = line - 40 - 30) lets the spider stop 15 mm closer to the barrel knot than the 30 mm margin intends, and the rewind estimate in `machine.cpp` is 15 mm short (the 0.75-turn overshoot and the limit switch cover that). Also: the factory `dropmm` 620 only fits the old 720 line; the inverted line is about 636, so the page refuses the new line until `dropmm` is lowered (the build guide tells the owner to do that first). Fix: make it 55, or a setting, and check the factory `dropmm` fits the inverted line. This one bites task 1's bench tests too, not only the radar work.
 
-## 3. Other decisions from the owner session, 2026-09-24
+### Docs yours after the firmware lands
 
-- **Existing hardware only** for Rev C.1: no new parts. Relay coil-disconnect and a dog clutch were rejected on this rule.
-- **Spider:** foam, 60 g or less, so the motor can stop it cleanly (BOM N11 updated).
-- **Model for this work:** Opus 5.5 at medium effort; high effort only for hard debugging.
+`02_electrical.md` pin map and wiring picture, `04_firmware.md`, `07_commissioning.md` step 12, web help text, and the build guide's radar rows (sections 09, 10 and 12, now marked AFTER TASK 2).
 
-## 4. Docs changed by the owner for this addendum
+### Finish
 
-`03_sensor.md` (rewritten), `01_mechanical_design.md` (bearing care section), `08_open_items.md` (V15), `bom/BOM.csv` (LD2450, spider weight), `CLAUDE.md` (task order). **Yours after the firmware lands:** `02_electrical.md` pin map and wiring picture, `04_firmware.md`, `07_commissioning.md` step 12, web help text.
+Changelog line, remove this task's roadmap line, close V15 in `08_open_items.md` with the S1 to S5 log rows, move this file to `docs/retired/`. Bearing care, formerly section 2 here, is reference and lives in `01_mechanical_design.md`, "Bearing care".

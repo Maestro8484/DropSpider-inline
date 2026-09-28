@@ -2,11 +2,7 @@
 
 Handoff from the lead mechanical engineer to the software/electrical team. Read `README.md`, then `docs/08_open_items.md`, before changing anything.
 
-**Current tasks, in order:**
-1. Start from `docs/handoff_task1_firmware.md` (state, hardware changes since the spec, order of work), then `docs/M1_fix_handoff.md`: Rev C.1 fixes the clutch direction flaw (M1) and a finger release jam (M2) with a motor-led drop. Tests T1 to T8.
-2. `docs/handoff_sensor_bearings.md`: LD2450 becomes the primary trigger (LD2410C fallback), plus bearing care rules. Tests S1 to S5. Start only after T1 to T8 pass.
-3. `docs/09_fairlead_switch.md`: fairlead + hinged flap + KW12-3 limit switch (closes V10). CAD, STLs and pictures are current (rebuild with `tools\regen_cad.ps1`). Firmware: the switch reads OPEN at rest after the lock seat by design (V14); infer home from the last cycle, not the boot reading.
-4. Separate, not blocking: `docs/handoff_inverted_mount.md`, the owner's ruling for hanging the device from the porch beam's inside face: device turned over, line out through the base, steel corner braces. Mockup approved and docs done 2026-09-27 (doc 06, V18); CAD-checked, not built. The braces and their holes are the owner's. The two earlier printed-mount designs are retired (2026-09-28): `cad/retired/` (code, STLs), `docs/retired/` (handoff, picture).
+**Work still to do, in order: `ROADMAP.md`.** Each task's detail is its handoff (`docs/handoff_task1_firmware.md` for the T1 to T8 bench tests, `docs/handoff_sensor_bearings.md` for the LD2450 radar); finished work is in `CHANGELOG.md`. Doc roles follow the owner's `repo-docs` standard: a handoff holds future work only, and moves to `docs/retired/` when done. The owner is building the inverted install (doc 06, V18): device turned over on steel corner braces on the porch beam; the braces and their holes are his.
 
 Firmware, doc 02, doc 04 and web help text are the team's to change. Rev C.1 rule from the owner: existing hardware only, no new purchases.
 
@@ -14,7 +10,7 @@ Firmware, doc 02, doc 04 and web help text are the team's to change. Rev C.1 rul
 
 ## Project
 
-Ceiling-mounted drop-spider prop, Mechanism A (In-Line Single-Axle Clutch Spool), Rev C.1. Mechanical design is released. The team's job: build the firmware out, wire and commission the hardware, and close the open items in `docs/08_open_items.md`.
+Drop-spider prop for a porch (the owner is building the inverted install, turned over on the beam; the ceiling install is still in doc 06), Mechanism A (In-Line Single-Axle Clutch Spool), Rev C.1. Mechanical design is released. The team's job: build the firmware out, wire and commission the hardware, and close the open items in `docs/08_open_items.md`.
 
 ## Owner preferences
 
@@ -53,11 +49,3 @@ cd cad; python generate.py      # parts + clash checks only
 - WiFi and update passwords come from `secrets.ini` (gitignored); template `secrets.ini.example`. Never commit `secrets.ini`.
 - Runtime settings live in NVS (flash), set from the serial console or the web page; see `docs/04_firmware.md`.
 - Limit switch on GPIO32 is a hard cut-off for any move in the rewind direction.
-
-## Suggested backlog, in order
-
-1. Close V1 (logic level) and V2 (servo direction) on the bench.
-2. Optional: read LD2410C target distance over UART2 (GPIO16/17 already wired) for a tighter trigger.
-3. Add a `test` command that runs commissioning steps 4 to 11 with prompts.
-
-Non-blocking rewind is done: the machine runs on its own task and FastAccelStepper makes the pulses.
