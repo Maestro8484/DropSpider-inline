@@ -106,6 +106,16 @@ SWV_HOLES_Z = (SWV_Z0 + 5.25, SWV_Z0 + 5.25 + 9.5)
 BORE_R = 2.0                          # bore throat radius (4.0 mm)
 SW_PILOT_D, SW_PILOT_DEPTH = 1.8, 6.5 # owner 2026-09-28: switch on 2x M2 x 12 self-tapping into the plastic, holes 6.5 deep; 1.8 drawn prints about 1.6
 REST_SHAVE = 1.25                     # owner 2026-09-28: rest pad shortened 1.25 mm
+COL_R = 1.5                           # owner 2026-09-28: the bore column's four long edges rounded (build123d trial's fillet)
+WIN_R = 1.5                           # corner radius of the lightening windows
+# Lightening windows (owner 2026-09-28, less material). All run along y right through, so they print as
+# plain holes up from the bed: nothing bridges, nothing needs support. Each stays 1.6 or more from the bore
+# mouths, the pilots and every feature standing on the plate, and 2 from the plate's outline.
+COL_WIN = (20.6, 27.4, 51.1, 61.9)    # through the column above the bore (x0, x1, z0, z1): clear of the bore's 9 mm mouth, the hinge block and the rest pad
+PLATE_WINS = [                        # through the 4 mm plate where nothing stands on it; (x0, x1, z0, z1) boxes, each list joined into one window
+    [(21.0, 26.9, 26.0, 37.4)],                                                   # beside the lower screw boss, below the column
+    [(21.0, 26.9, 69.6, 91.0), (21.0, 35.0, 69.6, 77.4), (32.6, 35.0, 62.6, 77.4)],   # above the column, round the upper boss, up beside the hinge block
+]
 
 
 def bore_inv():
@@ -128,19 +138,38 @@ def bore_inv():
     v.apply_translation([LINE_X, 0.05, LINE_Z]); return v
 
 
+def yprism(poly, y0, y1):
+    """A shapely polygon drawn in (x, z), extruded along y from y0 to y1."""
+    m = G.extrude_polygon(poly, y1 - y0)
+    v = m.vertices.copy(); m.vertices = np.column_stack([v[:, 0], y1 - v[:, 2], v[:, 1]])   # (u, v, w) to (x u, y y1-w, z v): a rotation, faces keep their winding
+    return m
+
+
+def rounded(boxes, r):
+    """Boxes (x0, x1, z0, z1) joined into one outline, every corner rounded r, inside and outside."""
+    from shapely.geometry import box
+    from shapely.ops import unary_union
+    p = unary_union([box(a, c, b, d) for a, b, c, d in boxes])
+    return p.buffer(-r, 32).buffer(r, 32).buffer(r, 32).buffer(-r, 32)
+
+
 def fairlead_base():
     """v2: mounting plate on the base, a bore column whose underside is the flap's hard stop, the hinge
-    boss, the rest stop, and a switch plate on the outer side with a nut gap behind it."""
+    boss, the rest stop, and a switch plate on the outer side with a nut gap behind it. Rounded column
+    and lightening windows (owner 2026-09-28)."""
     bx = G.bx
     x0, x1, z0, z1 = COL
     plate = bx(19, 37, -4, 0, 24, 93)                                   # mounting plate, same footprint as v1 plus the switch plate
     bosses = [bx(28.5, 36, -11, 0, z - 4, z + 4) for _, z in BLOCK_SCREWS]   # 11 mm of thread for each M3
-    column = bx(x0, x1, STOP_Y_INV, 0, z0, z1)
+    col_xz = rounded([COL], COL_R)
+    column = yprism(col_xz, STOP_Y_INV, 0)                              # long edges (along y) rounded r 1.5
     hinge = bx(29.0, 36.0, PIN_Y - 2.5, 0, HINGE_Z - 3.0, HINGE_Z + 3.0)     # M2 hinge bolt threads 7 mm; 1.1 clear of the knuckle (x 27.9)
-    rest = bx(24.0, x1, FLAP_TOP + 0.2 + REST_SHAVE, STOP_Y_INV, 63.5, 67.5)   # rest stop over the flap tail, shortened 1.25 (owner)
+    rest_y0 = FLAP_TOP + 0.2 + REST_SHAVE
+    rest = G.I(bx(24.0, x1, rest_y0, STOP_Y_INV, 63.5, 67.5), yprism(col_xz, rest_y0 - 1, STOP_Y_INV + 1))   # rest stop over the flap tail, shortened 1.25 (owner); trimmed to the column's round corner so it hangs over nothing
     splate = bx(GAP_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])   # solid from the column to the switch face (x 31 to 37), no nut gap
     body = G.U(plate, *bosses, column, hinge, rest, splate)
     cuts = [bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
+    cuts += [yprism(rounded(w, WIN_R), STOP_Y_INV - 1, 1) for w in [[COL_WIN]] + PLATE_WINS]   # lightening windows, right through
     for z in SWV_HOLES_Z:                                               # M2 x 12 self-tapping, 6.5 deep from the switch face
         cuts += [F.xcyl(SW_PILOT_D / 2, PLATE_X[1] - SW_PILOT_DEPTH, PLATE_X[1] + 1, SWV_HOLE_Y, z)]
     cuts += [G.vcyl(1.25, 12, -11, x, z) for x, z in BLOCK_SCREWS]      # 2.5 pilots, 11 deep from the mounting face

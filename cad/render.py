@@ -77,6 +77,8 @@ def lock_png():
     fig, ax = plt.subplots(figsize=(10, 8))
     P = G.ratchet_poly(); xs, ys = P.exterior.xy
     ax.fill(np.array(xs), np.array(ys) + G.AXIS_Y, color="#1f6feb", alpha=0.25); ax.plot(np.array(xs), np.array(ys) + G.AXIS_Y, "#1f6feb")
+    for w in G.spoke_window_polys(4.6):                                         # the disk's three through-windows (spoked, owner 2026-09-28)
+        wx, wy = w.exterior.xy; ax.fill(np.array(wx), np.array(wy) + G.AXIS_Y, color="white", ec="#1f6feb", lw=1)
     ax.add_patch(plt.Circle((0, G.AXIS_Y), 25, fill=False, ls="--", color="#58a6ff"))
     ax.add_patch(plt.Circle((0, G.AXIS_Y), 3, color="#444"))
     ax.add_patch(plt.Rectangle((G.SERVO_SHAFT_X - 20.5, G.AXIS_Y - 3), 23.5, 6, color="#e5534b"))
@@ -85,7 +87,7 @@ def lock_png():
     tipx, tipy = G.SERVO_SHAFT_X - 20.5 * math.cos(a), G.AXIS_Y + 20.5 * math.sin(a)
     ax.plot([G.SERVO_SHAFT_X, tipx], [G.AXIS_Y, tipy], color="#e5534b", lw=6, alpha=0.3)
     ax.text(tipx - 4, tipy + 3, "RELEASED (servo 30)", color="#e5534b", fontsize=9)
-    ax.text(G.SERVO_SHAFT_X - 18, G.AXIS_Y + 5, "LOCKED (servo 90)", color="#e5534b", fontsize=9)
+    ax.text(45.5, G.AXIS_Y - 9, "LOCKED (servo 90)", color="#e5534b", fontsize=9)
     ax.add_patch(plt.Rectangle((36, 4), 8, 32, color="#9aa0a6"))
     ax.text(45, 10, "ledge: takes the\nlocking load", fontsize=9)
     ax.add_patch(plt.Rectangle((-90, 0), 170, 4, color="#9aa0a6")); ax.text(-88, -7, "base, y = 0 (ceiling)", fontsize=9)
@@ -94,7 +96,7 @@ def lock_png():
     ax.plot([-25, -25], [40, 115], color="k", lw=1.5); ax.text(-23, 105, "line to spider", fontsize=9)
     ax.annotate("", xy=(20, 65), xytext=(-20, 67), arrowprops=dict(arrowstyle="->", lw=2.5, color="green",
                 connectionstyle="arc3,rad=-0.3"))
-    ax.text(-8, 72, "UNWIND (spider falling):\ncounterclockwise in this view", color="green", fontsize=10, ha="center")
+    ax.text(14, 78, "UNWIND (spider falling):\ncounterclockwise in this view", color="green", fontsize=10, ha="center", bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.5))
     ax.annotate("tooth pushes finger\nUP onto the ledge", xy=(31, 37), xytext=(5, 12), fontsize=9,
                 arrowprops=dict(arrowstyle="->"))
     ax.set_aspect("equal"); ax.invert_yaxis(); ax.set_xlim(-95, 85); ax.set_ylim(118, -12)
@@ -243,7 +245,9 @@ def drive_direction_png():
     ax.annotate("spool flange, behind the disk", xy=(-22, -24), xytext=(-100, -62), fontsize=9, color="#4b5d73", arrowprops=dict(arrowstyle="->", color="#4b5d73"))
     P = G.ratchet_poly(); xs, ys = S(*P.exterior.xy)
     ax.fill(xs, ys, color="#8fb6f7"); ax.plot(xs, ys, "#1f6feb", lw=1.5)
-    ax.text(0, -16, "ratchet disk\n(nearest you)", fontsize=9, color="#0b3d91", ha="center")
+    for w in G.spoke_window_polys(4.6):   # the disk's three windows; the spool body's own windows sit right behind them (a little larger round the screws), so you see straight through both
+        wx, wy = S(*w.exterior.xy); ax.fill(wx, wy, color="white", ec="#1f6feb", lw=1.2)
+    ax.text(0, -16, "ratchet disk\n(nearest you)", fontsize=9, color="#0b3d91", ha="center", bbox=dict(fc="white", ec="#1f6feb", lw=0.6, alpha=0.9, pad=1.5))
     # side strip: where you stand and which way you look
     zx = lambda z: -95 + (z + 32) * 1.05; yc, k = 82, 0.33
     def bar(z0, z1, r, col, label=None, dy=0):

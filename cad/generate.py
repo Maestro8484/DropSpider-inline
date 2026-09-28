@@ -69,8 +69,8 @@ SHELL_R = 23.4         # inside of the barrel skin; the line sits at r 25, so th
 SPOKE_W = 5.0
 WINDOW_FILLET = 1.5    # rounded corners where spokes meet hub and rim
 
-def spoke_windows(boss_r, z0, h):
-    """The three windows between hub and skin, as solids to cut, leaving spokes and a boss_r ring round each screw."""
+def spoke_window_polys(boss_r):
+    """The three windows between hub and skin as flat outlines (part x, y), leaving spokes and a boss_r ring round each screw. Also drawn by render.py."""
     from shapely.geometry import Point, box as sbox
     from shapely.affinity import rotate
     from shapely.ops import unary_union
@@ -78,8 +78,12 @@ def spoke_windows(boss_r, z0, h):
     keep = unary_union([rotate(sbox(0, -SPOKE_W / 2, SHELL_R + 1, SPOKE_W / 2), math.degrees(math.atan2(y, x)), origin=(0, 0)) for x, y in BOLTS]
                        + [Point(x, y).buffer(boss_r, 64) for x, y in BOLTS])
     win = ring.difference(keep).buffer(-WINDOW_FILLET, 64).buffer(WINDOW_FILLET, 64)
+    return list(getattr(win, "geoms", [win]))
+
+def spoke_windows(boss_r, z0, h):
+    """The three windows, as solids to cut."""
     out = []
-    for p in getattr(win, "geoms", [win]):
+    for p in spoke_window_polys(boss_r):
         s = extrude_polygon(p, h); s.apply_translation([0, 0, z0]); out.append(s)
     return out
 
