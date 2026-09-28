@@ -98,10 +98,10 @@ TAB = (30.5, 45.0, 34.0, 48.0)        # flap tab x0, x1, z0, z1, free-end side, 
 SWV_X0 = 37.0                         # switch body x 37 to 43.4 (6.4 thick), on the plate's outer face
 SWV_Z0 = 37.0                         # body z 37 to 57; roller end at z 37
 SWV_ROLLER_Z = SWV_Z0 + (F.TAIL_Z - F.SW_Z0)   # roller 4 mm in from that end: z 41, 17 mm from the hinge
-SWV_ROLL_Y = FLAP_TOP + 0.3 + 2.4     # roller centre: 0.3 above the tab at rest
-SWV_BODY_BOT = FLAP_TOP + 0.3 + 9.8   # lever face of the body: -20.7 (lever and roller stack 9.8, as doc 09's model)
-SWV_BODY_TOP = SWV_BODY_BOT + (F.SW_BODY_BOT - F.SW_BODY_TOP)   # -10.5; legs up to -4.1
-SWV_HOLE_Y = SWV_BODY_TOP - 2.9       # mounting holes 2.9 in from the leg side, as doc 09
+SWV_HOLE_Y = PLATE_Y0 + 6.5          # owner 2026-09-28: screw hole centres 6.5 mm from the plate's free edge (its top on the print bed)
+SWV_BODY_TOP = SWV_HOLE_Y + 2.9       # the switch's holes sit 2.9 in from its leg side (doc 09's model); legs up to -4.2
+SWV_BODY_BOT = SWV_BODY_TOP - (F.SW_BODY_BOT - F.SW_BODY_TOP)   # lever face, -20.8
+SWV_ROLL_Y = SWV_BODY_BOT - 9.8 + 2.4 # roller centre (lever and roller stack 9.8): 0.2 above the tab with the flap level
 SWV_HOLES_Z = (SWV_Z0 + 5.25, SWV_Z0 + 5.25 + 9.5)
 BORE_R = 2.0                          # bore throat radius (4.0 mm)
 SW_PILOT_D, SW_PILOT_DEPTH = 1.8, 6.5 # owner 2026-09-28: switch on 2x M2 x 12 self-tapping into the plastic, holes 6.5 deep; 1.8 drawn prints about 1.6
@@ -280,7 +280,7 @@ if __name__ == "__main__":
             if G.I(rotate_flap(flap, sign * deg), body).volume > 0.2:
                 print(f"{name}: {deg:.2f} deg"); break
         if sign == 1:
-            a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(HINGE_Z - SWV_ROLLER_Z) * math.sin(a) - 0.3:.2f} mm past touching (switch needs 3.4)")
+            a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(HINGE_Z - SWV_ROLLER_Z) * math.sin(a) - (SWV_ROLL_Y - 2.4 - FLAP_TOP):.2f} mm past touching (switch needs 3.4)")
     rest_flap = rotate_flap(flap, -deg if False else 0)
     lows = {"flap (at rest)": None, "block": body.bounds[0][1], "switch body and roller": switch_installed().bounds[0][1]}
     for dd in np.arange(0, 25.0, 0.25):

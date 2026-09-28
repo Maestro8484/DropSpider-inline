@@ -36,14 +36,15 @@ def as_circle(ring):
     """Center and radius if the ring is a circle (within 0.05 mm), else None."""
     p = np.asarray(ring.coords)[:-1]
     c = p.mean(axis=0); r = np.hypot(*(p - c).T)
-    return (c, r.mean()) if len(p) >= 16 and r.max() - r.min() < 0.05 else None
+    return (c, r.mean()) if len(p) >= 16 and r.max() - r.min() < 0.15 else None   # 0.15: the line hole is cut twice (bracket and drilled model) and comes out slightly uneven
 
 
 def main(mesh=None, out_path=OUT, caption="DropSpider bracket, ceiling face, seen from below. 1:1 mm. Red = cut.",
-         drilled=(), mirror=False, outlines=(), labels=(), legend=(), legend_at=(0, 0), scale_bar=False):
+         drilled=(), mirror=False, outlines=(), labels=(), legend=(), legend_at=(0, 0), scale_bar=False, cut_d=None):
     """drilled: (x, z, d) holes drawn in blue as drilled by hand. mirror: draw +x to the left.
     outlines: shapely polygons drawn dashed blue. labels: (x, z, text) in model mm, text starting there.
-    legend: lines of text starting at legend_at (drawing mm). scale_bar: a 100 mm bar to check the print scale."""
+    legend: lines of text starting at legend_at (drawing mm). scale_bar: a 100 mm bar to check the print scale.
+    cut_d: maps a hole's drawn diameter to the diameter cut (laser plate clearances); None = as drawn."""
     polys = footprint(G.bracket() if mesh is None else mesh)
     allp = np.vstack([np.asarray(pg.exterior.coords) for pg in polys])
     x0, z0 = allp.min(axis=0) - MARGIN
@@ -56,17 +57,21 @@ def main(mesh=None, out_path=OUT, caption="DropSpider bracket, ceiling face, see
     cut = 'fill="none" stroke="#ff0000" stroke-width="0.1"'
     blue = 'fill="none" stroke="#0000ff" stroke-width="0.15"'
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{f(W)}mm" height="{f(H)}mm" viewBox="0 0 {f(W)} {f(H)}">',
-           f'<title>{"DropSpider bracket, inverted install drilling template" if mirror else "DropSpider bracket ceiling footprint"}, 1:1 mm</title>']
+           f'<title>{"DropSpider bracket base, inverted install: laser plate and drilling template" if mirror else "DropSpider bracket ceiling footprint"}, 1:1 mm</title>']
     ring_d = lambda coords: "M " + " L ".join(f"{f(X(x))} {f(Z(z))}" for x, z in coords) + " Z"
     holes = []
     for pg in polys:
         out.append(f'<path {cut} d="{ring_d(pg.exterior.coords[:-1])}"/>')
         for ring in pg.interiors:
             c = as_circle(ring)
+            bb = ring.bounds
+            if c is None and cut_d and max(bb[2] - bb[0], bb[3] - bb[1]) < 9:   # small uneven hole (the line hole): cut it as a round hole
+                c = (np.array([(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2]), max(bb[2] - bb[0], bb[3] - bb[1]) / 2)
             if c is not None:
                 (cx, cz), r = c
-                out.append(f'<circle {cut} cx="{f(X(cx))}" cy="{f(Z(cz))}" r="{f(r)}"/>')
-                holes.append(f"circle d {2 * r:.2f} at x {cx:.1f}, z {cz:.1f}")
+                rc = cut_d(2 * r) / 2 if cut_d else r
+                out.append(f'<circle {cut} cx="{f(X(cx))}" cy="{f(Z(cz))}" r="{f(rc)}"/>')
+                holes.append(f"circle d {2 * rc:.2f} (bracket {2 * r:.2f}) at x {cx:.1f}, z {cz:.1f}")
             else:
                 out.append(f'<path {cut} d="{ring_d(ring.coords[:-1])}"/>')
                 b = ring.bounds
@@ -76,6 +81,7 @@ def main(mesh=None, out_path=OUT, caption="DropSpider bracket, ceiling face, see
     lab = 'fill="#0000ff" font-family="Arial" font-size="{}"'
     for x, z, d in drilled:   # a small cross at every hole to drill, so the centre punch has a mark
         cx, cz = X(x), Z(z)
+        d = cut_d(d) if cut_d else d
         out.append(f'<path {blue} d="M {f(cx - d / 2 - 1)} {f(cz)} L {f(cx + d / 2 + 1)} {f(cz)} M {f(cx)} {f(cz - d / 2 - 1)} L {f(cx)} {f(cz + d / 2 + 1)}"/>')
         if not labels:
             out.append(f'<text {lab.format(3)} x="{f(cx + d / 2 + 1)}" y="{f(cz - d / 2 - 0.5)}">drill {d:g}</text>')
@@ -106,9 +112,9 @@ def main_inverted():
     edge_x = G.bracket().bounds[1][0]          # servo-side edge of the base, x 75
     fz = [z for _, z in rs]
     labels = [
-        (bs[0][0] + 12, bs[0][1] - 6.5, f"FAIRLEAD BLOCK: 2x drill 3.4"),
-        (lx - 7, lz + 1, f"LINE: drill {INV.LINE_HOLE_D:g}"),
-        (rs[0][0] + 7, min(fz) - 7.5, f"RADAR FORK: 2x drill 3.4"),
+        (bs[0][0] + 12, bs[0][1] - 7, f"FAIRLEAD BLOCK: 2x M3"),
+        (lx - 7, lz + 1.5, f"LINE"),
+        (rs[0][0] + 7, min(fz) - 8, f"RADAR FORK: 2x M3"),
     ]
     legend = [
         "Distances to each hole's centre, in mm,",
@@ -117,14 +123,20 @@ def main_inverted():
         f"line: {edge_x - lx:g} in, {lz:g} down",
         f"fairlead block: {edge_x - bs[0][0]:g} in, {bs[0][1]:g} and {bs[1][1]:g} down",
         f"radar fork: {edge_x - rs[0][0]:g} in, {fz[0]:g} and {fz[1]:g} down",
-        "Dashed blue: where the block and the",
-        "fork sit. Red circles with no cross:",
-        "the bracket's own holes, not used.",
+        "LASER PLATE: every M3 hole cut 5.5 mm,",
+        "room for an M3 screw or an M3 heat-set",
+        "insert up to 5 mm across; the line 8 mm.",
+        "DRILLING THE PRINTED BASE instead: M3",
+        "holes 3.4 mm, the line 7 mm.",
+        "Dashed blue: where fairlead v2 and the",
+        "radar fork sit. Red circles with no cross:",
+        "the bracket's own holes (pad, ceiling).",
     ]
     main(INV.bracket_inverted(), OUT_INV,
-         "DropSpider bracket, base outer face seen from outside (from below when hung). Lay the 1:1 print on that face, printed side up, and drill through the crosses. Brace holes are the owner's.",
+         "DropSpider bracket base, outer face seen from outside (from below when hung). 1:1 mm. Red = cut (laser plate sizes). Crosses = the five holes the inverted install adds. Brace holes are the owner's.",
          drilled, mirror=True, outlines=list(block) + list(fork), labels=labels, legend=legend,
-         legend_at=(edge_x - 5 + MARGIN + 42, 58), scale_bar=True)
+         legend_at=(edge_x - 5 + MARGIN + 42, 40), scale_bar=True,
+         cut_d=lambda d: 8.0 if d > 6.5 else 5.5)
 
 
 if __name__ == "__main__":

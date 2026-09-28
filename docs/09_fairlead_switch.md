@@ -62,7 +62,7 @@ Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap water
 |---|---|
 | Print | `fairlead_base.stl` (mounting face on the bed, 33 mm tall, no supports) and `fairlead_flap_inv.stl` (prints flat like the old flap). The old `fairlead_flap.stl` does not fit this block: it has no tab |
 | Holes in the base | Same as before: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (block screws). Drawing `cad/bracket_footprint_inverted.svg`, 1:1 |
-| Switch | KW12-3 on the block's outer face (the side away from the rod), lever and roller DOWN, legs UP toward the base. 2x **M2 x 12 screws** through the switch, threading straight into the plastic (holes 6.5 mm deep, no nuts, no slots: the switch position is fixed) |
+| Switch | KW12-3 on the block's outer face (the side away from the rod), lever and roller DOWN, legs UP toward the base. 2x **M2 x 12 screws** through the switch, threading straight into the plastic (no nuts, no slots: the switch position is fixed). Hole centres 6.5 mm from the switch plate's free edge (its top as printed) |
 | Wires | Solder before mounting. The legs end about 4 mm under the base: lead the wires sideways off the legs, then round the base's far end to the board |
 | Flap | M2 bolt, 20 mm, in from the rod side through the flap's knuckle and threaded into the hinge boss, not clamped. The tab goes under the roller |
 | Screw on | 2x **M3 x 12** from inside the base (heads on the device side) into the block's 2.5 mm pilots. Flat face against the base's outer face |
