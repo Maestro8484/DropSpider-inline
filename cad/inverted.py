@@ -67,7 +67,7 @@ T_SHIFT = 69.0
 def T(m):
     m = m.copy(); m.apply_transform(T_ROT); m.apply_translation([0, T_SHIFT, 0]); return m
 def t_y(y): return -y + T_SHIFT
-PIN_Y, HINGE_Z = t_y(F.PY), F.HZ    # the flap's pin: y -13.2, z 58, axis along x
+
 
 
 def bracket_inverted():
@@ -76,40 +76,109 @@ def bracket_inverted():
     return G.D(G.bracket(), *cuts)
 
 
+# ---------------- fairlead block, v2 (owner 2026-09-28) ----------------
+# Owner: switch facing outward, its legs and wires toward the spool (up, toward the base), not jutting out
+# under the flap; the flap the lowest point of the unit. So the switch now sits ABOVE the flap: the flap's
+# free-end side (the side the bead lifts) gets a tab reaching out past the block, under the switch's roller.
+# The bead lifts the free end, the tab lifts the roller. A switch stacked above the flap with its legs up
+# needs about 30 mm between the flap and the base (lever and roller 9.8, body 10.2, legs 6.4, room to
+# solder), so the flap hangs 32 mm under the base (the old unit hung 39, with the switch lowest).
+FL_Y = -32.0                          # flap mid-plane at rest
+DY = FL_Y - t_y(F.HY)                 # the doc 09 flap moved by T, then down this far
+PIN_Y, HINGE_Z = t_y(F.PY) + DY, F.HZ # hinge pin: y -30.2, z 58, axis along x
+FLAP_TOP = FL_Y + F.FT / 2            # -30.8
+STOP_GAP = 4.8                        # flap top to the block's underside (hard stop), as doc 09
+STOP_Y_INV = FLAP_TOP + STOP_GAP      # -26: underside of the bore column
+COL = (19.0, 31.0, 39.0, 68.0)        # bore column x0, x1, z0, z1. Stop face starts at z 39, as doc 09 (sets the stop angle)
+GAP_X = (31.0, 34.0)                  # nut gap between the column and the switch plate, open underneath
+PLATE_X = (34.0, 37.0)                # switch plate, 3 thick; the switch bolts to its outer (x 37) face
+PLATE_Z = (37.0, 58.0)
+PLATE_Y0 = -20.0                      # plate bottom, just above the switch's lever face
+TAB = (30.5, 45.0, 34.0, 48.0)        # flap tab x0, x1, z0, z1, free-end side, under the roller
+SWV_X0 = 37.0                         # switch body x 37 to 43.4 (6.4 thick), on the plate's outer face
+SWV_Z0 = 37.0                         # body z 37 to 57; roller end at z 37
+SWV_ROLLER_Z = SWV_Z0 + (F.TAIL_Z - F.SW_Z0)   # roller 4 mm in from that end: z 41, 17 mm from the hinge
+SWV_ROLL_Y = FLAP_TOP + 0.3 + 2.4     # roller centre: 0.3 above the tab at rest
+SWV_BODY_BOT = FLAP_TOP + 0.3 + 9.8   # lever face of the body: -20.7 (lever and roller stack 9.8, as doc 09's model)
+SWV_BODY_TOP = SWV_BODY_BOT + (F.SW_BODY_BOT - F.SW_BODY_TOP)   # -10.5; legs up to -4.1
+SWV_HOLE_Y = SWV_BODY_TOP - 2.9       # mounting holes 2.9 in from the leg side, as doc 09
+SWV_HOLES_Z = (SWV_Z0 + 5.25, SWV_Z0 + 5.25 + 9.5)
+
+
+def bore_inv():
+    """Line bore through the column, y 0 down to the stop face: 3.2 mm throat, rounded flares at both ends."""
+    h = -STOP_Y_INV + 0.5
+    prof = [(0, 0.0)]
+    for k in range(9):
+        t = k / 8; prof.append((1.6 + 3.0 * (1 - t) ** 2, 5.0 * t))
+    prof.append((1.6, h - 5.0))
+    for k in range(1, 9):
+        t = k / 8; prof.append((1.6 + 1.4 * t ** 2, h - 5.0 + 5.0 * t))
+    prof.append((0, h))
+    v = trimesh.creation.revolve(np.array(prof), sections=64)                     # axis z, 0 to h
+    v.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))   # z -> -y
+    if v.volume < 0: v.invert()
+    assert v.bounds[1][1] < 0.1 and v.bounds[0][1] < STOP_Y_INV, v.bounds    # must span the column
+    v.apply_translation([LINE_X, 0.05, LINE_Z]); return v
+
+
 def fairlead_base():
-    """Doc 09's block, slab, plates, ribs and rest stop moved by T and clipped to the outside of the
-    base, plus a 4 mm mounting plate on the base's outer face. Same cuts as doc 09, moved by T."""
+    """v2: mounting plate on the base, a bore column whose underside is the flap's hard stop, the hinge
+    boss, the rest stop, and a switch plate on the outer side with a nut gap behind it."""
     bx = G.bx
-    plate = bx(19, 36, -4, 0, 24, 93)                          # z 24 to 93: clear of the braces at the base's ends
-    boss  = bx(28.5, 36, -11, 0, 24, 32)                       # under the z 28 screw: 11 mm of thread instead of the 4 mm plate (flap is x 17 to 28, z 33 up)
-    slab  = bx(-36, F.SW_X0, 62, F.BOT_Y, 54, F.RIB2_Z0)
-    web   = bx(-36, -32, 3, F.BOT_Y, 54, F.RIB2_Z0)             # stops at z 93: the far rib (93 to 99) is dropped for the brace
-    lower = bx(-36, -32, 70, F.BOT_Y, 39, 54)
-    rib1b = bx(-36, F.RIB_X1, F.RIB1B_Y0, F.BOT_Y, 52.5, 58.5)
-    block = bx(-36, -19, 70, F.STOP_Y, 39, 62)
-    rest  = bx(-36, -26, F.STOP_Y, F.HY - F.FT / 2 - 0.2, 63.5, 67.5)
-    moved = [T(m) for m in (slab, web, lower, rib1b, block, rest)]
-    outside = bx(0, 40, -60, 0, 0, 120)                      # keep only what lies outside the base (y <= 0)
-    body = G.U(plate, boss, *[G.I(m, outside) for m in moved])
-    cuts = [T(F.trumpet()),
-            T(F.xcyl(0.95, -37, -28, F.PY, F.HZ)),                                  # M2 hinge bolt threads in from the flap side
-            T(bx(F.SW_X0 + 0.01, -16, F.HY - 3.6, F.HY + 3.6, F.HZ - 3.6, F.HZ + 3.6))]   # knuckle clearance guard
-    for z in F.SW_HOLES_Z:
-        cuts += [T(F.xcyl(1.2, -37, -27, F.SW_HOLE_Y - F.SW_SLIDE, z)), T(F.xcyl(1.2, -37, -27, F.SW_HOLE_Y + F.SW_SLIDE, z)),
-                 T(bx(-37, -27, F.SW_HOLE_Y - F.SW_SLIDE, F.SW_HOLE_Y + F.SW_SLIDE, z - 1.2, z + 1.2))]
-    cuts += [G.vcyl(1.25, 12, -11, x, z) for x, z in BLOCK_SCREWS]          # 2.5 pilots, 11 deep from the mounting face
+    x0, x1, z0, z1 = COL
+    plate = bx(19, 37, -4, 0, 24, 93)                                   # mounting plate, same footprint as v1 plus the switch plate
+    bosses = [bx(28.5, 36, -11, 0, z - 4, z + 4) for _, z in BLOCK_SCREWS]   # 11 mm of thread for each M3
+    column = bx(x0, x1, STOP_Y_INV, 0, z0, z1)
+    hinge = bx(29.0, 36.0, PIN_Y - 2.5, 0, HINGE_Z - 3.0, HINGE_Z + 3.0)     # M2 hinge bolt threads 7 mm; 1.1 clear of the knuckle (x 27.9)
+    rest = bx(24.0, x1, FLAP_TOP + 0.2, STOP_Y_INV, 63.5, 67.5)          # rest stop over the flap tail, as doc 09
+    splate = bx(PLATE_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])
+    bridges = [bx(GAP_X[0], GAP_X[1], PLATE_Y0, 0, z - 1, z + 1) for z in (PLATE_Z[0] + 1, PLATE_Z[1] - 1)]
+    body = G.U(plate, *bosses, column, hinge, rest, splate, *bridges)
+    cuts = [bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
+    for z in SWV_HOLES_Z:                                               # 2.4 wide slots, +-2.5 in y; M2 x 12, nuts in the gap
+        cuts += [F.xcyl(1.2, GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y - F.SW_SLIDE, z),
+                 F.xcyl(1.2, GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y + F.SW_SLIDE, z),
+                 bx(GAP_X[0] - 0.5, PLATE_X[1] + 1, SWV_HOLE_Y - F.SW_SLIDE, SWV_HOLE_Y + F.SW_SLIDE, z - 1.2, z + 1.2)]
+    cuts += [G.vcyl(1.25, 12, -11, x, z) for x, z in BLOCK_SCREWS]      # 2.5 pilots, 11 deep from the mounting face
     return G.D(body, *cuts)
 
 
 def fairlead_base_print():
-    """x = 36 face (the back, where the switch nuts sit) on the bed, like doc 09's body."""
+    """Mounting face (y 0) on the bed; everything grows from it, so no supports and a dead-flat face."""
     m = fairlead_base()
-    m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [0, 1, 0]))   # +x -> -z
+    m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))   # -y -> +z
     m.apply_translation(-m.bounds[0]); return m
 
 
-def flap_installed(): return T(F.fairlead_flap())
-def switch_installed(): return T(F.switch_model())
+def flap_inv_local():
+    """Doc 09's flap (same knuckle, slot, prong) plus the tab, in doc 09's frame so it prints like the old one."""
+    tx0, tx1, tz0, tz1 = TAB
+    tab = G.bx(-tx1, -tx0, F.HY - F.FT / 2, F.HY + F.FT / 2, tz0, tz1)
+    return G.U(F.fairlead_flap(), tab)
+
+
+def fairlead_flap_inv_print():
+    m = flap_inv_local(); m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))
+    m.apply_translation(-m.bounds[0]); return m
+
+
+def flap_installed():
+    m = T(flap_inv_local()); m.apply_translation([0, DY, 0]); return m
+
+
+def switch_legs_installed():
+    x0, x1 = SWV_X0, SWV_X0 + (F.SW_X1 - F.SW_X0)
+    return G.bx(x0 + 2, x1 - 2, SWV_BODY_TOP, SWV_BODY_TOP + 6.4, SWV_Z0 + 2, SWV_Z0 + 18)
+
+
+def switch_installed():
+    """KW12-3, legs UP toward the base, lever and roller down onto the flap's tab, body on the plate's outer face."""
+    x0, x1 = SWV_X0, SWV_X0 + (F.SW_X1 - F.SW_X0)
+    body = G.bx(x0, x1, SWV_BODY_BOT, SWV_BODY_TOP, SWV_Z0, SWV_Z0 + 20)
+    xc = (x0 + x1) / 2
+    roller = F.xcyl(2.4, xc - 1.5, xc + 1.5, SWV_ROLL_Y, SWV_ROLLER_Z)
+    return G.U(body, switch_legs_installed(), roller)
 
 
 def rotate_flap(m, deg):
@@ -146,7 +215,7 @@ def pcb_box():
 
 def line_and_bead(drop=120.0):
     line = G.vcyl(0.3, 40 + drop, -drop, LINE_X, LINE_Z)
-    bead = trimesh.creation.icosphere(radius=4, subdivisions=3); bead.apply_translation([LINE_X, t_y(F.HY) - F.FT / 2 - 4 - 3.3, LINE_Z])
+    bead = trimesh.creation.icosphere(radius=4, subdivisions=3); bead.apply_translation([LINE_X, FL_Y - F.FT / 2 - 4 - 3.3, LINE_Z])
     return {"line": line, "bead": bead}
 
 
@@ -208,7 +277,16 @@ if __name__ == "__main__":
             if G.I(rotate_flap(flap, sign * deg), body).volume > 0.2:
                 print(f"{name}: {deg:.2f} deg"); break
         if sign == 1:
-            a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(F.TAIL_Z - F.HZ) * math.sin(a):.2f} mm (switch needs 3.4)")
+            a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(HINGE_Z - SWV_ROLLER_Z) * math.sin(a) - 0.3:.2f} mm past touching (switch needs 3.4)")
+    rest_flap = rotate_flap(flap, -deg if False else 0)
+    lows = {"flap (at rest)": None, "block": body.bounds[0][1], "switch body and roller": switch_installed().bounds[0][1]}
+    for dd in np.arange(0, 3.0, 0.25):
+        if G.I(rotate_flap(flap, -dd), body).volume > 0.2: break
+    lows["flap (at rest)"] = rotate_flap(flap, -dd).bounds[0][1]
+    print("lowest points (y, mm below the base): " + ", ".join(f"{k} {v:.1f}" for k, v in lows.items()))
+    print(f"flap is the lowest point: {lows['flap (at rest)'] < min(lows['block'], lows['switch body and roller']) - 0.5}")
+    lg = switch_legs_installed()
+    print(f"switch legs point up toward the base: legs y {lg.bounds[0][1]:.1f} to {lg.bounds[1][1]:.1f}, {-lg.bounds[1][1]:.1f} mm of room under the base to solder; switch body x {SWV_X0:.1f} to {SWV_X0 + 6.4:.1f}, on the outer face")
     # screw heads inside the base: the block's 2 screws and nothing else in the way
     for x, z in BLOCK_SCREWS + RADAR_SCREWS:
         head = G.vcyl(3.2, 3.0, 4.0, x, z)                                          # screw head or M3 nut inside the base
@@ -218,4 +296,4 @@ if __name__ == "__main__":
     print(f"load: weight + a line snap turn {M / 1000:.1f} N m about the beam's face, carried by the two steel braces' corners; "
           f"the PLA base only sits on their flat legs (from x -24, where the base starts at the brace rows, to x 60), in compression; "
           f"the braces' top beam screws see about {M / (BRACE_LEG - 20) / 2:.0f} N each")
-    print(f"line falls {LINE_X - X_BEAM:.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (t_y(F.HY) - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")
+    print(f"line falls {LINE_X - X_BEAM:.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (FL_Y - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")

@@ -48,17 +48,26 @@ One flap is needed; a second is a spare.
 6. Screw the body to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
 7. Thread the line from the spool down through the fairlead, then slide it into the flap's slot from the free end. Bead, swivel, spider below as before.
 
-## Inverted install: `fairlead_base.stl`
+## Inverted install: `fairlead_base.stl` and `fairlead_flap_inv.stl` (v2, 2026-09-28)
 
-For the inverted install (doc 06), the same fairlead, stops and switch plate come as one block that screws under the base at the line hole. Source `fairlead_base()` in `cad/inverted.py`: doc 09's geometry turned 180 degrees and moved to the base's outer face, so the flap, hinge, switch slots and the numbers above are unchanged. Checked in the model 2026-09-27: watertight, clear of every part, line path clear through the base hole, the bore and the flap slot, hard stop at 14.75 degrees, roller pushed 4.33 mm (needs 3.4), 2 mm clear of the spool. Its far rib is left off so the owner's braces fit at the base's ends, and a small boss under the z 28 screw gives that screw 11 mm of thread (without it, only the 4 mm plate).
+![Fairlead v2](img/inverted_fairlead.png)
+
+Owner's redesign ask, 2026-09-28: the switch faces outward, its legs and wires point up toward the spool instead of hanging under the flap, and the flap is the lowest point. So the switch now sits above the flap on the block's outer side, legs up, and its roller rests on a tab added to the flap's free-end side. The bead lifts the free end; the tab lifts the roller. Source `fairlead_base()` and `flap_inv_local()` in `cad/inverted.py`. Stacking the switch above the flap takes about 30 mm under the base, so the flap hangs 32 mm under it (v1: 15 mm, with the switch hanging to 43).
+
+Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap watertight; mounting face one plane; clear of every part (braces, radar, board box); line path clear through the base hole, the bore and the flap slot; hard stop 14.75 degrees, rest stop 1.75; roller pushed 4.03 mm past touching (needs 3.4, same as v1); lowest points below the base: flap 34.0, block 32.7, switch 30.5; switch legs end 4.1 mm under the base; 2 mm clear of the spool; screw heads clear. Not printed or fitted yet.
 
 | Step | What to do |
 |---|---|
-| Print | `fairlead_base.stl` as exported, 17 mm tall, same settings as `fairlead_body.stl` (68 mm2 of overhang, no supports) |
-| Drill | nothing on a `bracket.stl` printed from 2026-09-28 on (holes printed in); on an older print, the base: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (drawing `cad/bracket_footprint_inverted.svg`, 1:1). Sand the 7 mm hole's edges smooth: the line runs through it |
-| Flap and switch | Assembly steps 1 to 5 above, unchanged |
-| Screw on | 2x **M3 x 12** from inside the base (heads on the device side), cutting their own thread into the block's 2.5 mm pilots. The block's flat face against the base's outer face |
+| Print | `fairlead_base.stl` (mounting face on the bed, 33 mm tall, no supports) and `fairlead_flap_inv.stl` (prints flat like the old flap). The old `fairlead_flap.stl` does not fit this block: it has no tab |
+| Holes in the base | Same as before: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (block screws). Drawing `cad/bracket_footprint_inverted.svg`, 1:1 |
+| Switch | KW12-3 on the block's outer face (the side away from the rod), lever and roller DOWN, legs UP toward the base. 2x M2 x 12 through the switch and the slots in the switch plate; the nuts go in the slot behind the plate, pushed in from underneath with tweezers. Slide it until the roller just touches the flap's tab, then back off a paper's thickness and tighten |
+| Wires | Solder before mounting. The legs end about 4 mm under the base: lead the wires sideways off the legs, then round the base's far end to the board |
+| Flap | M2 bolt, 20 mm, in from the rod side through the flap's knuckle and threaded into the hinge boss, not clamped. The tab goes under the roller |
+| Screw on | 2x **M3 x 12** from inside the base (heads on the device side) into the block's 2.5 mm pilots. Flat face against the base's outer face |
 | Line | From the spool's servo side down through the base hole, the bore, then the flap's slot |
+| Check | Lift the flap's free end by hand: click at about 2 mm, stops flat against the block. Let go: it drops to its rest stop and the switch opens |
+
+Heights change with v2: the bead at home sits about 196 mm below the ceiling (v1: 179), so the retracted spider hides behind a 10 in beam only if it is 28 mm tall or less, and the line between the spool and the flap is about 72 mm (v1: 55). Line length = (ceiling - 196) - (rest height + spider height + 30) + 72.
 
 ## Wiring
 

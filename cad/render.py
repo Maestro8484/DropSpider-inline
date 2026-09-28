@@ -7,7 +7,7 @@ import raster
 
 IMG = os.path.join(G.HERE, "..", "docs", "img"); os.makedirs(IMG, exist_ok=True)
 COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff",
-       "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "switch_kw12": "#111111",
+       "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "fairlead_flap_inv": "#d946ef", "switch_kw12": "#111111",
        "finger": "#e5534b", "rod_6mm": "#444", "coupler": "#d4a72c", "spacer_A": "#2da44e", "spacer_B": "#2da44e",
        "bearing_606": "#57606a", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
        "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
@@ -16,7 +16,7 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b",
        "fairlead_base": "#8b5cf6", "brace": "#6b7280", "line": "#111111", "bead": "#f59e0b", "electronics": "#16a34a"}
 LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_body": "spool_body.stl + HF0612",
-         "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)",
+         "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)", "fairlead_flap_inv": "fairlead_flap_inv.stl (flap with the tab under the switch)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
          "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
@@ -190,7 +190,7 @@ def inverted_png():
     save(img, "inverted_install.png", "Inverted install (the owner's plan): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
          labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
 
-def inverted_fairlead_png():
+def inverted_fairlead_png(elev=-12, azim=35, name="inverted_fairlead.png"):
     """Close-up for the build guide: the fairlead block under the base, flap, switch, both block screws, line and bead."""
     import inverted as INV
     A = INV.assembly_inverted(); L = INV.line_and_bead(drop=45)
@@ -199,13 +199,13 @@ def inverted_fairlead_png():
     items = [(INV.view_inv(base), "#d0d3d6")]
     items += [(INV.view_inv(A[k]), COL[k]) for k in ("fairlead_base", "fairlead_flap", "switch_kw12")]
     items += [(INV.view_inv(m), "#57606a") for m in screws] + [(INV.view_inv(L["line"]), "#111111"), (INV.view_inv(L["bead"]), COL["bead"])]
-    img, proj = raster.render(items, elev=-45, azim=120, W=1300, H=1000)
-    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -40), 80, 30, "line: down through the 7 mm hole, the block's bore, the flap's slot", True),
-              lbl(proj, (INV.LINE_X, -INV.LINE_Z, -20), -420, -60, "bead: lifts the flap at home", True),
-              lbl(proj, (26, -80, -30), 60, 20, "KW12-3: roller on the flap's tail", True),
+    img, proj = raster.render(items, elev=elev, azim=azim, W=1300, H=1000)
+    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, 25), 60, -40, "line: from the spool, down through the 7 mm hole, the block's bore, the flap's slot", True),
+              lbl(proj, (INV.LINE_X, -INV.LINE_Z, -40), -420, -60, "bead: lifts the flap at home", True),
+              lbl(proj, (43, -47, -15), 60, 20, "KW12-3 on the outer face, legs up; roller on the flap's tab", True),
               lbl(proj, (32, -83, -8), 80, -60, "M3 x 12 from inside the base (x2)", True)]
-    save(img, "inverted_fairlead.png", "Inverted install: fairlead block under the base, seen from below (only the base is drawn above it)",
-         labels, keys=["fairlead_base", "fairlead_flap", "switch_kw12", "bead"], loc="lower left")
+    save(img, name, "Inverted install, fairlead v2: switch above the flap, legs up, flap lowest (only the base is drawn above it)",
+         labels, keys=["fairlead_base", "fairlead_flap_inv", "switch_kw12", "bead"], loc="lower left")
 
 if __name__ == "__main__":
     base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()

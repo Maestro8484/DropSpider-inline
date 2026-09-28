@@ -203,7 +203,8 @@ PARTS = {
     "shim_2mm": lambda: tube(2),
     "ld2450_cradle": ld2450_cradle_print,
     "ld2450_fork_screw": lambda: __import__("sensor_mount").ld2450_fork_screw_print(),   # the radar fork, both installs: 2x M3, no glue (owner 2026-09-27; the glued ld2450_fork is retired)
-    "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),             # inverted install only (docs/06): fairlead block under the base
+    "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),
+    "fairlead_flap_inv": lambda: __import__("inverted").fairlead_flap_inv_print(),   # inverted install only: doc 09 flap plus the tab under the switch roller (2026-09-28)             # inverted install only (docs/06): fairlead block under the base
 }
 
 # ---------------- installed assembly ----------------

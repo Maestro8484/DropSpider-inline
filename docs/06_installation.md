@@ -54,11 +54,11 @@ The owner's plan, approved 2026-09-27: the device turned upside down, its flat b
 | Point | Below the ceiling |
 |---|---|
 | Base (the device's bottom face) | 160 mm |
-| Bead at home, against the flap | about 179 mm |
-| Spider retracted, bottom | 179 + 30 (bead and swivel) + spider height. Hidden behind the 254 mm beam only for a spider up to about 45 mm tall |
+| Bead at home, against the flap | about 196 mm (fairlead v2, 2026-09-28; v1 179) |
+| Spider retracted, bottom | 196 + 30 (bead and swivel) + spider height. Hidden behind the 254 mm beam only for a spider up to about 28 mm tall |
 | Line | falls 117 mm from the beam's face (ceiling install: 305 mm) |
 
-Line length (barrel knot to bead) = (ceiling - 179) - (target rest height + spider height + 30) + 55. The 55 mm is line from the spool to the flap in this layout. Tie it, enter `line`, then shorten on site, as for the ceiling install.
+Line length (barrel knot to bead) = (ceiling - 196) - (target rest height + spider height + 30) + 72. The 72 mm is line from the spool to the flap in this layout (fairlead v2, doc 09). Tie it, enter `line`, then shorten on site, as for the ceiling install.
 
 **Radar view**, from the model: the device blocks none of the radar's field (60 degrees either side, 35 up and down); its centre line meets the beam's face plane 403 mm below the ceiling, under the beam's bottom edge (254). The beam does cut off the top of the field: anything shallower than about 24 degrees below level hits the beam, as in the ceiling install (doc 03). **Not through metal.** The radar sees through wood, drywall and plastic, but aluminum siding or trim coil blocks it completely, however thin (at 24 GHz the signal dies within about half a micron of aluminum; Hi-Link's manual and every install guide say metal blocks it). If the beam is clad in aluminum, the radar only sees people once they are in view under the beam's bottom edge, and the flat metal can bounce the signal back as phantom targets or jumpy positions. Fix for either: tilt steeper, so less of the view lands on the beam. Start the walk test at 50 degrees; if it fires late or fires on nothing, go to 55 or 60. The cradle clears every part up to 65 degrees in this layout (checked in the model 2026-09-27). The radar hangs about 30 mm past the base's far end. The spider, retracted or dropped, is inside its view: if the radar reports the spider as a person, the device would sit in "waiting for the doorway to clear" after each scare. Not checked; the first walk test (S3) shows it, and a steeper or shallower tilt moves the spider out of the middle of the view.
 
