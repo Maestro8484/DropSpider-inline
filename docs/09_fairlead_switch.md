@@ -50,12 +50,12 @@ One flap is needed; a second is a spare.
 
 ## Inverted install: `fairlead_base.stl`
 
-For the inverted install (doc 06), the same fairlead, stops and switch plate come as one block that screws under the base at the line hole. Source `fairlead_base()` in `cad/inverted.py`: doc 09's geometry turned 180 degrees and moved to the base's outer face, so the flap, hinge, switch slots and the numbers above are unchanged. Checked in the model 2026-09-27: watertight, clear of every part, line path clear through the base hole, the bore and the flap slot, hard stop at 14.75 degrees, roller pushed 4.33 mm (needs 3.4), 2 mm clear of the spool. Its far rib is left off so the owner's braces fit at the base's ends.
+For the inverted install (doc 06), the same fairlead, stops and switch plate come as one block that screws under the base at the line hole. Source `fairlead_base()` in `cad/inverted.py`: doc 09's geometry turned 180 degrees and moved to the base's outer face, so the flap, hinge, switch slots and the numbers above are unchanged. Checked in the model 2026-09-27: watertight, clear of every part, line path clear through the base hole, the bore and the flap slot, hard stop at 14.75 degrees, roller pushed 4.33 mm (needs 3.4), 2 mm clear of the spool. Its far rib is left off so the owner's braces fit at the base's ends, and a small boss under the z 28 screw gives that screw 11 mm of thread (without it, only the 4 mm plate).
 
 | Step | What to do |
 |---|---|
-| Print | `fairlead_base.stl` as exported, 17 mm tall, same settings as `fairlead_body.stl` (54 mm2 of overhang, no supports) |
-| Drill | the base: 5 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (drawing `cad/bracket_footprint_inverted.svg`, 1:1). Sand the 5 mm hole's edges smooth: the line runs through it |
+| Print | `fairlead_base.stl` as exported, 17 mm tall, same settings as `fairlead_body.stl` (68 mm2 of overhang, no supports) |
+| Drill | the base: 7 mm at x 25, z 45 (the line), 3.4 mm at x 32, z 28 and z 83 (drawing `cad/bracket_footprint_inverted.svg`, 1:1). Sand the 7 mm hole's edges smooth: the line runs through it |
 | Flap and switch | Assembly steps 1 to 5 above, unchanged |
 | Screw on | 2x **M3 x 12** from inside the base (heads on the device side), cutting their own thread into the block's 2.5 mm pilots. The block's flat face against the base's outer face |
 | Line | From the spool's servo side down through the base hole, the bore, then the flap's slot |

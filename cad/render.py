@@ -21,14 +21,14 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
          "bearing_606": "606ZZ", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
          "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
-         "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x #4 screws into the beam's underside)",
+         "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x M3 through the base, no glue)",
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
          "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw",
          "hinge_plate": "hinge_plate.stl (4x #4 screws into the beam)", "hinge_clip": "hinge_clip.stl x2 (2x M3 each, on the pad)",
          "pin": "pins: 2x M3 x 25 (hinge), 4x M3 x 20 (struts), nuts", "tie_bar": "tie_bar.stl (2x M3 through the base's x 65 holes)",
          "strut": "strut.stl x2 (the 45 degree bar, pushed)",
          "fairlead_base": "fairlead_base.stl (under the base, 2x M3 from inside)", "brace": "2x steel corner brace, 6 in (owner drills the base)",
-         "line": "6 lb line, out through a 5 mm hole in the base", "bead": "stop bead",
+         "line": "6 lb line, out through a 7 mm hole in the base", "bead": "stop bead",
          "electronics": "room for the controller board on the pad, 52 x 75 x 30 (stand-in box)"}
 
 def rview(m):
@@ -221,7 +221,7 @@ def inverted_png():
               lbl(proj, (INV.LINE_X + 10, -INV.LINE_Z, -30), 200, 60, "fairlead, flap and switch under the base", True),
               lbl(proj, (95, -62, -40), 120, 120, "radar under the servo end, looking at the approach", True)]
     save(img, "inverted_install.png", "Inverted install (the owner's plan): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
-         labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
+         labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
 
 if __name__ == "__main__":
     base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); fairlead_png(); fairlead_exploded_png(); wall_png(); inverted_png()

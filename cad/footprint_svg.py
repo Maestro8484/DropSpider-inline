@@ -1,7 +1,7 @@
 """
 Bracket footprint for a laser cutter: the ceiling face (y = 0) outline with every hole through it,
 1:1 in millimeters. Writes cad/bracket_footprint.svg, and cad/bracket_footprint_inverted.svg for the
-inverted install (docs/06): the same face with the three holes the owner drills (line, 2 block screws).
+inverted install (docs/06): the same face with the five holes drilled (line, 2 block screws, 2 radar fork screws).
 
 View: from the room, looking up at the ceiling (the way a paper or plywood template held against
 the ceiling reads). x runs left to right; z (along the rod, motor end first) runs top to bottom.
@@ -73,7 +73,7 @@ def main(mesh=None, out_path=OUT, caption="DropSpider bracket, ceiling face, see
 
 def main_inverted():
     import inverted as INV
-    drilled = [(INV.LINE_X, INV.LINE_Z, INV.LINE_HOLE_D)] + [(x, z, 3.4) for x, z in INV.BLOCK_SCREWS]
+    drilled = [(INV.LINE_X, INV.LINE_Z, INV.LINE_HOLE_D)] + [(x, z, 3.4) for x, z in INV.BLOCK_SCREWS + INV.RADAR_SCREWS]
     main(INV.bracket_inverted(), OUT_INV,
          "DropSpider bracket, base outer face (the floor side when inverted), seen from below. 1:1 mm. Blue = drill by hand. Brace holes are the owner's.",
          drilled)

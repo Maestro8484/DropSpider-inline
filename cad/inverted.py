@@ -8,9 +8,10 @@ The line simply peels off the OTHER side of the barrel (the servo side, x +25) a
 base, which is now the floor side.
 
 What is new:
-  bracket_inverted   the printed bracket with 5 holes the owner drills: 5 mm for the line at
-                     (x 25, z 45); 2x 3.4 at (x 32, z 28) and (x 32, z 83) for the fairlead block;
-                     nothing else. (The radar fork is glued, so no holes for it.)
+  bracket_inverted   the printed bracket with 5 holes drilled: 7 mm for the line at (x 25, z 45),
+                     wider than the 6 mm barrel channel so the line never rubs a drilled edge;
+                     2x 3.4 at (x 32, z 28) and (x 32, z 83) for the fairlead block; 2x 3.4 at
+                     (x 62, z 45) and (x 62, z 79) for the radar fork. Brace holes are the owner's.
   fairlead_base      the fairlead + flap hard stop + KW12-3 switch plate, as a block on the base's
                      OUTER face at the line. Built from doc 09's geometry moved by one rigid
                      transform T (180 degrees about z, then +69 in y): the same flared bore, the
@@ -20,9 +21,10 @@ What is new:
                      checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
                      at the base's ends. The owner's orientation (2026-09-27): the flat leg under the
                      base, the other leg standing UP the beam's face beside the device, screwed to it.
-  radar              part of the device (owner 2026-09-27): the same ld2450_fork, cradle and radar,
-                     turned over and glued under the base at the servo end, looking back toward the
-                     beam (the approach) and down, under the fairlead block.
+  radar              part of the device (owner 2026-09-27): ld2450_fork_screw (cad/wall_mount.py,
+                     same ears as ld2450_fork, no glue), cradle and radar, turned over and bolted
+                     under the base at the servo end with 2x M3, looking back toward the beam (the
+                     approach) and down, under the fairlead block.
   electronics        the controller board stays where it is in the ceiling design: on the pad, the
                      base's device side at the beam end, now facing up. A 52 x 75 x 30 stand-in box
                      is clash-checked.
@@ -42,7 +44,7 @@ import wall_mount as WM
 
 # ---------------- dimensions (mm) ----------------
 LINE_X, LINE_Z = 25.0, 45.0          # line exit: the barrel's +x tangent, straight to the base
-LINE_HOLE_D = 5.0
+LINE_HOLE_D = 7.0                    # barrel channel is z 42 to 48; 7 mm (z 41.5 to 48.5) keeps the line off the drilled edge
 BLOCK_SCREWS = [(32.0, 28.0), (32.0, 83.0)]   # (x, z): M3 from inside the base into the block's 2.5 pilots
 BRACE_Z = (8.0, 106.0)              # brace centre lines: the base's ends, clear of the block (z 24 to 93); the owner's call
 BRACE_LEG, BRACE_W, BRACE_T = 152.0, 25.0, 1.5  # 6 in x 1 in steel corner brace stand-in
@@ -51,9 +53,10 @@ X_BEAM = -88.0 - BEAM_GAP            # -92
 DEVICE_TOP = 62.0                    # bearing plate top; the tallest thing above the base
 CEILING_Y = BRACE_LEG + 8.0          # the braces' upright legs stand under the ceiling: base 160 below it
 BEAM_DEPTH = 254.0
-BEAM_BOTTOM_Y = CEILING_Y - BEAM_DEPTH   # -184
+BEAM_BOTTOM_Y = CEILING_Y - BEAM_DEPTH   # -94
 RADAR_TILT = 50.0                    # doc 03's tilt, below level; the cradle adjusts
-RADAR_SHIFT = (130.0, 4.0)           # after turning over: fork plate from x -74..-62 to x 56..68, glue face onto y 0
+RADAR_SHIFT = (130.0, 4.0)
+RADAR_SCREWS = [(130.0 - 68.0, 62.0 - WM.FORK_SCREW_DZ), (130.0 - 68.0, 62.0 + WM.FORK_SCREW_DZ)]   # (x, z): the fork's 2 holes, turned over: x 62, z 45 and 79           # after turning over: fork plate from x -74..-62 to x 56..68, glue face onto y 0
 PCB_BOX = (-88.0, -36.0, 4.0, 34.0, 18.0, 93.0)   # electronics stand-in on the pad (x, y, z ranges)
 
 # T: doc 09's fairlead geometry (line at x -25, bore y 69..78.5, flap at y 84 below it) moved to
@@ -69,7 +72,7 @@ PIN_Y, HINGE_Z = t_y(F.PY), F.HZ    # the flap's pin: y -13.2, z 58, axis along 
 
 def bracket_inverted():
     """The printed bracket plus the holes the owner drills (the STL is unchanged; this is the model for checks)."""
-    cuts = [G.vcyl(LINE_HOLE_D / 2, 10, -3, LINE_X, LINE_Z)] + [G.vcyl(1.7, 10, -3, x, z) for x, z in BLOCK_SCREWS]
+    cuts = [G.vcyl(LINE_HOLE_D / 2, 10, -3, LINE_X, LINE_Z)] + [G.vcyl(1.7, 10, -3, x, z) for x, z in BLOCK_SCREWS + RADAR_SCREWS]
     return G.D(G.bracket(), *cuts)
 
 
@@ -78,6 +81,7 @@ def fairlead_base():
     base, plus a 4 mm mounting plate on the base's outer face. Same cuts as doc 09, moved by T."""
     bx = G.bx
     plate = bx(19, 36, -4, 0, 24, 93)                          # z 24 to 93: clear of the braces at the base's ends
+    boss  = bx(28.5, 36, -11, 0, 24, 32)                       # under the z 28 screw: 11 mm of thread instead of the 4 mm plate (flap is x 17 to 28, z 33 up)
     slab  = bx(-36, F.SW_X0, 62, F.BOT_Y, 54, F.RIB2_Z0)
     web   = bx(-36, -32, 3, F.BOT_Y, 54, F.RIB2_Z0)             # stops at z 93: the far rib (93 to 99) is dropped for the brace
     lower = bx(-36, -32, 70, F.BOT_Y, 39, 54)
@@ -86,7 +90,7 @@ def fairlead_base():
     rest  = bx(-36, -26, F.STOP_Y, F.HY - F.FT / 2 - 0.2, 63.5, 67.5)
     moved = [T(m) for m in (slab, web, lower, rib1b, block, rest)]
     outside = bx(0, 40, -60, 0, 0, 120)                      # keep only what lies outside the base (y <= 0)
-    body = G.U(plate, *[G.I(m, outside) for m in moved])
+    body = G.U(plate, boss, *[G.I(m, outside) for m in moved])
     cuts = [T(F.trumpet()),
             T(F.xcyl(0.95, -37, -28, F.PY, F.HZ)),                                  # M2 hinge bolt threads in from the flap side
             T(bx(F.SW_X0 + 0.01, -16, F.HY - 3.6, F.HY + 3.6, F.HZ - 3.6, F.HZ + 3.6))]   # knuckle clearance guard
@@ -131,7 +135,7 @@ def radar_on_base(tilt=RADAR_TILT):
     import sensor_mount as S
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
-    for k, m in (("ld2450_fork", S.ld2450_fork()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
+    for k, m in (("ld2450_fork_screw", WM.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
         mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0]); out[k] = mm
     return out
 
@@ -175,11 +179,11 @@ if __name__ == "__main__":
     print(f"mounting face is one plane at y 0: {abs(body.bounds[1][1]) < 0.01} (nothing above y 0; contact area {body.area_faces[at0].sum():.0f} mm2)")
     A = assembly_inverted()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
-    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork", "ld2450_cradle", "ld2450_radar", "electronics"]
+    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "electronics"]
     bad = False
     for k in new:
         for j, part in A.items():
-            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"} or {k, j} <= {"ld2450_fork", "ld2450_cradle", "ld2450_radar"}: continue   # roller on flap tail; radar sits in its cradle
+            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"} or {k, j} <= {"ld2450_fork_screw", "ld2450_cradle", "ld2450_radar"}: continue   # roller on flap tail; radar sits in its cradle
             v = G.I(A[k], part).volume
             if v > 0.5: print(f"CLASH {k} x {j}: {v:.1f}"); bad = True
     if not bad: print("block, flap, switch, braces, radar and the 52 x 75 x 30 electronics box clear every part")
@@ -207,11 +211,12 @@ if __name__ == "__main__":
         if sign == 1:
             a = math.radians(deg); print(f"  bead lift at stop {13 * math.sin(a):.2f} mm; roller push {(F.TAIL_Z - F.HZ) * math.sin(a):.2f} mm (switch needs 3.4)")
     # screw heads inside the base: the block's 2 screws and nothing else in the way
-    for x, z in BLOCK_SCREWS:
-        head = G.vcyl(2.8, 2.5, 4.0, x, z)
+    for x, z in BLOCK_SCREWS + RADAR_SCREWS:
+        head = G.vcyl(3.2, 3.0, 4.0, x, z)                                          # screw head or M3 nut inside the base
         hits = [k for k, part in A.items() if k != "bracket" and G.I(head, part).volume > 0.05]
         print(f"screw head inside the base at x {x:.0f}, z {z:.0f}: {'clear' if not hits else 'HITS ' + str(hits)}")
     W = 480 / 1000 * 9.81; M = W * (-5 - X_BEAM) + 27 * (LINE_X - X_BEAM)
-    Zb = 110 * 4 ** 2 / 6
-    print(f"load: base plate bending at the brace leg tip, weight + line snap: {M / Zb:.1f} MPa in-plane (PLA about 50): margin x{50 / (M / Zb):.0f}; top brace screw about {M / BRACE_LEG / 2:.0f} N each")
+    print(f"load: weight + a line snap turn {M / 1000:.1f} N m about the beam's face, carried by the two steel braces' corners; "
+          f"the PLA base only sits on their flat legs (from x -24, where the base starts at the brace rows, to x 60), in compression; "
+          f"the braces' top beam screws see about {M / (BRACE_LEG - 20) / 2:.0f} N each")
     print(f"line falls {LINE_X - X_BEAM:.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (t_y(F.HY) - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")

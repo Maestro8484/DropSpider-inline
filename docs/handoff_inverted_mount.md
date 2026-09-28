@@ -15,6 +15,10 @@ Owner's answers, 2026-09-27: mockup approved; the braces and their holes are his
 
 Step 3 done the same day: docs 01 (direction rule 1), 05 (section G), 06 (the wall section is now this install), 08 (V10, V18; the finger item renumbered V20), 09 (`fairlead_base.stl` section), BOM (PRINT-INV, I1, I2; wall lines marked superseded), `cad/README.md`, `README.md`, `fairlead_base` in `generate.py`'s print list, and `cad/bracket_footprint_inverted.svg` (the three drilled holes). Full rebuild run: every check passes and every existing STL and picture came out byte-identical.
 
+Fable cold check the same day (one read-only reviewer, 8 findings, none blocking; all verified and fixed): brace bolt zones added to doc 06 (clear between x 24 and x 55 at either end; never x -20 to 20 at the 606ZZ end, the bearing plate); switch and radar leads routed round the base's far end (docs 05, 06); a boss under the z 28 block screw (it had only the 4 mm plate to bite); line hole 7 mm, wider than the 6 mm barrel channel; the radar fork is now `ld2450_fork_screw.stl`, bolted with 2x M3, no glue (two more holes, x 62, z 45 and z 79); the load line in `inverted.py` rewritten (the braces carry the moment, the base is in compression); the beam clipping the top of the radar's field noted in doc 06; stale numbers below flagged.
+
+The three sections below ("Braces", "What turning it over does", "What has to change") were written before the owner's corrections. Where they disagree with this section or with doc 06 (braces standing down the beam, 1.5 in braces through the pad holes, base 70 below the ceiling, line 113 from the beam, 8 MPa), they are stale.
+
 Still open: nothing is built. The spider sits inside the radar's view (doc 06); the walk test settles whether that matters.
 
 ## First job: the mockup, for the owner to check
@@ -34,7 +38,7 @@ What the next session still does about them:
 - Model the braces as 6 in stand-ins (`BRACE_LEG` 152, `BRACE_W` 25 in `cad/inverted.py`) at whatever z the owner says, and run the clash check against the fairlead block. A 6 in leg reaches from the beam to x +60 under the base; on the pad rows (z 28 and z 83) it runs through the block (x 19 to 36, z 20 to 99), so the braces go at the base's ends (about z 8 and z 106) unless he says otherwise. Ask him which z once, in the mockup message.
 - Keep the fairlead block clear of the brace legs: its plate starts at z 24 and its far rib (z 93 to 99) comes off if the braces are at the ends. That is one edit in `fairlead_base()`.
 - Leave the drilled holes for the braces out of `bracket_inverted()` and off the footprint drawing. Only the three holes the session owns go in: the line (5 mm at x 25, z 45) and the two block screws (x 32, z 28 and z 83). Any others are his.
-- The vertical legs hang 152 mm down the beam, ending 222 mm below the ceiling, above the beam's bottom edge (254). Capacity is not a question: the device is about 1 lb and the line cannot pull more than 6 lb.
+- The upright legs stand 152 mm up the beam from the base (owner 2026-09-27: "rotated the other way"), so the base sits about 160 below the ceiling. Capacity is not a question: the device is about 1 lb and the line cannot pull more than 6 lb.
 
 ## Ground truth first
 
