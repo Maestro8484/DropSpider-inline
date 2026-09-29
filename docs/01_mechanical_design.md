@@ -27,8 +27,9 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 | 10 to 30 | 5-to-6 mm rigid coupler | Motor shaft fills the 5 mm side. Blue Loctite on both set screws. |
 | 20 to 120 | 6 mm hardened rod, 100 mm | Clamped in the coupler only; everything else slides on it |
 | 30 to 36 | spacer_A_6mm | 12 mm across, so it stops on the ratchet disk's face instead of dropping into its 10.3 mm center hole. Sets the disk in the finger plane. Adjust with shims (see below). |
-| 36 to 42 | spool_ratchet | 12 teeth, tip r 33, root r 29 |
-| 40.5 to 50 | spool_body with HF0612 pressed in | Boss sits in the disk recess, 3x M3x8 screws from the motor side |
+| 36 to 43 | spool_ratchet | 12 teeth z 36 to 42 (tip r 33, root r 29), then a flat 1 mm plateau 57 mm across that the shield sits on |
+| 43 to 44.5 | spool_shield | Flat 1.5 mm disc, 64 mm across like the spool flange: keeps the line off the teeth. Clears the finger's top (z 42) by 1 mm |
+| 44.5 to 50 | spool_body with HF0612 pressed in | Flat face on the shield; line channel z 44.5 to 48. The HF0612 (z 38 to 50) runs through all three parts and centres them; 3x M3x8 from the motor side, heads 5 deep in the disk |
 | 50 to 100 | spacer_B_50mm | 9.6 mm across; the last 1 mm at the 606ZZ end is 8 mm across so it presses only on the bearing's inner ring, not its shield |
 | 100 to 106 | 606ZZ in the bearing plate | Supports the rod end |
 
@@ -71,6 +72,7 @@ The same swing means the knot can end up to half a turn either side of the botto
 |---|---|---|---|---|---|---|
 | spool_body.stl | 1 | as exported, flange down | gyroid 40% | 4 | none | none |
 | spool_ratchet.stl | 1 | as exported | gyroid 40% | 4 | none | none |
+| spool_shield.stl | 1 | as exported, flat | gyroid 40% | 4 | none | none |
 | bracket.stl | 1 | base down | gyroid 40% | 4 | tree, **not** build-plate-only | none |
 | fairlead_body.stl | 1 | as exported (flat side down) | gyroid 40% | 4 | none | 5 mm (big flat footprint, stops corner lift) |
 | fairlead_flap.stl | 1 (+1 spare) | as exported (flat side down) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |

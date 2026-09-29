@@ -2,6 +2,11 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-09-29
+
+### Changed
+- Spool stack (owner): new `spool_shield`, a flat 1.5 mm disc 64 mm across between the ratchet disk and the spool body, so the line cannot reach the teeth. No boss and recess any more (it left a 1 mm gap at the rim): all three sit on flat faces, centred by the HF0612 running through all three 10.3 holes and the 3 screws. Ratchet gets a 1 mm flat plateau so the shield clears the finger by 1 mm; spool body shortened to keep the stack length, line channel now 3.5 mm. Finger seating, clashes and the inverted checks unchanged. `spool_ratchet`, `spool_shield`, `spool_body` exported.
+
 ## 2026-09-28
 
 ### Added

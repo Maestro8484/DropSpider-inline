@@ -87,24 +87,43 @@ def spoke_windows(boss_r, z0, h):
         s = extrude_polygon(p, h); s.apply_translation([0, 0, z0]); out.append(s)
     return out
 
+# Rev C.2 spool stack (owner 2026-09-29): ratchet disk, shield disc, spool body, sandwiched on flat faces only.
+# No boss and recess: the boss once left a 1 mm gap at the rim where the line could wedge. The HF0612 runs
+# through all three (same 10.3 hole in each) and centres them, with the 3 screws. The shield keeps the line off
+# the ratchet teeth; it is spool-flange size (64) and sits on a 1 mm plateau so it clears the finger's top (z 42) by 1.
+PLATEAU_R = 28.5       # ratchet's raised mating face: inside the finger tip (r 29.4) and the tooth root (r 29)
+PLATEAU_H = 1.0        # lifts the shield 1 mm clear of the finger's top face
+SHIELD_R = 32.0        # same as the spool flange
+SHIELD_T = 1.5
+SHIELD_Z = 6.0 + PLATEAU_H            # local z of the shield's motor-side face (ratchet local frame, z 0 = motor face)
+BODY_Z = SHIELD_Z + SHIELD_T          # local z of the spool body's flat face; barrel from here to 12, flange 12..14
+
 def spool_ratchet():
-    """Part coords = installed orientation. z0 face = screw heads, faces the motor."""
-    d = extrude_polygon(ratchet_poly(), 6.0)
-    return D(d, cyl(HF0612_STUB_HOLE / 2, 8, -1), cyl(15.25, 2, 4.5),        # hole over the HF0612 stub, 30.5 recess over the 30 boss (fit check 2026-09-26)
-             *[cyl(1.65, 8, -1, x, y) for x, y in BOLTS],
-             *[cyl(3.1, 3.5, -0.5, x, y) for x, y in BOLTS],
-             *spoke_windows(4.6, -1, 8))                                    # 1.5 wall round each screw-head counterbore
+    """Part coords = installed orientation. z0 face = screw heads, faces the motor. Teeth z 0..6, flat plateau 6..7."""
+    d = U(extrude_polygon(ratchet_poly(), 6.0), cyl(PLATEAU_R, PLATEAU_H, 6.0))
+    return D(d, cyl(HF0612_BORE / 2, 9, -1),                               # the HF0612 passes through, same hole as the spool body
+             *[cyl(1.65, 9, -1, x, y) for x, y in BOLTS],
+             *[cyl(3.1, 5.5, -0.5, x, y) for x, y in BOLTS],               # heads sit 5 deep so an M3x8 reaches 4.5 into the spool body
+             *spoke_windows(4.6, -1, 9))                                    # 1.5 wall round each screw-head counterbore
+
+def spool_shield():
+    """Flat 1.5 disc, spool-flange size, between the ratchet plateau and the spool body; keeps the line off the teeth.
+    Symmetric, so either face and any of the three screw positions fits."""
+    d = cyl(SHIELD_R, SHIELD_T, 0)
+    return D(d, cyl(HF0612_BORE / 2, 3, -1), *[cyl(1.65, 3, -1, x, y) for x, y in BOLTS], *spoke_windows(4.6, -1, 3))
 
 def spool_body():
-    """Installed orientation: boss z 4.5..6 (in disk recess), barrel 6..12, flange 12..14. The windows leave the boss
-    as the hub plus three spoke ends, whose rounded ends at r 15 still centre it in the disk's recess."""
-    b = U(cyl(BARREL_D / 2, 6, 6), cyl(32, 2, 12), cyl(9, 8, 6), cyl(15, 1.5, 4.5))
-    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, 4.4, x, y) for x, y in BOLTS],   # M3x8 tip reaches z 11; pilot to 12.4
+    """Installed orientation: flat face at BODY_Z (on the shield), barrel BODY_Z..12, flange 12..14."""
+    b = U(cyl(BARREL_D / 2, 12 - BODY_Z, BODY_Z), cyl(32, 2, 12), cyl(9, 14 - BODY_Z, BODY_Z))
+    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, BODY_Z - 0.5, x, y) for x, y in BOLTS],   # pilots right through; M3x8 tip reaches z 13
              *spoke_windows(3.5, 3, 12))                                    # 2.25 wall round each screw pilot
+
+def spool_shield_print():
+    return spool_shield()
 
 def spool_body_print():
     b = spool_body().copy()
-    b.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); b.apply_translation([0, 0, 14])
+    b.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); b.apply_translation([0, 0, 14])   # flange on the bed
     return b
 
 # ---------------- bracket ----------------
@@ -227,6 +246,7 @@ PARTS = {
     "fairlead_flap": fairlead_flap_print,
     "spool_body": spool_body_print,
     "spool_ratchet": spool_ratchet,
+    "spool_shield": spool_shield_print,
     "bracket": bracket_print,
     "finger": finger_print,
     "spacer_A_6mm": lambda: tube(6),
@@ -245,6 +265,7 @@ def assembly():
     A["bracket"] = bracket()
     r = spool_ratchet(); r.apply_translation([0, AXIS_Y, Z_RATCHET]); A["spool_ratchet"] = r
     b = spool_body(); b.apply_translation([0, AXIS_Y, Z_RATCHET]); A["spool_body"] = b
+    s = spool_shield(); s.apply_translation([0, AXIS_Y, Z_RATCHET + SHIELD_Z]); A["spool_shield"] = s
     import fairlead as F
     A["fairlead_body"] = F.fairlead_body(); A["fairlead_flap"] = F.fairlead_flap(); A["switch_kw12"] = F.switch_model()
     import sensor_mount as S
