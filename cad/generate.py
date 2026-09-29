@@ -185,8 +185,8 @@ def bracket():
     return D(b, *cuts)
 
 # 606ZZ retainer (owner 2026-09-29): on a bracket whose seat went loose after heating the bearing in, a thin plate
-# on the end plate's outer face (z 106) stops the 606ZZ walking out. The 10 mm hole (owner) clears the turning inner ring and
-# the rod (which runs on about 14 mm past the plate); the rim overlaps the bearing face from r 5 out. One M3 each side at
+# on the end plate's outer face (z 106) stops the 606ZZ walking out. The 14.5 mm hole (owner) clears everything that turns and
+# the rod (which runs on about 14 mm past the plate); the plate overlaps only the outer ring's rim, r 7.25 to 8.5. One M3 each side at
 # x +-14, y 40, into 2.5 mm pilots drilled through the 6 mm end plate using the retainer as the template.
 RET_T = 2.0
 RET_X = 14.0
@@ -196,7 +196,7 @@ def bearing_retainer():
     outline = LineString([(-RET_X, AXIS_Y), (RET_X, AXIS_Y)]).buffer(9.0, 64)      # 46 x 18 rounded bar, inside the 40 wide end plate at the screws
     outline = outline.intersection(Polygon([(-19.5, 0), (19.5, 0), (19.5, 62), (-19.5, 62)]))
     plate = extrude_polygon(outline, RET_T); plate.apply_translation([0, 0, 106])
-    return D(plate, cyl(5.0, RET_T + 2, 105, 0, AXIS_Y),                            # 10 mm: just clears the rod and the turning inner ring, holds the rim (owner)
+    return D(plate, cyl(7.25, RET_T + 2, 105, 0, AXIS_Y),                           # 14.5 mm: the plate holds only the outer ring's rim, 1.25 mm of it (owner)
              *[cyl(1.8, RET_T + 2, 105, sx * RET_X, AXIS_Y) for sx in (-1, 1)])        # M3 clearance, prints about 3.4
 
 def bearing_retainer_print():
