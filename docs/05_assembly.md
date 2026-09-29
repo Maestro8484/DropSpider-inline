@@ -20,7 +20,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 
 ![Step 1](img/step1.png)
 
-6. Press the **606ZZ** into the end plate. If it goes in loose (a seat softened by heating the bearing, or an older bracket), fit `bearing_retainer` on the end plate's outside face: drill two 2.5 mm pilots through the end plate using the retainer's holes as the guide, then 2x M3 x 6 to 8. The rod passes through its 14.5 mm hole and sticks out past it by about 14 to 17 mm; that is expected. Screw the **NEMA 11** to the outside of the motor plate, 4x M2.5x6, wires pointing toward the base.
+6. Press the **606ZZ** into the end plate. If it goes in loose (a seat softened by heating the bearing, or an older bracket), fit `bearing_retainer` on the end plate's outside face: drill two 2.5 mm pilots through the end plate using the retainer's holes as the guide, then 2x M3 x 6 to 8. The rod passes through its 12 mm hole and sticks out past it by about 14 to 17 mm; that is expected. Screw the **NEMA 11** to the outside of the motor plate, 4x M2.5x6, wires pointing toward the base.
 
 ![Step 2](img/step2.png)
 
