@@ -4,6 +4,10 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ## 2026-09-29
 
+### Added
+- `bearing_retainer`: thin 2 mm plate on the end plate's outside face that stops a loose 606ZZ walking out; 12 mm hole for the rod, 2x M3 into pilots drilled through the end plate. No clashes in either install.
+- Build note (owner's build): about 4 mm of shim on the motor side of the spool and 5 mm on the 606ZZ side for a snug, free stack.
+
 ### Changed
 - Ratchet disk is now a plain 7 mm plate, teeth full height, flat both faces (owner: no lip); it prints with the shield face on the bed, so the counterbores need no bridging. 0.4 edge breaks on the bearing holes where they print on the bed. Assembly order: screw the three together first, then press the HF0612 through all three.
 - Spool stack (owner): new `spool_shield`, a flat 1.5 mm disc 64 mm across between the ratchet disk and the spool body, so the line cannot reach the teeth. No boss and recess any more (it left a 1 mm gap at the rim): all three sit on flat faces, centred by the HF0612 running through all three 10.3 holes and the 3 screws. Ratchet gets a 1 mm flat plateau so the shield clears the finger by 1 mm; spool body shortened to keep the stack length, line channel now 3.5 mm. Finger seating, clashes and the inverted checks unchanged. `spool_ratchet`, `spool_shield`, `spool_body` exported.

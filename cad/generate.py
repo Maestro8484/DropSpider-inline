@@ -184,6 +184,24 @@ def bracket():
             *[vcyl(1.8, 10, -1, 62, z) for z in (45, 79)]]                                   # radar fork, 2x M3
     return D(b, *cuts)
 
+# 606ZZ retainer (owner 2026-09-29): on a bracket whose seat went loose after heating the bearing in, a thin plate
+# on the end plate's outer face (z 106) stops the 606ZZ walking out. The 12 mm hole clears the turning inner ring and
+# the rod (which runs on about 14 mm past the plate); the rim overlaps the outer ring by 2.5 mm. One M3 each side at
+# x +-14, y 40, into 2.5 mm pilots drilled through the 6 mm end plate using the retainer as the template.
+RET_T = 2.0
+RET_X = 14.0
+def bearing_retainer():
+    """Installed position: z 106..108 on the end plate's outer face, centred on the rod."""
+    from shapely.geometry import LineString
+    outline = LineString([(-RET_X, AXIS_Y), (RET_X, AXIS_Y)]).buffer(9.0, 64)      # 46 x 18 rounded bar, inside the 40 wide end plate at the screws
+    outline = outline.intersection(Polygon([(-19.5, 0), (19.5, 0), (19.5, 62), (-19.5, 62)]))
+    plate = extrude_polygon(outline, RET_T); plate.apply_translation([0, 0, 106])
+    return D(plate, cyl(6.0, RET_T + 2, 105, 0, AXIS_Y),                            # clears the inner ring and the rod
+             *[cyl(1.8, RET_T + 2, 105, sx * RET_X, AXIS_Y) for sx in (-1, 1)])        # M3 clearance, prints about 3.4
+
+def bearing_retainer_print():
+    m = bearing_retainer(); m.apply_translation([0, -AXIS_Y, -106]); return m
+
 def bracket_print():
     """Base (ceiling face) down, the way the owner printed it."""
     b = bracket(); b.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
@@ -267,6 +285,7 @@ PARTS = {
     "spool_body": spool_body_print,
     "spool_ratchet": spool_ratchet_print,
     "spool_shield": spool_shield_print,
+    "bearing_retainer": bearing_retainer_print,
     "bracket": bracket_print,
     "finger": finger_print,
     "spacer_A_6mm": lambda: tube(6),
@@ -298,6 +317,7 @@ def assembly():
     A["spacer_A"] = D(cyl(SPACER_A_R, 6, 30, 0, AXIS_Y), cyl(3.25, 8, 29, 0, AXIS_Y))
     sb = spacer_b(); sb.apply_translation([0, AXIS_Y, 50]); A["spacer_B"] = sb
     A["bearing_606"] = D(cyl(8.5, 6, 100, 0, AXIS_Y), cyl(3, 8, 99, 0, AXIS_Y))
+    A["bearing_retainer"] = bearing_retainer()
     A["hf0612"] = D(cyl(HF0612_OD / 2, 12, 38, 0, AXIS_Y), cyl(3, 14, 37, 0, AXIS_Y))   # one-way bearing 6 x 10 x 12, flush with the spool flange (z 50), 2 mm stub into the disk (doc 05 step 1)
     A["motor_nema11"] = U(bx(-14, 14, AXIS_Y - 14, AXIS_Y + 14, -32, 0), cyl(2.5, 20, 0, 0, AXIS_Y))
     # stand-in, not measured: the tabs sit on the tower (they fit, owner), the case top and spline

@@ -20,7 +20,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 
 ![Step 1](img/step1.png)
 
-6. Press the **606ZZ** into the end plate. Screw the **NEMA 11** to the outside of the motor plate, 4x M2.5x6, wires pointing toward the base.
+6. Press the **606ZZ** into the end plate. If it goes in loose (a seat softened by heating the bearing, or an older bracket), fit `bearing_retainer` on the end plate's outside face: drill two 2.5 mm pilots through the end plate using the retainer's holes as the guide, then 2x M3 x 6 to 8. The rod passes through its 12 mm hole and sticks out past it by about 14 to 17 mm; that is expected. Screw the **NEMA 11** to the outside of the motor plate, 4x M2.5x6, wires pointing toward the base.
 
 ![Step 2](img/step2.png)
 
@@ -29,7 +29,7 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 ![Step 3](img/step3.png)
 
 8. Measure from the motor plate's outer face to the free end of the coupler. **30 mm:** use `spacer_A_6mm`. **26 mm:** use the old 10 mm spacer A if you have one. **27 to 29 mm:** `spacer_A_6mm` plus `shim_1mm` / `shim_2mm` to make up the difference. **Over 30:** sand spacer A down by the difference.
-9. Hold, in line inside the frame: spacer A (next to the coupler), the spool (ratchet disk toward the motor), spacer B.
+9. Hold, in line inside the frame: spacer A (next to the coupler), the spool (ratchet disk toward the motor), spacer B. **Owner's build (2026-09-29):** snug but not tight took about **4 mm of shim on the motor side of the spool** and **5 mm on the 606ZZ side**. Stack to fit your own frame the same way, then check the ratchet disk still sits between the finger's faces.
 
 ![Step 4](img/step4.png)
 
