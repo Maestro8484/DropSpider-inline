@@ -3,6 +3,8 @@
 **DropSpider, Mechanism A: In-Line Single-Axle Clutch Spool (ISCS), Rev C.1.**
 A Halloween prop, mounted on a porch ceiling or turned over on the porch beam's inside face (doc 06), that drops a foam spider 0.5 to 1.2 m when someone walks toward a doorway, then winds it back up and re-arms on its own. Zero power while waiting.
 
+Code: https://github.com/Maestro8484/DropSpider-inline. Project page: https://theschmidtwithin.com/bench/#dropspider
+
 Sibling project name reserved: `dropspider-tiltspool` (Mechanism B, servo-driven tilt-spool free-fall). Not started. This repo is Mechanism A only.
 
 ![Installed assembly](docs/img/assembly_iso.png)
