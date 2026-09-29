@@ -10,9 +10,9 @@ All PLA except the finger (PETG if you have it). Settings table in `01_mechanica
 
 ## B. Sub-assemble the spool
 
-1. Press the **HF0612** into `spool_body` from the flange side. It ends up flush with the flange and sticking out about 6.5 mm on the flat side. That stub goes through `spool_shield` and into the ratchet disk's center hole; all three holes are 10.3 mm.
+1. Stack before the bearing goes in: `spool_shield` (the flat 64 mm disc, either face) on the flat face of `spool_body`, then `spool_ratchet`, its flat face (no counterbores) on the shield. Line up the three screw holes and drive **3x M3x8** into the body. Snug, do not strip. The three must sit flat on each other with no gap at the rim. Then press the **HF0612** in from the flange side, through all three 10.3 mm holes, until it is flush with the flange.
 2. Check its direction now: push a spare piece of the 6 mm rod in, hold the rod, and spin the body. It must spin freely one way and lock the other. Mark the free direction on the flange with a marker.
-3. Slide `spool_shield` (the flat 64 mm disc, either face) over the stub onto the body's flat face, then `spool_ratchet`, plateau side against the shield, counterbored side facing away. Line up the three screw holes and drive **3x M3x8** into the body. Snug, do not strip. The three parts must sit flat on each other with no gap at the rim.
+3. Check the stack again: no gap at the rim anywhere round. If there is one, back the screws off, scrape any lip off the hole edges, and tighten again.
 4. Look at the spool from the **ratchet disk side** (this side faces the motor, so this is the view from behind the motor). The free direction marked in step 2 must be **clockwise** from this side, so it locks counterclockwise (Rev C.1; Rev C had this backwards). If not, press the bearing out and flip it.
 5. Tie the **6 lb monofilament** straight to the barrel with an arbor knot (the knot anglers use on a reel spool), between the flanges, a drop of CA on the knot. No elastic, no braid.
 

@@ -87,35 +87,55 @@ def spoke_windows(boss_r, z0, h):
         s = extrude_polygon(p, h); s.apply_translation([0, 0, z0]); out.append(s)
     return out
 
-# Rev C.2 spool stack (owner 2026-09-29): ratchet disk, shield disc, spool body, sandwiched on flat faces only.
-# No boss and recess: the boss once left a 1 mm gap at the rim where the line could wedge. The HF0612 runs
-# through all three (same 10.3 hole in each) and centres them, with the 3 screws. The shield keeps the line off
-# the ratchet teeth; it is spool-flange size (64) and sits on a 1 mm plateau so it clears the finger's top (z 42) by 1.
-PLATEAU_R = 28.5       # ratchet's raised mating face: inside the finger tip (r 29.4) and the tooth root (r 29)
-PLATEAU_H = 1.0        # lifts the shield 1 mm clear of the finger's top face
+# Rev C.2 spool stack (owner 2026-09-29): ratchet disk, shield disc, spool body, three plain plates sandwiched on
+# flat faces only. No boss, recess or lip: the boss once left a 1 mm gap at the rim where the line could wedge. The
+# ratchet is 7 thick with the teeth full height, so its spool-side face is one flat plane 1 mm above the finger's
+# top (z 42); the shield, spool-flange size, lies on it and keeps the line off the teeth. Assembly: screw the three
+# together first (flat faces clamp with nothing in the way), then press the HF0612 through all three 10.3 holes
+# from the flange side. Every hole edge that prints on the bed gets a 0.4 chamfer so no first-layer lip can hold a
+# face off its neighbour or catch the bearing.
+RATCHET_T = 7.0        # teeth z 0..7; the finger (z 35..42 installed) engages the lower 6
 SHIELD_R = 32.0        # same as the spool flange
 SHIELD_T = 1.5
-SHIELD_Z = 6.0 + PLATEAU_H            # local z of the shield's motor-side face (ratchet local frame, z 0 = motor face)
+SHIELD_Z = RATCHET_T                  # local z of the shield's motor-side face (ratchet local frame, z 0 = motor face)
 BODY_Z = SHIELD_Z + SHIELD_T          # local z of the spool body's flat face; barrel from here to 12, flange 12..14
+CHAMFER = 0.4
+
+def hole_chamfer(r, z_face, material_below, c=CHAMFER, e=0.05):
+    """45 degree cone that breaks the edge of a round hole of radius r where it meets the face at z_face."""
+    R = r + c + e
+    k = trimesh.creation.cone(radius=R, height=R, sections=96)       # base at z 0, apex up
+    if material_below:
+        k.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); k.apply_translation([0, 0, z_face + e])
+    else:
+        k.apply_translation([0, 0, z_face - e])
+    return k
 
 def spool_ratchet():
-    """Part coords = installed orientation. z0 face = screw heads, faces the motor. Teeth z 0..6, flat plateau 6..7."""
-    d = U(extrude_polygon(ratchet_poly(), 6.0), cyl(PLATEAU_R, PLATEAU_H, 6.0))
-    return D(d, cyl(HF0612_BORE / 2, 9, -1),                               # the HF0612 passes through, same hole as the spool body
-             *[cyl(1.65, 9, -1, x, y) for x, y in BOLTS],
+    """Part coords = installed orientation. z0 face = screw heads, faces the motor; z 7 face = flat, on the shield."""
+    d = extrude_polygon(ratchet_poly(), RATCHET_T)
+    return D(d, cyl(HF0612_BORE / 2, RATCHET_T + 2, -1),                   # the HF0612 passes through, same hole as the spool body
+             hole_chamfer(HF0612_BORE / 2, RATCHET_T, True),
+             *[cyl(1.65, RATCHET_T + 2, -1, x, y) for x, y in BOLTS],
              *[cyl(3.1, 5.5, -0.5, x, y) for x, y in BOLTS],               # heads sit 5 deep so an M3x8 reaches 4.5 into the spool body
-             *spoke_windows(4.6, -1, 9))                                    # 1.5 wall round each screw-head counterbore
+             *spoke_windows(4.6, -1, RATCHET_T + 2))                        # 1.5 wall round each screw-head counterbore
+
+def spool_ratchet_print():
+    """Flat shield face on the bed (the flattest face there is); counterbores open upward, so nothing to bridge."""
+    m = spool_ratchet(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); m.apply_translation([0, 0, RATCHET_T]); return m
 
 def spool_shield():
-    """Flat 1.5 disc, spool-flange size, between the ratchet plateau and the spool body; keeps the line off the teeth.
+    """Flat 1.5 disc, spool-flange size, between the ratchet and the spool body; keeps the line off the teeth.
     Symmetric, so either face and any of the three screw positions fits."""
     d = cyl(SHIELD_R, SHIELD_T, 0)
-    return D(d, cyl(HF0612_BORE / 2, 3, -1), *[cyl(1.65, 3, -1, x, y) for x, y in BOLTS], *spoke_windows(4.6, -1, 3))
+    return D(d, cyl(HF0612_BORE / 2, 3, -1), hole_chamfer(HF0612_BORE / 2, 0, False), hole_chamfer(HF0612_BORE / 2, SHIELD_T, True),
+             *[cyl(1.65, 3, -1, x, y) for x, y in BOLTS], *spoke_windows(4.6, -1, 3))
 
 def spool_body():
-    """Installed orientation: flat face at BODY_Z (on the shield), barrel BODY_Z..12, flange 12..14."""
+    """Installed orientation: flat face at BODY_Z (on the shield), barrel BODY_Z..12, flange 12..14 (on the bed)."""
     b = U(cyl(BARREL_D / 2, 12 - BODY_Z, BODY_Z), cyl(32, 2, 12), cyl(9, 14 - BODY_Z, BODY_Z))
-    return D(b, cyl(HF0612_BORE / 2, 12, 3), *[cyl(1.25, 8.0, BODY_Z - 0.5, x, y) for x, y in BOLTS],   # pilots right through; M3x8 tip reaches z 13
+    return D(b, cyl(HF0612_BORE / 2, 12, 3), hole_chamfer(HF0612_BORE / 2, 14, True),   # lead-in where the bearing is pressed in
+             *[cyl(1.25, 8.0, BODY_Z - 0.5, x, y) for x, y in BOLTS],   # pilots right through; M3x8 tip reaches z 13
              *spoke_windows(3.5, 3, 12))                                    # 2.25 wall round each screw pilot
 
 def spool_shield_print():
@@ -245,7 +265,7 @@ PARTS = {
     "fairlead_body": fairlead_body_print,
     "fairlead_flap": fairlead_flap_print,
     "spool_body": spool_body_print,
-    "spool_ratchet": spool_ratchet,
+    "spool_ratchet": spool_ratchet_print,
     "spool_shield": spool_shield_print,
     "bracket": bracket_print,
     "finger": finger_print,
