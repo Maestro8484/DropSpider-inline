@@ -5,7 +5,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-09-29
 
 ### Added
-- `bearing_retainer`: thin 2 mm plate on the end plate's outside face that stops a loose 606ZZ walking out; 12 mm hole for the rod, 2x M3 into pilots drilled through the end plate. No clashes in either install.
+- `bearing_retainer`: thin 2 mm plate on the end plate's outside face that stops a loose 606ZZ walking out; 10 mm hole for the rod (holds the bearing rim), 2x M3 into pilots drilled through the end plate. No clashes in either install.
 - Build note (owner's build): about 4 mm of shim on the motor side of the spool and 5 mm on the 606ZZ side for a snug, free stack.
 
 ### Changed
