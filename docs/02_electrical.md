@@ -51,7 +51,7 @@ If it stutters, misses, or does nothing while the driver clearly holds (shaft st
 
 ## Motor wiring
 
-STEPPERONLINE NEMA 11 (0.67 A): black + green = coil A, red + blue = coil B. Black to 1A, green to 1B, red to 2A, blue to 2B. If the motor buzzes but will not turn, swap black and green. Never plug or unplug the motor with 12 V on.
+STEPPERONLINE NEMA 11, 11HS12-0674S (0.67 A, 5.6 ohm per coil): black (A+) + green (A-) = coil A, red (B+) + blue (B-) = coil B. Meter check: black to green and red to blue each read about 5.6 ohm; any other pair reads open. Black to 1A, green to 1B, red to 2A, blue to 2B. The leads come bare: put a female jumper end on each (half of a female-to-female jumper, joint soldered or twisted and covered, joints staggered) and push them onto the expansion board's motor pins. If the motor buzzes but will not turn, swap black and green. Never plug or unplug the motor with 12 V on.
 
 ## Limit switch wiring (KW12-3 in the fairlead)
 
