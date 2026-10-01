@@ -260,10 +260,10 @@ a{color:var(--accent)}
   <div class="tw"><table>
     <thead><tr><th>Wire</th><th>From</th><th>To</th><th>Joints</th></tr></thead>
     <tbody>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>step</td><td>ESP32 GPIO25</td><td>expansion board STEP</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>direction</td><td>ESP32 GPIO26</td><td>expansion board DIR</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>enable</td><td>ESP32 GPIO27</td><td>expansion board EN</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wgnd)"></span>signal ground</td><td>ESP32 GND (right row, next to 3V3)</td><td>expansion board GND next to STEP/DIR</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>step</td><td>ESP32 GPIO25</td><td>expansion board STEP column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>direction</td><td>ESP32 GPIO26</td><td>expansion board DIR column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>enable</td><td>ESP32 GPIO27</td><td>expansion board EN column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>signal ground</td><td>ESP32 GND (right row, next to 3V3)</td><td>expansion board, any one pin in the <b>G</b> row (all three G pins are joined)</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsrv)"></span>servo signal</td><td>ESP32 GPIO13</td><td>servo orange</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsw)"></span>switch</td><td>ESP32 GPIO32</td><td>KW12-3 NO leg</td><td><span class="j">PLUG</span> <span class="j">SOLDER</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data in</td><td>ESP32 RX2 (GPIO16)</td><td>LD2450 TX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
@@ -284,14 +284,17 @@ a{color:var(--accent)}
         <rect x="90" y="30" width="110" height="90" rx="3" fill="#5b3a8f" stroke="#3b2560"/><circle cx="175" cy="52" r="9" fill="#d9c27a" stroke="#8a7632"/><text x="145" y="100" fill="#fff" font-size="11" text-anchor="middle" font-family="IBM Plex Mono,monospace">TMC2209</text><text x="175" y="72" fill="#fff" font-size="8" text-anchor="middle">pot</text>
         <rect x="24" y="36" width="44" height="30" fill="#c0392b"/><text x="46" y="80" fill="#fff" font-size="9" text-anchor="middle">DIP all OFF</text>
         <g font-family="IBM Plex Mono,monospace" font-size="10" fill="#fff">
-          <text x="236" y="40">STEP</text><text x="236" y="60">DIR</text><text x="236" y="80">EN</text><text x="236" y="100">GND</text>
+          <g font-size="8" text-anchor="middle"><text x="232" y="28">DIR</text><text x="254" y="28">STEP</text><text x="276" y="28">EN</text></g>
+          <text x="208" y="44">S</text><text x="208" y="64">V</text><text x="208" y="84">G</text>
         </g>
-        <g fill="#c9a14a"><circle cx="226" cy="36" r="4"/><circle cx="226" cy="56" r="4"/><circle cx="226" cy="76" r="4"/><circle cx="226" cy="96" r="4"/></g>
+        <g fill="#c9a14a"><circle cx="232" cy="40" r="4"/><circle cx="254" cy="40" r="4"/><circle cx="276" cy="40" r="4"/><circle cx="232" cy="80" r="4"/><circle cx="254" cy="80" r="4"/><circle cx="276" cy="80" r="4"/></g>
+        <g fill="none" stroke="#6b7a90"><circle cx="232" cy="60" r="4"/><circle cx="254" cy="60" r="4"/><circle cx="276" cy="60" r="4"/></g>
+        <text x="254" y="104" fill="#fff" font-size="8" text-anchor="middle">S = signal, V = empty, G = ground</text>
         <rect x="24" y="120" width="56" height="30" fill="#2e8b57"/><text x="52" y="139" fill="#fff" font-size="9" text-anchor="middle">VMOT GND</text>
         <g font-family="IBM Plex Mono,monospace" font-size="9" fill="#fff"><text x="100" y="146">1A 1B 2A 2B</text></g>
         <g><rect x="98" y="126" width="12" height="8" fill="#222"/><rect x="116" y="126" width="12" height="8" fill="#1f8a4c"/><rect x="134" y="126" width="12" height="8" fill="#d23a2f"/><rect x="152" y="126" width="12" height="8" fill="#2563c9"/></g>
       </svg>
-      <p class="dim">Pot to 0.85 V (pot top to GND), 12 V on, motor unplugged. Driver's EN pin on the expansion board's EN position. Motor order as printed on your expansion board; if it buzzes, swap black and green.</p>
+      <p class="dim">DIR, STEP, EN each have three pins: S, V, G. The ESP32 wire goes on <b>S</b>. One ground wire from the ESP32 to any <b>G</b>. Leave every <b>V</b> empty. Pot to 0.85 V (pot top to GND), 12 V on, motor unplugged. Driver's EN pin on the expansion board's EN position. Motor order as printed on your expansion board; if it buzzes, swap black and green.</p>
     </div>
     <div class="card">
       <h3>KW12-3 roller switch</h3>
