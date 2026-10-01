@@ -31,6 +31,7 @@ Each doc has one job, marked in bold below where it matters: a **handoff** holds
 | `ROADMAP.md` | **roadmap:** every piece of work still to do, in order, one line each |
 | `CHANGELOG.md` | **changelog:** finished work, newest first |
 | `docs/handoff_task1_firmware.md` | **handoff:** bench tests T1 to T8, and the spool-to-flap fix before them |
+| `docs/handoff_spool_onepiece.md` | **handoff:** one-piece spool and ratchet, no supports, bearing hole that grips, separator clear of the finger |
 | `docs/handoff_sensor_bearings.md` | **handoff:** the LD2450 radar as the trigger (the name is historical; bearing care is in doc 01) |
 | `docs/M1_fix_handoff.md` | **reference:** the Rev C.1 clutch fix and motor-led drop, why it works, and the T1 to T8 test table (the name is historical) |
 | `cad/generate.py`, `cad/fairlead.py`, `cad/inverted.py` | source of truth for every printed part (`inverted.py`: the device turned over on the porch beam, doc 06) (`tools\regen_cad.ps1` rebuilds STLs and images) |
