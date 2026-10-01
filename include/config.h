@@ -11,9 +11,11 @@
 // GPIO2 (the LED), which are used for exactly those things.
 
 // ---------- pins ----------
-#define PIN_STEP        25   // -> expansion board STEP
-#define PIN_DIR         26   // -> expansion board DIR
-#define PIN_EN          27   // -> expansion board EN   (LOW = driver on, HIGH = coils off)
+// D27, D26, D25 sit side by side on the header in the same order as the expansion board's DIR, STEP, EN
+// columns, so a 3-wire ribbon goes across straight (owner 2026-10-01; was STEP 25, DIR 26, EN 27).
+#define PIN_STEP        26   // -> expansion board STEP, S row
+#define PIN_DIR         27   // -> expansion board DIR, S row
+#define PIN_EN          25   // -> expansion board EN, S row   (LOW = driver on, HIGH = coils off)
 #define PIN_SERVO       13   // -> SG90 orange. Not GPIO14: 14 pulses at boot and would twitch the finger.
 #define PIN_SENSOR      33   // <- LD2410C OUT (HIGH = presence). Or AM312 PIR OUT.
 #define PIN_LIMIT       32   // <- limit switch (3-pin endstop) at the eyelet: pressed = spider home

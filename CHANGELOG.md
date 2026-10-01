@@ -2,6 +2,11 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-01
+
+### Changed
+- Driver pins: DIR GPIO27, STEP GPIO26, EN GPIO25 (were STEP 25, DIR 26, EN 27), so D27, D26, D25 match the expansion board's DIR, STEP, EN columns and a 3-wire ribbon goes straight across (owner). Firmware built; not yet flashed (board not connected). Doc 02, wiring guide, wiring picture and build guide updated; expansion board wires go on the S row, ground to any G, V empty.
+
 ## 2026-09-30
 
 ### Changed

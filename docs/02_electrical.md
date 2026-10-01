@@ -11,9 +11,11 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 |---|---|---|---|
 | VIN | buck OUT+ (5.0 V) | power in | Do not feed 12 V here |
 | GND (any) | common ground | - | All grounds tie together |
-| GPIO25 | expansion board STEP | out | One pulse = 1/8 motor step |
-| GPIO26 | expansion board DIR | out | Rewind direction set in firmware |
-| GPIO27 | expansion board EN | out | LOW = motor powered, HIGH = coils off (free) |
+| GPIO27 | expansion board DIR, S row | out | Rewind direction set in firmware |
+| GPIO26 | expansion board STEP, S row | out | One pulse = 1/8 motor step |
+| GPIO25 | expansion board EN, S row | out | LOW = motor powered, HIGH = coils off (free) |
+
+D27, D26, D25 sit side by side on the ESP32 header in the same order as the expansion board's DIR, STEP, EN columns, so one 3-wire ribbon goes across straight (changed 2026-10-01; before then STEP was GPIO25, DIR 26, EN 27).
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | LD2410C OUT (fallback only) | in | HIGH = someone present. Firmware adds a pull-down. Used only with `sensor 2410` |
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |

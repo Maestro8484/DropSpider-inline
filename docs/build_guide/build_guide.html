@@ -260,9 +260,9 @@ a{color:var(--accent)}
   <div class="tw"><table>
     <thead><tr><th>Wire</th><th>From</th><th>To</th><th>Joints</th></tr></thead>
     <tbody>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>step</td><td>ESP32 GPIO25</td><td>expansion board STEP column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>direction</td><td>ESP32 GPIO26</td><td>expansion board DIR column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wsig)"></span>enable</td><td>ESP32 GPIO27</td><td>expansion board EN column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>step</td><td>ESP32 GPIO26</td><td>expansion board STEP column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>direction</td><td>ESP32 GPIO27</td><td>expansion board DIR column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wsig)"></span>enable</td><td>ESP32 GPIO25</td><td>expansion board EN column, <b>S</b> row</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wgnd)"></span>signal ground</td><td>ESP32 GND (right row, next to 3V3)</td><td>expansion board, any one pin in the <b>G</b> row (all three G pins are joined)</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsrv)"></span>servo signal</td><td>ESP32 GPIO13</td><td>servo orange</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsw)"></span>switch</td><td>ESP32 GPIO32</td><td>KW12-3 NO leg</td><td><span class="j">PLUG</span> <span class="j">SOLDER</span></td></tr>
@@ -294,7 +294,7 @@ a{color:var(--accent)}
         <g font-family="IBM Plex Mono,monospace" font-size="9" fill="#fff"><text x="100" y="146">1A 1B 2A 2B</text></g>
         <g><rect x="98" y="126" width="12" height="8" fill="#222"/><rect x="116" y="126" width="12" height="8" fill="#1f8a4c"/><rect x="134" y="126" width="12" height="8" fill="#d23a2f"/><rect x="152" y="126" width="12" height="8" fill="#2563c9"/></g>
       </svg>
-      <p class="dim">DIR, STEP, EN each have three pins: S, V, G. The ESP32 wire goes on <b>S</b>. One ground wire from the ESP32 to any <b>G</b>. Leave every <b>V</b> empty. Pot to 0.85 V (pot top to GND), 12 V on, motor unplugged. Driver's EN pin on the expansion board's EN position. Motor order as printed on your expansion board; if it buzzes, swap black and green.</p>
+      <p class="dim">DIR, STEP, EN each have three pins: S, V, G. The ESP32 wire goes on <b>S</b>: D27 to DIR, D26 to STEP, D25 to EN, the same order on both boards, so a 3-wire ribbon goes straight across. One ground wire from the ESP32 to any <b>G</b>. Leave every <b>V</b> empty. Pot to 0.85 V (pot top to GND), 12 V on, motor unplugged. Driver's EN pin on the expansion board's EN position. Motor order as printed on your expansion board; if it buzzes, swap black and green.</p>
     </div>
     <div class="card">
       <h3>KW12-3 roller switch</h3>
@@ -578,16 +578,16 @@ a{color:var(--accent)}
   var USE={
     "L5":["GPIO32, to KW12-3 NO leg","--wsw","PLUG"],
     "L6":["GPIO33, free (LD2410C, not fitted)","--wmute","",1],
-    "L7":["GPIO25, to expansion board STEP","--wsig","PLUG"],
-    "L8":["GPIO26, to expansion board DIR","--wsig","PLUG"],
-    "L9":["GPIO27, to expansion board EN","--wsig","PLUG"],
+    "L7":["GPIO25, to expansion board EN","--wsig","PLUG"],
+    "L8":["GPIO26, to expansion board STEP","--wsig","PLUG"],
+    "L9":["GPIO27, to expansion board DIR","--wsig","PLUG"],
     "L12":["GPIO13, to servo orange","--wsrv","PLUG"],
     "L13":["bridged to the GND rail","--wgnd","PLUG"],
     "L14":["bridged to the 5 V rail (power in)","--w5","PLUG"],
     "R8":["GPIO17, to LD2450 RX","--wrad","PLUG"],
     "R9":["GPIO16, to LD2450 TX","--wrad","PLUG"],
     "R11":["GPIO2, on-board blue LED, no wire","--wmute","",1],
-    "R13":["to expansion board GND by STEP/DIR","--wgnd","PLUG"]
+    "R13":["to any expansion board G pin","--wgnd","PLUG"]
   };
   function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(p||pins).appendChild(e);return e}
   var pins=document.getElementById("pins"), tags=document.getElementById("tags");
@@ -652,11 +652,11 @@ a{color:var(--accent)}
   }
   // male pins and tags. [col,row,colourVar,label]
   var pins=[
-    [15,3,"--wgnd","ESP32 GND: expansion board GND"],
+    [15,3,"--wgnd","ESP32 GND: expansion board G"],
     [15,4,"--wsrv","SERVO (D13): servo orange"],
-    [15,7,"--wsig","EN (D27): expansion board EN"],
-    [15,8,"--wsig","DIR (D26): expansion board DIR"],
-    [15,9,"--wsig","STEP (D25): expansion board STEP"],
+    [15,7,"--wsig","DIR (D27): expansion board DIR"],
+    [15,8,"--wsig","STEP (D26): expansion board STEP"],
+    [15,9,"--wsig","EN (D25): expansion board EN"],
     [15,11,"--wsw","LIMIT (D32): KW12-3 NO"],
     [16,13,"--w5","5 V in: from the buck OUT+"],
     [16,14,"--w5","5 V: servo red"],

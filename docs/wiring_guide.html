@@ -31,9 +31,9 @@
 </tr>
 <tr><td style="border:1px solid #cccccc"><b>VIN</b></td><td style="border:1px solid #cccccc">buck converter OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">powers the board</td><td style="border:1px solid #cccccc">never 12 V here</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GND</b> (any)</td><td style="border:1px solid #cccccc">common ground</td><td style="border:1px solid #cccccc">every ground ties together</td><td style="border:1px solid #cccccc">adapter, expansion board, buck, ESP32, servo, radar, switch</td></tr>
-<tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">expansion board STEP</td><td style="border:1px solid #cccccc">one pulse = 1/8 motor step</td><td style="border:1px solid #cccccc"></td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO26</b></td><td style="border:1px solid #cccccc">expansion board DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
-<tr><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">expansion board EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO26</b></td><td style="border:1px solid #cccccc">expansion board STEP</td><td style="border:1px solid #cccccc">one pulse = 1/8 motor step</td><td style="border:1px solid #cccccc"></td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">expansion board DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">expansion board EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO13</b></td><td style="border:1px solid #cccccc">servo signal (orange)</td><td style="border:1px solid #cccccc">finger lock and release</td><td style="border:1px solid #cccccc"><b>not GPIO14</b>: 14 pulses at boot and would drop the spider</td></tr>
 <tr><td style="border:1px solid #cccccc"><b>GPIO16</b> (RX2)</td><td style="border:1px solid #cccccc">LD2450 TX</td><td style="border:1px solid #cccccc">radar data in</td><td style="border:1px solid #cccccc">TX crosses to RX</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO17</b> (TX2)</td><td style="border:1px solid #cccccc">LD2450 RX</td><td style="border:1px solid #cccccc">radar data out</td><td style="border:1px solid #cccccc">RX crosses to TX</td></tr>
@@ -64,7 +64,7 @@
 
 <h3 style="font-size:12pt;margin:12px 0 4px 0">Stepper driver: TMC2209 on the expansion board</h3>
 <table style="border-collapse:collapse;width:100%" cellpadding="6">
-<tr><td style="border:1px solid #cccccc;width:30%">STEP, DIR, EN</td><td style="border:1px solid #cccccc">GPIO25, GPIO26, GPIO27</td></tr>
+<tr><td style="border:1px solid #cccccc;width:30%">STEP, DIR, EN</td><td style="border:1px solid #cccccc">GPIO26, GPIO27, GPIO25</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">VMOT, GND</td><td style="border:1px solid #cccccc">12 V adapter</td></tr>
 <tr><td style="border:1px solid #cccccc">DIP switches 1, 2, 3</td><td style="border:1px solid #cccccc">all OFF (1/8 step)</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Current pot</td><td style="border:1px solid #cccccc"><b>0.85 V</b> pot top to GND, 12 V on, <b>motor unplugged</b> (= 0.6 A)</td></tr>

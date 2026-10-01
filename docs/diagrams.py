@@ -32,14 +32,14 @@ def wiring():
     for a in (a1, a2): a.set_xlim(0, 15); a.axis("off")
     a1.set_ylim(-1.4, 8.2); a2.set_ylim(-0.2, 7.0)
     a1.set_title("1. SIGNAL WIRING (thin jumper wires)", fontsize=14, weight="bold", loc="left")
-    drv = pins_box(a1, 0.4, 7.0, 3.2, "Expansion board + TMC2209", right=["STEP", "DIR", "EN", "GND"], color="#fff8c5")
-    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 DevKit V1 (30-pin)", left=["GPIO25", "GPIO26", "GPIO27", "GND"],
+    drv = pins_box(a1, 0.4, 7.0, 3.2, "Expansion board + TMC2209", right=["DIR", "STEP", "EN", "GND"], color="#fff8c5")
+    esp = pins_box(a1, 5.9, 7.0, 3.2, "ESP32 DevKit V1 (30-pin)", left=["GPIO27", "GPIO26", "GPIO25", "GND"],
                    right=["GPIO13", "GPIO16 (RX2)", "GPIO17 (TX2)", "GPIO32", "GND ", "GPIO33"], color="#ddf4ff")
     srv = pins_box(a1, 11.4, 7.4, 3.2, "SG90 servo", left=["orange = signal"], color="#dafbe1")
     rad = pins_box(a1, 11.4, 5.85, 3.2, "LD2450 radar (primary)", left=["TX", "RX"], color="#dafbe1")
     lim = pins_box(a1, 11.4, 3.85, 3.2, "KW12-3 limit switch", left=["NO", "COM"], color="#dafbe1")
     old = pins_box(a1, 11.4, 1.85, 3.2, "LD2410C (fallback, optional)", left=["OUT"], color="#eaeef2")
-    for p, q, c, l in [("STEP", "GPIO25", BLU, "step"), ("DIR", "GPIO26", BLU, "direction"), ("EN", "GPIO27", BLU, "enable"), ("GND", "GND", BLK, "ground")]:
+    for p, q, c, l in [("STEP", "GPIO26", BLU, "step"), ("DIR", "GPIO27", BLU, "direction"), ("EN", "GPIO25", BLU, "enable"), ("GND", "GND", BLK, "ground")]:
         line(a1, drv[p], esp[q], c, l)
     line(a1, esp["GPIO13"], srv["orange = signal"], GRN, "servo signal", mid=10.2)
     line(a1, esp["GPIO16 (RX2)"], rad["TX"], PUR, "radar data", mid=10.5)
