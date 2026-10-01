@@ -1,6 +1,6 @@
 # Handoff: one-piece spool and ratchet (Rev C.3)
 
-Redesign the three-part spool stack (`spool_ratchet`, `spool_shield`, `spool_body`) as one part that prints with no supports, grips the HF0612 one-way bearing so it cannot turn in its hole, and keeps the line separator out of the finger's reach. For a CAD session working with the owner (Joe).
+**Later, not now:** the owner keeps the current three-part stack and its cut-to-length shims (2026-10-01); this is the plan for the next spool. Redesign the three-part spool stack (`spool_ratchet`, `spool_shield`, `spool_body`) as one part that prints with no supports, grips the HF0612 one-way bearing so it cannot turn in its hole, and keeps the line separator out of the finger's reach. For a CAD session working with the owner (Joe).
 
 ## Ground truth first
 
@@ -13,9 +13,9 @@ git log -1 --oneline -- docs/handoff_spool_onepiece.md # when this file was last
 
 ## Before you start
 
-1. **Which part slips, the bearing in its hole or the clutch on the rod?** Joe reports "the one-way bearing slips a bit". Ask him to draw one marker line across the HF0612's outer ring and the spool face, run a few drops or turn it by hand against the lock, and look. Line split at the ring edge = the bearing turns in the plastic, so this redesign fixes it (step 3). Line still whole but the spool slips on the rod = the clutch slipping on the rod, which a printed part cannot fix; stop and report it instead.
+1. **The bearing turns in the plastic** (owner confirmed 2026-10-01), only under more load than the spider's weight; the clutch on the rod is fine. Step 3 fixes it.
 2. **What is left of the finger.** Joe cut about 5 mm off the finger's face with flush cutters so it stopped catching the separator disc. Ask whether he cut its thickness (along the rod) or its length (toward the teeth), and how much finger now sits on the ratchet teeth (look edge-on at the lock angle). Either cut means less tooth engagement than the design's 7 mm; the new spool must let a fresh, uncut `finger.stl` work.
-3. **"About 1 mm smaller diameter."** Joe's words, tied to the bearing slipping. The bearing is 10.0 mm across, so a 9.3 hole cannot take it; read it as the bearing hole going tighter (10.3 now). Confirm with him in one line before designing: "bearing hole tighter, 10.3 to about 10.2 with crush ribs, yes?"
+3. **Bearing hole 0.1 mm smaller.** Joe confirmed 2026-10-01: 10.3 to 10.2 (10.2 printed tight before; 10.3 now slips a bit under more load than the spider's weight).
 4. Run `cd cad; python generate.py` and confirm every check passes before changing anything, so a later failure is yours.
 
 ## Read first
@@ -30,11 +30,12 @@ git log -1 --oneline -- docs/handoff_spool_onepiece.md # when this file was last
 
 1. **One part, three zones along the rod.** Ratchet (12 teeth, tip r 33, root r 29, ramps rise clockwise and steep faces block counterclockwise, seen from behind the motor; keep `ratchet_poly`), then a separator, then the barrel and the far flange. No screws, no counterbores. The HF0612 presses in from the flange side as now.
 2. **Separator smaller than the finger's reach.** Today's shield is r 32, out past the finger's tip (closest approach r 29.38), so when Joe shimmed the stack along the rod the finger rode onto it. Make the separator r 28 or less (at least 1 mm inside the finger tip), so the finger can overlap it along the rod and never touch it. It only has to keep the line off the teeth: about 720 mm of 6 lb mono is under 5 turns on the r 25 barrel, one layer. Check that claim against the line length in doc 06 and say the margin in the report.
-3. **Bearing hole that grips.** Standard printed press-fit: crush ribs (small ribs that the bearing shaves flat as it goes in) rather than a plain round hole. Starting point: 10.4 hole with 6 to 8 ribs reaching in to 10.0 or 10.1, plus the existing 0.4 lead-in chamfer at the flange side. Name the source you borrow the rib sizes from (guard 2: prior art first).
+3. **Bearing hole that grips.** Standard printed press-fit: crush ribs (small ribs that the bearing shaves flat as it goes in) rather than a plain round hole. Owner's number is a plain 10.2 hole; offer crush ribs (10.4 hole, 6 to 8 ribs reaching in to 10.1) as the alternative if 10.2 needs sanding to go in, plus the existing 0.4 lead-in chamfer at the flange side. Name the source you borrow the rib sizes from (guard 2: prior art first).
 4. **Prints with no supports, lying on one face.** Recommended: ratchet face on the bed (the teeth are plain vertical walls; the separator and barrel are smaller, so they stand on it with no overhang). The far flange then overhangs the barrel: give its underside a 45 degree chamfer, or keep it no wider than a 45 degree slope allows. The barrel is only about 3.5 mm wide today; there is room to widen it along the rod (Joe's build needed about 4 mm of shim on the motor side and 5 mm on the 606ZZ side, and spacer B is 50 mm), so take width from the shims rather than steepening the chamfer. Every hole edge on the bed gets the 0.4 chamfer.
-5. **Keep the light-weight windows** (`spoke_windows`) if they still print with no bridging in this orientation; they run straight through along the rod, so they should.
-6. **Fit the stack along the rod.** Total length, spacer A and spacer B (or new shims) must put the ratchet teeth across the finger's full 7 mm with the separator clear. Write the new z table.
-7. Export only the new part's STL, `spool_onepiece.stl`. Move `spool_ratchet`, `spool_shield` and `spool_body` to `cad/retired/` with a one-line "Retired, superseded by spool_onepiece" note, once Joe has the new one in hand.
+5. **Line anchor built in:** a 1 mm hole through the barrel skin into a window, midway between spokes, for the toggle anchor in `docs/05_assembly.md` step 5 (or a printed post inside the window to tie to). Printed holes under about 1 mm close up, so draw it 1.2 and check it with a 1 mm drill.
+6. **Keep the light-weight windows** (`spoke_windows`) if they still print with no bridging in this orientation; they run straight through along the rod, so they should.
+7. **Fit the stack along the rod.** Total length, spacer A and spacer B (or new shims) must put the ratchet teeth across the finger's full 7 mm with the separator clear. Write the new z table.
+8. Export only the new part's STL, `spool_onepiece.stl`. Move `spool_ratchet`, `spool_shield` and `spool_body` to `cad/retired/` with a one-line "Retired, superseded by spool_onepiece" note, once Joe has the new one in hand.
 
 ## Tests
 
