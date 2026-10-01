@@ -2,6 +2,12 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-09-30
+
+### Changed
+- `fairlead_flap_inv`: owner's redesign. The tab runs 3.7 mm further toward the hinge and a sloped web fills the notch beside the prong, so the side has no step for the line to catch; the line slot runs 1.4 mm deeper. Source (`cad/inverted.py`) now builds it to within 3.5 mm3 of his STL; his STL is kept as the print file. All inverted checks unchanged (clashes, line path, hard stop 14.75, roller push 4.13, rest 9.5).
+- Doc 02: motor part number 11HS12-0674S, 5.6 ohm coil check, female jumper ends on the bare leads.
+
 ## 2026-09-29
 
 ### Added

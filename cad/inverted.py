@@ -94,7 +94,8 @@ GAP_X = (31.0, 34.0)                  # nut gap between the column and the switc
 PLATE_X = (34.0, 37.0)                # switch plate, 3 thick; the switch bolts to its outer (x 37) face
 PLATE_Z = (37.0, 58.0)
 PLATE_Y0 = -20.0                      # plate bottom, just above the switch's lever face
-TAB = (30.5, 45.0, 34.0, 48.0)        # flap tab x0, x1, z0, z1, free-end side, under the roller
+TAB = (30.5, 45.0, 34.0, 51.67)       # flap tab x0, x1, z0, z1, free-end side, under the roller; z1 48 to 51.67 (owner's redesign 2026-09-30)
+FLAP_SLOT_END = 46.43                 # line slot's round end, 1.43 deeper than doc 09's z 45 (owner's redesign 2026-09-30)
 SWV_X0 = 37.0                         # switch body x 37 to 43.4 (6.4 thick), on the plate's outer face
 SWV_Z0 = 37.0                         # body z 37 to 57; roller end at z 37
 SWV_ROLLER_Z = SWV_Z0 + (F.TAIL_Z - F.SW_Z0)   # roller 4 mm in from that end: z 41, 17 mm from the hinge
@@ -184,10 +185,17 @@ def fairlead_base_print():
 
 
 def flap_inv_local():
-    """Doc 09's flap (same knuckle, slot, prong) plus the tab, in doc 09's frame so it prints like the old one."""
+    """Doc 09's flap (same knuckle, prong) plus the tab, in doc 09's frame so it prints like the old one.
+    Owner's redesign (2026-09-30, his STL matched to 0.1 mm): the tab runs on to z 51.67 and a 45-ish web fills the
+    notch between the tab, the prong and the plate, so the side has no step to catch the line; the line slot runs
+    1.43 deeper so the line sits clear of the slot's closed end."""
     tx0, tx1, tz0, tz1 = TAB
-    tab = G.bx(-tx1, -tx0, F.HY - F.FT / 2, F.HY + F.FT / 2, tz0, tz1)
-    return G.U(F.fairlead_flap(), tab)
+    y0, y1 = F.HY - F.FT / 2, F.HY + F.FT / 2
+    tab = G.bx(-tx1, -tx0, y0, y1, tz0, tz1)
+    from shapely.geometry import Polygon
+    web = yprism(Polygon([(-30.5, 48.0), (-30.5, tz1), (-27.9, 53.41), (-27.9, 48.0)]), y0, y1)
+    slot = G.U(G.bx(F.LX - 1.7, F.LX + 1.7, F.HY - 4, F.HY + 4, F.LZ, FLAP_SLOT_END), G.vcyl(1.7, 8, F.HY - 4, F.LX, FLAP_SLOT_END))
+    return G.D(G.U(F.fairlead_flap(), tab, web), slot)
 
 
 def fairlead_flap_inv_print():
