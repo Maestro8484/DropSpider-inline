@@ -58,7 +58,7 @@ The owner's plan, approved 2026-09-27: the device turned upside down, its flat b
 | Base (the device's bottom face) | 160 mm |
 | Bead at home, against the flap | about 196 mm (fairlead v2, 2026-09-28; v1 179) |
 | Spider retracted, bottom | 196 + 30 (bead and swivel) + spider height. Hidden behind the 254 mm beam only for a spider up to about 28 mm tall |
-| Line | falls 54 mm from the beam's face (ceiling install: 305 mm). A spider wider than about 10 cm brushes the beam |
+| Line | falls 54 mm from the beam's face (ceiling install: 305 mm). A spider wider than about 10 cm brushes the beam; the owner's is about 8 cm, so about 14 mm to spare while it hangs still (owner kept this layout 2026-10-01) |
 
 Line length (barrel knot to bead) = (ceiling - 196) - (target rest height + spider height + 30) + 72. The 72 mm is line from the spool to the flap in this layout (fairlead v2, doc 09). Tie it, enter `line`, then shorten on site, as for the ceiling install.
 
