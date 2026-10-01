@@ -19,8 +19,8 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | LD2410C OUT (fallback only) | in | HIGH = someone present. Firmware adds a pull-down. Used only with `sensor 2410` |
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
-| GPIO16 (RX2) | LD2450 TX | in | Primary trigger, UART2 at 256000 baud |
-| GPIO17 (TX2) | LD2450 RX | out | Primary trigger |
+| GPIO16 (RX2) | LD2450 TX (yellow wire) | in | Primary trigger, UART2 at 256000 baud |
+| GPIO17 (TX2) | LD2450 RX (green wire) | out | Primary trigger |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
@@ -68,6 +68,6 @@ By design the switch reads **open** at rest after the lock seat (doc 09, V14): t
 
 ## Sensor wiring
 
-**LD2450 (primary):** 5 V, GND, TX to GPIO16, RX to GPIO17. 4-pin, 1.25 mm plug at the sensor. No OUT pin. See `03_sensor.md`.
+**LD2450 (primary):** 5 V, GND, TX to GPIO16, RX to GPIO17. The owner's cable (2026-10-01), colours at the sensor: **red 5 V, black GND, yellow TX (to GPIO16), green RX (to GPIO17)**. TX goes to RX and RX to TX: yellow is the sensor's transmit, so it lands on the ESP32's receive. 4-pin, 1.25 mm plug at the sensor. No OUT pin. See `03_sensor.md`.
 
 **LD2410C (fallback, optional):** 5 V, GND, OUT to GPIO33 (3.3 V output, goes straight in). Used only with `sensor 2410`.

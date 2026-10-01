@@ -266,10 +266,10 @@ a{color:var(--accent)}
       <tr><td><span class="sw" style="background:var(--wgnd)"></span>signal ground</td><td>ESP32 GND (right row, next to 3V3)</td><td>expansion board, any one pin in the <b>G</b> row (all three G pins are joined)</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsrv)"></span>servo signal</td><td>ESP32 GPIO13</td><td>servo orange</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wsw)"></span>switch</td><td>ESP32 GPIO32</td><td>KW12-3 NO leg</td><td><span class="j">PLUG</span> <span class="j">SOLDER</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data in</td><td>ESP32 RX2 (GPIO16)</td><td>LD2450 TX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data out</td><td>ESP32 TX2 (GPIO17)</td><td>LD2450 RX</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--w5)"></span>5 V</td><td>buck OUT+</td><td>5 V rail on the protoboard: ESP32 VIN (solder bridge), servo red, LD2450 5V</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
-      <tr><td><span class="sw" style="background:var(--wgnd)"></span>ground</td><td>buck OUT-</td><td>GND rail on the protoboard: ESP32 GND (solder bridge), servo brown, LD2450 GND, KW12-3 COM</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data in</td><td>ESP32 RX2 (GPIO16)</td><td>LD2450 TX, <b>yellow</b> wire</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wrad)"></span>radar data out</td><td>ESP32 TX2 (GPIO17)</td><td>LD2450 RX, <b>green</b> wire</td><td><span class="j">PLUG</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--w5)"></span>5 V</td><td>buck OUT+</td><td>5 V rail on the protoboard: ESP32 VIN (solder bridge), servo red, LD2450 5V (red wire)</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
+      <tr><td><span class="sw" style="background:var(--wgnd)"></span>ground</td><td>buck OUT-</td><td>GND rail on the protoboard: ESP32 GND (solder bridge), servo brown, LD2450 GND (black wire), KW12-3 COM</td><td><span class="j">SOLDER</span> <span class="j">PLUG</span></td></tr>
       <tr><td><span class="sw" style="background:var(--w12)"></span>12 V</td><td>jack +</td><td>expansion board VMOT, and buck IN+</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
       <tr><td><span class="sw" style="background:var(--wgnd)"></span>12 V ground</td><td>jack -</td><td>expansion board GND, and buck IN-</td><td><span class="j">SCREW</span> <span class="j">SCREW</span> <span class="j">SOLDER</span></td></tr>
       <tr><td>motor, 4 wires</td><td>NEMA 11 black, green, red, blue</td><td>expansion board 1A, 1B, 2A, 2B</td><td><span class="j">PLUG</span></td></tr>
@@ -584,8 +584,8 @@ a{color:var(--accent)}
     "L12":["GPIO13, to servo orange","--wsrv","PLUG"],
     "L13":["bridged to the GND rail","--wgnd","PLUG"],
     "L14":["bridged to the 5 V rail (power in)","--w5","PLUG"],
-    "R8":["GPIO17, to LD2450 RX","--wrad","PLUG"],
-    "R9":["GPIO16, to LD2450 TX","--wrad","PLUG"],
+    "R8":["GPIO17, to LD2450 RX (green)","--wrad","PLUG"],
+    "R9":["GPIO16, to LD2450 TX (yellow)","--wrad","PLUG"],
     "R11":["GPIO2, on-board blue LED, no wire","--wmute","",1],
     "R13":["to any expansion board G pin","--wgnd","PLUG"]
   };
@@ -660,12 +660,12 @@ a{color:var(--accent)}
     [15,11,"--wsw","LIMIT (D32): KW12-3 NO"],
     [16,13,"--w5","5 V in: from the buck OUT+"],
     [16,14,"--w5","5 V: servo red"],
-    [16,15,"--w5","5 V: LD2450 5V"],
-    [1,7,"--wrad","RX2 (GPIO16): LD2450 TX"],
-    [1,8,"--wrad","TX2 (GPIO17): LD2450 RX"],
+    [16,15,"--w5","5 V: LD2450 5V (red)"],
+    [1,7,"--wrad","RX2 (GPIO16): LD2450 TX (yellow)"],
+    [1,8,"--wrad","TX2 (GPIO17): LD2450 RX (green)"],
     [0,12,"--wgnd","GND in: from the buck OUT-"],
     [0,13,"--wgnd","GND: servo brown"],
-    [0,14,"--wgnd","GND: LD2450 GND"],
+    [0,14,"--wgnd","GND: LD2450 GND (black)"],
     [0,15,"--wgnd","GND: KW12-3 COM"]
   ];
   pins.forEach(function(p){
