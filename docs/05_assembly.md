@@ -75,11 +75,11 @@ One `fairlead_body` and one `fairlead_flap` per build. Full detail in `09_fairle
 
 ## G. Inverted install only (device turned over on the beam's face, doc 06)
 
-23. Bracket printed from 2026-09-28 on: the five holes are already there, skip to 24. Older print: drill the base: 7 mm at x 25, z 45 (the line; a 1/4 in bit is close enough), 3.4 mm at x 32, z 28 and z 83 (the fairlead block), 3.4 mm at x 62, z 45 and z 79 (the radar fork). Print `cad/bracket_footprint_inverted.svg` at 100% as a template. Sand the 7 mm hole smooth. The brace bolt holes are the owner's; doc 06 says where they can go.
+23. Bracket printed from 2026-09-28 on: the five holes are already there, skip to 24. Older print: drill the base: 7 mm at x 25, z 45 (the line; a 1/4 in bit is close enough), 3.4 mm at x 32, z 28 and z 83 (the fairlead block), and, on every print, 3.4 mm at x -80, z 38.5 and z 72.5 (the radar fork at the pad end; the owner's build has the servo end at the beam, 2026-10-01). Print `cad/bracket_footprint_inverted.svg` at 100% as a template. Sand the 7 mm hole smooth. The brace bolt holes are the owner's; doc 06 says where they can go.
 24. Print `fairlead_base.stl` instead of `fairlead_body.stl`. Fit the flap and switch to it as in steps 15a to 15d, then screw it under the base with 2x M3 x 12 from inside the base.
-25. Bolt `ld2450_fork_screw.stl` under the base at the servo end, plate against the base, ears hanging down: 2x M3 x 10 up through the fork and the base, nuts inside. No glue. Cradle on one M3 bolt through the fork's ears, radar slid into the cradle (doc 03), looking back toward the pad end and down, 50 degrees to start.
+25. Bolt `ld2450_fork_screw.stl` under the base at the pad end, on the x -80 holes, plate against the base, ears hanging down: 2x M3 x 10 up through the fork and the base, nuts inside. No glue. Cradle on one M3 bolt through the fork's ears, radar slid into the cradle (doc 03), looking along the device toward the beam (the servo end) and down, 50 degrees to start. The nuts sit inside under the board's edge: keep that strip clear or lift the board on 4 mm foam tape.
 26. Wind the line clockwise (seen from behind the motor) as in step 16, but lead it off the spool's **servo side**, down through the base hole, the block's bore and the flap's slot.
-27. Leads: the switch and radar leads go round the base's far (servo) end and back along the top to the board (about 15 and 25 cm), tied to the base clear of the spool.
+27. Leads: the switch and radar leads go round the base's pad end and back to the board (about 15 and 10 cm), tied to the base clear of the spool.
 28. The braces and their holes are the owner's. Then `07_commissioning.md` as usual.
 
 ## Base layout reference

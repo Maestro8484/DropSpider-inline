@@ -5,6 +5,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-01
 
 ### Changed
+- Inverted install turned end for end to match the owner's build (photo): servo end at the beam, pad end away from it. Radar fork moves to the pad end, 2x M3 drilled at x -80, z 38.5 and 72.5; nothing blocks its view, its centre line passes under the beam (409 mm below the ceiling), the cradle clears every part from 20 to 90 degrees. Line now 54 mm from the beam's face (was 117). Model, drilling template, install picture, doc 05, doc 06 and build guide updated.
 - Driver pins: DIR GPIO27, STEP GPIO26, EN GPIO25 (were STEP 25, DIR 26, EN 27), so D27, D26, D25 match the expansion board's DIR, STEP, EN columns and a 3-wire ribbon goes straight across (owner). Firmware built; not yet flashed (board not connected). Doc 02, wiring guide, wiring picture and build guide updated; expansion board wires go on the S row, ground to any G, V empty.
 
 ## 2026-09-30

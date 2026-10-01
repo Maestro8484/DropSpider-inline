@@ -185,12 +185,12 @@ def inverted_png():
     A = INV.assembly_inverted(); A.update(INV.line_and_bead())
     A.update({k: G.I(m, G.bx(-200, 250, -300, 200, -25, 135)) for k, m in INV.porch().items()})   # a short length of beam and ceiling, so the device reads
     key = lambda k: "brace" if k.startswith("brace") else k
-    img, proj = raster.render([(INV.view_inv(m), COL[key(k)]) for k, m in A.items()], elev=-12, azim=-30, W=1300, H=1000)
-    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -110), 12, -60, f"line falls {INV.LINE_X - INV.X_BEAM:.0f} mm from the beam's face", True),
-              lbl(proj, (INV.X_BEAM + 140, -INV.BRACE_Z[0], -2), 260, 60, "base sits on the braces' flat legs", True),
+    img, proj = raster.render([(INV.view_inv(m), COL[key(k)]) for k, m in A.items()], elev=-12, azim=210, W=1300, H=1000)   # from the pad end, beam behind (owner's build 2026-10-01: servo end at the beam)
+    labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -110), 12, -60, f"line falls {abs(INV.LINE_X - INV.X_BEAM):.0f} mm from the beam's face", True),
+              lbl(proj, (INV.X_BEAM - 140, -INV.BRACE_Z[0], -2), -260, 60, "base sits on the braces' flat legs", True),
               lbl(proj, (INV.LINE_X + 10, -INV.LINE_Z, -30), 200, 60, "fairlead, flap and switch under the base", True),
-              lbl(proj, (95, -62, -40), 120, 120, "radar under the servo end, looking at the approach", True)]
-    save(img, "inverted_install.png", "Inverted install (the owner's plan): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
+              lbl(proj, (INV.RADAR_FORK[0] - 25, -INV.RADAR_FORK[1], -40), -120, 120, "radar under the pad end, looking toward the beam and down", True)]
+    save(img, "inverted_install.png", "Inverted install (owner's build, servo end at the beam): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
          labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
 
 def inverted_fairlead_png(elev=-12, azim=35, name="inverted_fairlead.png"):

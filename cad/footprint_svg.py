@@ -40,17 +40,19 @@ def as_circle(ring):
 
 
 def main(mesh=None, out_path=OUT, caption="DropSpider bracket, ceiling face, seen from below. 1:1 mm. Red = cut.",
-         drilled=(), mirror=False, outlines=(), labels=(), legend=(), legend_at=(0, 0), scale_bar=False, cut_d=None):
+         drilled=(), mirror=False, outlines=(), labels=(), legend=(), legend_at=(0, 0), scale_bar=False, cut_d=None, extra_h=0.0):
     """drilled: (x, z, d) holes drawn in blue as drilled by hand. mirror: draw +x to the left.
     outlines: shapely polygons drawn dashed blue. labels: (x, z, text) in model mm, text starting there.
     legend: lines of text starting at legend_at (drawing mm). scale_bar: a 100 mm bar to check the print scale.
-    cut_d: maps a hole's drawn diameter to the diameter cut (laser plate clearances); None = as drawn."""
+    cut_d: maps a hole's drawn diameter to the diameter cut (laser plate clearances); None = as drawn.
+    extra_h: blank room added under the outline (for a legend placed there)."""
     polys = footprint(G.bracket() if mesh is None else mesh)
     allp = np.vstack([np.asarray(pg.exterior.coords) for pg in polys])
     x0, z0 = allp.min(axis=0) - MARGIN
     x1, z1 = allp.max(axis=0) + MARGIN
     W, H = x1 - x0, z1 - z0
     if scale_bar: H += 10
+    H += extra_h
     X = (lambda x: x1 - x) if mirror else (lambda x: x - x0)
     Z = lambda z: z - z0
     f = lambda v: f"{v:.3f}"
@@ -114,7 +116,7 @@ def main_inverted():
     labels = [
         (bs[0][0] + 12, bs[0][1] - 7, f"FAIRLEAD BLOCK: 2x M3"),
         (lx - 7, lz + 1.5, f"LINE"),
-        (rs[0][0] + 7, min(fz) - 8, f"RADAR FORK: 2x M3"),
+        (rs[0][0] + 31, sum(fz) / 2 + 1, f"RADAR FORK: 2x M3"),   # inboard of the fork, between the pad holes
     ]
     legend = [
         "Distances to each hole's centre, in mm,",
@@ -135,8 +137,8 @@ def main_inverted():
     main(INV.bracket_inverted(), OUT_INV,
          "DropSpider bracket base, outer face seen from outside (from below when hung). 1:1 mm. Red = cut (laser plate sizes). Crosses = the five holes the inverted install adds. Brace holes are the owner's.",
          drilled, mirror=True, outlines=list(block) + list(fork), labels=labels, legend=legend,
-         legend_at=(edge_x - 5 + MARGIN + 42, 40), scale_bar=True,
-         cut_d=lambda d: 8.0 if d > 6.5 else 5.5)
+         legend_at=(MARGIN, G.bracket().bounds[1][2] + 2 * MARGIN + 4), scale_bar=True,   # under the plate: the radar fork now sits at the pad end, where the legend was
+         cut_d=lambda d: 8.0 if d > 6.5 else 5.5, extra_h=3 * len(legend) + 4)
 
 
 if __name__ == "__main__":

@@ -17,14 +17,17 @@ What is new:
                      transform T (180 degrees about z, then +69 in y): the same flared bore, the
                      same flap (fairlead_flap.stl unchanged), the same switch slots and stops.
                      Two M3 screws from inside the base thread into 2.5 pilots.
+  turned end for end (owner's build, photo 2026-10-01): the SERVO end of the base sits at the beam, not
+                     the pad end. Braces, beam and radar below follow that; the device itself is unchanged.
   corner braces      2x steel L brackets, 6 in legs, 1 in wide (stand-ins for pictures and clash
                      checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
                      at the base's ends. The owner's orientation (2026-09-27): the flat leg under the
                      base, the other leg standing UP the beam's face beside the device, screwed to it.
   radar              part of the device (owner 2026-09-27): ld2450_fork_screw (cad/sensor_mount.py,
                      same ears as ld2450_fork, no glue), cradle and radar, turned over and bolted
-                     under the base at the servo end with 2x M3, looking back toward the beam (the
-                     approach) and down, under the fairlead block.
+                     under the base at the PAD end (the end away from the beam) with 2x M3 drilled at
+                     x -80, z 38.5 and 72.5, the radar just past the base's end, looking toward the
+                     beam (the approach) and down, under the whole device.
   electronics        the controller board stays where it is in the ceiling design: on the pad, the
                      base's device side at the beam end, now facing up. A 52 x 75 x 30 stand-in box
                      is clash-checked.
@@ -48,15 +51,17 @@ LINE_HOLE_D = 7.0                    # barrel channel is z 42 to 48; 7 mm (z 41.
 BLOCK_SCREWS = [(32.0, 28.0), (32.0, 83.0)]   # (x, z): M3 from inside the base into the block's 2.5 pilots
 BRACE_Z = (8.0, 106.0)              # brace centre lines: the base's ends, clear of the block (z 24 to 93); the owner's call
 BRACE_LEG, BRACE_W, BRACE_T = 152.0, 25.0, 1.5  # 6 in x 1 in steel corner brace stand-in
-BEAM_GAP = 4.0                       # pad edge (x -88) to the beam's face
-X_BEAM = -88.0 - BEAM_GAP            # -92
+BEAM_GAP = 4.0                       # base's servo end (x 75) to the beam's face
+X_BEAM = 75.0 + BEAM_GAP             # 79: owner's build 2026-10-01 has the servo end at the beam (was the pad end, x -92)
 DEVICE_TOP = 62.0                    # bearing plate top; the tallest thing above the base
 CEILING_Y = BRACE_LEG + 8.0          # the braces' upright legs stand under the ceiling: base 160 below it
 BEAM_DEPTH = 254.0
 BEAM_BOTTOM_Y = CEILING_Y - BEAM_DEPTH   # -94
 RADAR_TILT = 50.0                    # doc 03's tilt, below level; the cradle adjusts
-RADAR_SHIFT = (130.0, 4.0)
-RADAR_SCREWS = [(130.0 - 68.0, 62.0 - S.FORK_SCREW_DZ), (130.0 - 68.0, 62.0 + S.FORK_SCREW_DZ)]   # (x, z): the fork's 2 holes, turned over: x 62, z 45 and 79
+RADAR_SHIFT = (130.0, 4.0)           # the ceiling design's radar turned over: fork centre x 62, z 62 (the old servo-end place)
+RADAR_FORK = (-80.0, 55.5)           # owner's build 2026-10-01: fork centre at the pad end, 8 from the base's end; z 55.5 keeps
+                                     # its holes 10.5 from the pad's zip-tie holes at z 28 and 83
+RADAR_SCREWS = [(RADAR_FORK[0], RADAR_FORK[1] - S.FORK_SCREW_DZ), (RADAR_FORK[0], RADAR_FORK[1] + S.FORK_SCREW_DZ)]   # x -80, z 38.5 and 72.5
 PCB_BOX = (-88.0, -36.0, 4.0, 34.0, 18.0, 93.0)   # electronics stand-in on the pad (x, y, z ranges)
 
 # T: doc 09's fairlead geometry (line at x -25, bore y 69..78.5, flap at y 84 below it) moved to
@@ -232,10 +237,13 @@ def corner_braces():
     out = {}
     for i, zc in enumerate(BRACE_Z):
         z0, z1 = zc - BRACE_W / 2, zc + BRACE_W / 2
-        horiz = G.bx(X_BEAM, X_BEAM + BRACE_LEG, -BRACE_T, 0, z0, z1)
-        vert = G.bx(X_BEAM, X_BEAM + BRACE_T, -BRACE_T, BRACE_LEG - BRACE_T, z0, z1)   # stands UP the beam beside the device
+        horiz = G.bx(X_BEAM - BRACE_LEG, X_BEAM, -BRACE_T, 0, z0, z1)
+        vert = G.bx(X_BEAM - BRACE_T, X_BEAM, -BRACE_T, BRACE_LEG - BRACE_T, z0, z1)   # stands UP the beam beside the device's servo end
         out[f"brace_{i}"] = G.U(horiz, vert)
     return out
+
+
+RY_END = trimesh.transformations.rotation_matrix(math.pi, [0, 1, 0])   # 180 about y: a rotation, so the parts are the same printed parts
 
 
 def radar_on_base(tilt=RADAR_TILT):
@@ -244,7 +252,9 @@ def radar_on_base(tilt=RADAR_TILT):
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
     for k, m in (("ld2450_fork_screw", S.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
-        mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0]); out[k] = mm
+        mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0])
+        mm.apply_transform(RY_END)                                     # end for end: now looks +x, toward the beam at the servo end
+        mm.apply_translation([RADAR_FORK[0] + 62.0, 0, RADAR_FORK[1] + 62.0]); out[k] = mm
     return out
 
 
@@ -268,8 +278,8 @@ def assembly_inverted():
 
 
 def porch():
-    beam = G.bx(X_BEAM - 90, X_BEAM, BEAM_BOTTOM_Y, CEILING_Y, -110, 220)
-    ceiling = G.bx(X_BEAM - 90, 200, CEILING_Y, CEILING_Y + 12, -110, 220)
+    beam = G.bx(X_BEAM, X_BEAM + 90, BEAM_BOTTOM_Y, CEILING_Y, -110, 220)
+    ceiling = G.bx(-200, X_BEAM + 90, CEILING_Y, CEILING_Y + 12, -110, 220)
     return {"beam": beam, "ceiling": ceiling}
 
 
@@ -297,7 +307,7 @@ if __name__ == "__main__":
     if not bad: print("block, flap, switch, braces, radar and the 52 x 75 x 30 electronics box clear every part")
     # radar view: rays over +-60 across and +-35 along the board from its centre; what share hits the device or its braces
     Rb = A["ld2450_radar"]; t = math.radians(RADAR_TILT)
-    nb = np.array([-math.cos(t), -math.sin(t), 0.0]); ab = np.array([math.sin(t), -math.cos(t), 0.0]); zb = np.array([0, 0, 1.0])
+    nb = np.array([math.cos(t), -math.sin(t), 0.0]); ab = np.array([-math.sin(t), -math.cos(t), 0.0]); zb = np.array([0, 0, 1.0])
     c = Rb.bounds.mean(0) + nb * 2.0
     solid = G.U(*[m for k2, m in A.items() if not k2.startswith("ld2450") and k2 != "electronics"])
     dirs = [math.cos(math.radians(e)) * (math.cos(math.radians(a2)) * nb + math.sin(math.radians(a2)) * zb) + math.sin(math.radians(e)) * ab
@@ -332,8 +342,8 @@ if __name__ == "__main__":
         head = G.vcyl(3.2, 3.0, 4.0, x, z)                                          # screw head or M3 nut inside the base
         hits = [k for k, part in A.items() if k != "bracket" and G.I(head, part).volume > 0.05]
         print(f"screw head inside the base at x {x:.0f}, z {z:.0f}: {'clear' if not hits else 'HITS ' + str(hits)}")
-    W = 480 / 1000 * 9.81; M = W * (-5 - X_BEAM) + 27 * (LINE_X - X_BEAM)
+    W = 480 / 1000 * 9.81; M = W * abs(-5 - X_BEAM) + 27 * abs(LINE_X - X_BEAM)
     print(f"load: weight + a line snap turn {M / 1000:.1f} N m about the beam's face, carried by the two steel braces' corners; "
-          f"the PLA base only sits on their flat legs (from x -24, where the base starts at the brace rows, to x 60), in compression; "
+          f"the PLA base only sits on their flat legs (x {X_BEAM - BRACE_LEG:.0f} to {X_BEAM - BRACE_T:.0f}), in compression; "
           f"the braces' top beam screws see about {M / (BRACE_LEG - 20) / 2:.0f} N each")
-    print(f"line falls {LINE_X - X_BEAM:.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (FL_Y - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")
+    print(f"line falls {abs(LINE_X - X_BEAM):.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (FL_Y - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")
