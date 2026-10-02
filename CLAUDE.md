@@ -37,6 +37,7 @@ cd cad; python generate.py      # parts + clash checks only
 
 - Motor-led drop (Rev C.1): the motor is powered for the whole cycle and spins ahead of the spool on the drop; the HF0612 lets the spool lag but never overrun it. Never drop with the driver off: the owner measured too much drag on the unpowered motor.
 - Release under load must wind the spool clockwise (seen from behind the motor) about 1/12 turn while the finger swings out (M2). A bare servo release with the spider hanging jams.
+- The motor never turns with the finger in (owner 2026-10-01): every motor move swings the finger out first, with the 1/12 turn unload, unless it is already out. The only exception is the lock's seat move, which lets the spool down onto the finger on purpose.
 - Servo on GPIO13, not GPIO14 (boot pulses would drop the spider).
 - Boot must never auto-rewind. Driver EN goes HIGH (off) first thing in `setup()`.
 - Armed idle = driver off and servo detached.

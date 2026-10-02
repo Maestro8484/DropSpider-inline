@@ -127,7 +127,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `rel` | unload and release only (steps 1 to 3 of the drop): the motor winds up 1/12 turn while the finger swings out, then stays on holding the spider. `jog` lowers it; `off` lets it slide down on the motor's drag |
 | `rewind` | rewind only; motor stays on until `lock`; stops at the limit switch |
 | `lock` | finger in, seat move onto a tooth, motor off, servo off |
-| `jog <n>` | move n microsteps (1600 = one turn), + = rewind direction, motor stays on. Refused winding in with the switch pressed |
+| `jog <n>` | move n microsteps (1600 = one turn), + = rewind direction, motor stays on. Finger out first: if it is not already at the release angle, the release runs (finger out with the 1/12 turn unload), then the jog. Refused winding in with the switch pressed |
 | `servo <deg>` | move the finger live, to find angles; it holds there |
 | `stop` | halt everything now, abort any cycle, leave the motor powered as it was |
 | `off` | motor and servo off |
@@ -147,6 +147,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
+- **The motor never turns with the finger in** (owner 2026-10-01). `jog` and `rewind` swing the finger out first, with the 1/12 turn unload, unless it is already out; a drop releases before it unwinds. The one exception is the lock's seat move, which lets the spool down onto the finger on purpose.
 - Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done.
 - Motion commands are refused while a cycle runs; `stop` and `off` always work.
 - Each motion command ends with a `[done] ...` or `refused: ...` line. `tools/console.py` waits for it.

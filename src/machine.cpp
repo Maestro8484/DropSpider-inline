@@ -17,7 +17,7 @@ enum St {
   ST_BOOT, ST_IDLE, ST_LOCKOUT, ST_WAIT_CLEAR, ST_FAULT,          // at rest
   ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND,                      // cycle
   ST_LOCK_IN, ST_LOCK_SEAT, ST_LOCK_HOLD,                         // cycle or bench
-  ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO                            // bench only
+  ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO, ST_BENCH_FREE             // bench only
 };
 
 struct Req { Action a; long arg; TriggerSource src; };
@@ -90,6 +90,7 @@ static const char *stateName(St s) {
     case ST_JOG:         return "jogging the motor";
     case ST_BENCH_REL:   return "finger out (bench)";
     case ST_BENCH_SERVO: return "moving the finger (bench)";
+    case ST_BENCH_FREE:  return "finger out before the motor turns (bench)";
   }
   return "unknown";
 }
@@ -321,6 +322,34 @@ static void startLock() {
   enter(ST_LOCK_IN);
 }
 
+// Owner rule 2026-10-01: the motor never turns with the finger in, except the lock's
+// seat move, whose job is to let the spool down onto the finger. So a bench jog or
+// rewind first runs the release (finger out with the 1/12 turn unload, M2) unless
+// the finger is already out, then the move itself.
+static Action pendAct;
+static long pendArg;
+
+static void benchMove(Action a, long arg) {
+  if (a == ACT_JOG) {
+    driverOn();
+    homeLost();
+    ignoreLimit = false;
+    if (!startMove(arg, S.rpm)) { logf("refused: motor would not start"); enter(benchReturn); return; }
+    enter(ST_JOG);
+  } else {
+    startRewind();
+  }
+}
+
+static void benchMoveFingerOut(Action a, long arg) {
+  disarmForBench(); cycle = false;
+  if (servoDeg == S.servoRel) { benchMove(a, arg); return; }
+  logf("[bench] finger out first (the motor never turns with the finger in)");
+  pendAct = a; pendArg = arg;
+  startRelease();
+  enter(ST_BENCH_FREE);
+}
+
 static void benchDone(const char *what) {
   logf("[done] %s", what);
   enter(benchReturn);
@@ -395,16 +424,8 @@ static void handleReq(const Req &r) {
       startLock();
       break;
     case ACT_REWIND:
-      disarmForBench(); cycle = false;
-      startRewind();
-      break;
     case ACT_JOG:
-      disarmForBench(); cycle = false;
-      driverOn();
-      homeLost();
-      ignoreLimit = false;
-      if (!startMove(r.arg, S.rpm)) { logf("refused: motor would not start"); return; }
-      enter(ST_JOG);
+      benchMoveFingerOut(r.a, r.arg);
       break;
     case ACT_SERVO:
       disarmForBench(); cycle = false;
@@ -506,7 +527,7 @@ static void step() {
       if (stepper->isRunning()) break;
       finishRewind();
       if (cycle) startLock();
-      else benchDone("rewind (motor stays on until lock)");
+      else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
       break;
 
     case ST_LOCK_IN:
@@ -548,7 +569,14 @@ static void step() {
       if (stepper->isRunning()) break;
       logf("[jog] ran %ld steps%s", stepper->getCurrentPosition() - moveStartPos,
            cutByLimit ? ", stopped by the limit switch" : "");
-      benchDone("jog (motor stays on)");
+      servoOff();
+      benchDone("jog (finger out, motor stays on)");
+      break;
+
+    case ST_BENCH_FREE:
+      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      noteUnload();
+      benchMove(pendAct, pendArg);
       break;
 
     case ST_BENCH_REL:

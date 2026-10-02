@@ -5,6 +5,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-01
 
 ### Changed
+- Firmware: the motor never turns with the finger in (owner rule). `jog` and `rewind` run the release first (finger out with the 1/12 turn unload) unless the finger is already out; the lock's seat move is the one exception. Flashed by WiFi; `jog 400` logged the finger going out first, then the move; `jog -400` with the finger already out went straight to the move.
 - Line anchor: a 1 mm hole drilled through the barrel skin into a spoke window, line tied round a 10 mm stub of 1.75 mm filament inside, CA on the knot (was an arbor knot with CA, which can turn on the smooth barrel). Doc 05 step 5 and the build guide.
 - Owner keeps the current spool stack; the one-piece spool handoff is now for later, with the bearing hole 0.1 smaller (10.2) and a built-in line anchor hole. Open item V21: the slip only shows above the spider's weight, so the limit switch must be on before arming.
 - Inverted install turned end for end to match the owner's build (photo): servo end at the beam, pad end away from it. Radar fork moves to the pad end, 2x M3 drilled at x -80, z 38.5 and 72.5; nothing blocks its view, its centre line passes under the beam (409 mm below the ceiling), the cradle clears every part from 20 to 90 degrees. Line now 54 mm from the beam's face (was 117). Model, drilling template, install picture, doc 05, doc 06 and build guide updated.
