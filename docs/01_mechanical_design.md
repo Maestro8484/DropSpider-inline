@@ -35,6 +35,22 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 
 **The one measurement that matters:** the ratchet disk must straddle the finger. Finger plate is z 35 to 42 (7 mm thick); disk is z 36 to 42. After the motor and coupler are on, measure from the motor plate's outer face to the coupler's free end. If it is not 30 mm, change spacer A by the difference using `shim_1mm` / `shim_2mm` (or reprint spacer A). The spool floats between spacer A and spacer B, so the stack must be snug, not tight.
 
+### Rev C.3 one-piece spool (`spool_onepiece.stl`, designed 2026-10-02, not yet printed or fitted)
+
+Replaces the three-part stack above once printed and checked. One part, no screws, prints ratchet face down with no supports. 14.5 mm long, the same as the owner's assembled stack (measured 14.6), so the shims stay; only the finger change below moves them. Drawn with the new finger (hub 2.5 mm shorter, plate z 32.5 to 39.5).
+
+| z (mm) | Part | Notes |
+|---|---|---|
+| 32.5 to 39.5 | teeth | Same 12 teeth (tip r 33, root r 29), 7 mm deep, straight across the finger plate |
+| 39.5 to 41 | separator | r 28, 1.4 mm inside the finger's closest point (r 29.4), so the finger never touches it however the stack is shimmed (checked slid 5 mm either way) |
+| 41 to 44.5 | barrel, r 25 | Line hole printed in at z 42.8, between two spokes, leaning the way the line wraps |
+| 44.5 to 47 | far flange | Rises off the barrel at 45 degrees to r 27, then a 0.5 mm rim |
+| 34.4 to 46.3 | HF0612 (9.99 across, 11.89 long, owner measured) | Plain 10.2 hole, 12.0 long, between a printed shoulder on the motor side and a snap lip at the flange face (9.9 across, 0.3 deep, with a 45 degree ramp above it). Press in from the flange face past the lip until it stops on the shoulder; then it cannot walk out either way. `spool_onepiece_ribs.stl`: 10.4 hole with six crush ribs reaching to 10.0, same shoulder and lip |
+
+Spacers: on the owner's build, keep the same total shim, but move 2.5 mm of it from the motor side to the 606ZZ side, because the new finger sits 2.5 mm nearer the servo. Check edge-on that the teeth sit across the finger.
+
+Line on the barrel: 720 mm (the ceiling install's worked example, doc 06) is 4.6 turns on the 157 mm barrel circumference; 6 lb mono is 0.23 mm thick, so one layer about 1.1 mm wide on a 3.5 mm barrel, and about 8 layers to reach the flange rim.
+
 ## The lock (read this before touching the servo angles)
 
 ![Lock detail](img/lock_detail.png)
@@ -44,7 +60,7 @@ A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. Th
 - Finger locked = level, pointing at the rod (default servo 90). Released = swung toward the floor by 60 degrees (default servo 30). Both are set at commissioning.
 - Lock sequence (firmware does this): motor holds the spool, finger goes in, motor eases the spool down (counterclockwise) up to 1/12 turn until a tooth lands on the finger, the clutch then slips so the motor runs on alone, motor off, servo lets go.
 - Release sequence (M2): with the spider hanging, the tooth pins the finger. The motor winds the spool clockwise about 1/12 turn while the finger swings out, so the finger rides up the tooth's ramp. Never release with the motor off.
-- The finger (Rev C.1) is 7 mm wide and 7 mm thick, level with the ledge it rests on (z 35 to 42); the ratchet disk is z 36 to 42, so a spline 1 mm higher or lower than expected still leaves 5 mm of finger on the disk. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. No horn: a hub under the finger reaches down onto the SG90 spline (4.8 mm across the teeth, 3.4 mm tall, tip about 2 mm short of the ledge, all measured by the owner). The socket is drawn 5.0 mm so it prints about 4.7 (a 4.8 drawing printed 4.5 on the owner's printer), a light press on the spline. The spline tip bottoms on a 1.5 mm floor, which sets the height; the horn screw goes in from the top through a 7.4 mm recess (prints about 7.1). Print it flat top face down (as exported); the hub stands up.
+- The finger (Rev C.1) is 7 mm wide and 7 mm thick. Since 2026-10-02 its hub is 2.5 mm shorter (owner), so the plate sits at z 32.5 to 39.5, 2.5 mm nearer the servo than the ledge (z 35 to 42), which still backs 4.5 mm of it; whichever spool is on the rod moves 2.5 mm toward the motor to stay across it. Its tip face is beveled 20 degrees so the corner on the ramp side sits 2.5 mm back; the steep-face side reaches full depth. Checked in CAD: it seats in a tooth gap over a 5 degree window. No horn: a hub under the finger reaches down onto the SG90 spline (4.8 mm across the teeth, 3.4 mm tall, tip about 2 mm short of the ledge, all measured by the owner). The socket is drawn 5.0 mm so it prints about 4.7 (a 4.8 drawing printed 4.5 on the owner's printer), a light press on the spline. The spline tip bottoms on a 1.5 mm floor, which sets the height; the horn screw goes in from the top through a 7.4 mm recess (prints about 7.1). Print it flat top face down (as exported); the hub stands up.
 
 ## Direction rules (the only things that can be assembled backwards)
 

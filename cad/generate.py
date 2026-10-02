@@ -146,6 +146,89 @@ def spool_body_print():
     b.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); b.apply_translation([0, 0, 14])   # flange on the bed
     return b
 
+# Rev C.3 one-piece spool (handoff_spool_onepiece.md, 2026-10-02): ratchet, separator, barrel and far flange as one
+# part, no screws. Prints ratchet face down with no supports: everything above the teeth is smaller than them, and
+# the far flange rises off the barrel on a 45 degree chamfer. Part z 0 = motor face, installed at OP_Z0, print
+# orientation = installed orientation. 14.5 long, the owner's assembled three-part stack measured 14.6 (owner
+# 2026-10-02). The separator is r 28, inside the finger's reach (closest r 29.4), so the finger can overlap it
+# along the rod and never touch it; the teeth are the finger plate's 7 mm and sit across it. The HF0612 (owner
+# measured 9.99 across, 11.89 long) is held both ways: a printed shoulder on the motor side, and a small snap lip
+# at the flange face that it is pressed past. Line anchor printed in: the hole doc 05 step 5 drilled by hand.
+OP_Z0 = 32.5           # installed z of the motor face = FINGER_Z0, so the teeth sit across the finger plate
+OP_TEETH_T = 7.0       # teeth z 0..7, the finger plate's thickness
+OP_SEP_R, OP_SEP_T = 28.0, 1.5        # separator z 7..8.5
+OP_BARREL_W = 3.5      # flat barrel z 8.5..12, r 25 (same width as the Rev C.2 barrel)
+OP_FLANGE_R = 27.0     # far flange: 45 degree chamfer r 25 to 27 (z 12..14), then a 0.5 rim (14..14.5)
+OP_RIM_T = 0.5
+HF0612_LEN = 11.89     # owner measured 2026-10-02 (9.99 across)
+OP_SEAT_L = 12.0       # shoulder to the lip's underside: 0.1 longer than the bearing
+OP_LIP_D, OP_LIP_T = 9.9, 0.6   # snap lip at the flange face: 0.3 straight at 9.9 drawn (prints about 9.7 to 9.8) against the 9.99 bearing, under a 0.3 45 degree ramp so it presses past
+OP_BARREL_Z0 = OP_TEETH_T + OP_SEP_T
+OP_CHAMFER_Z0 = OP_BARREL_Z0 + OP_BARREL_W
+OP_L = OP_CHAMFER_Z0 + (OP_FLANGE_R - BARREL_D / 2) + OP_RIM_T
+OP_BORE = 10.2         # plain press hole for the HF0612 (owner 2026-10-01: 10.3 slips under more than the spider's weight)
+OP_SHOULDER_R = 4.25   # hole under the bearing: 8.5 clears the rod, the shoulder stops the bearing's cup only
+OP_RIB_BORE, OP_RIB_TIP, OP_RIBS, OP_RIB_W = 10.4, 10.0, 6, 1.0   # crush-rib option: 10.4 hole, six ribs 0.2 high (AON3D's 0.2 mm), 1.0 wide at the base
+OP_ANCHOR_D = 1.2      # line hole, teardrop point up so its roof prints
+OP_ANCHOR_DEG = 60.0   # midway between the spokes at 0 and 120: a window lies behind the skin
+OP_ANCHOR_LEAN = 45.0  # leans counterclockwise (seen from behind the motor), the way the line wraps off the hole while winding
+
+def crush_ribs(z0, z1):
+    """Six triangular ribs inside the 10.4 hole, tips at r 5.0, standing proud by 0.2."""
+    R = OP_RIB_BORE / 2 + 0.3                       # rib roots buried 0.3 in the wall
+    tri = Polygon([(OP_RIB_TIP / 2, 0), (R, -OP_RIB_W / 2 - 0.3), (R, OP_RIB_W / 2 + 0.3)])
+    out = []
+    for i in range(OP_RIBS):
+        r = extrude_polygon(tri, z1 - z0); r.apply_translation([0, 0, z0])
+        r.apply_transform(trimesh.transformations.rotation_matrix(2 * math.pi * i / OP_RIBS + math.pi / OP_RIBS, [0, 0, 1])); out.append(r)
+    return out
+
+def anchor_hole():
+    """Teardrop line hole through the barrel skin, mid-width, leaning counterclockwise (seen from behind the motor),
+    with a 0.4 chamfer at the outside so the edge cannot nick the line. Returns (cutters, inner end point, axis)."""
+    a, lean = math.radians(OP_ANCHOR_DEG), math.radians(OP_ANCHOR_LEAN)
+    zc = OP_BARREL_Z0 + OP_BARREL_W / 2
+    rad = np.array([math.cos(a), math.sin(a), 0.0]); tan_ccw = np.array([math.sin(a), -math.cos(a), 0.0])   # -angle about +z = counterclockwise from behind the motor
+    ax = rad * math.cos(lean) + tan_ccw * math.sin(lean)                                                    # outward along the hole
+    p_out = rad * (BARREL_D / 2) + np.array([0, 0, zc])                                                    # where the hole meets the barrel
+    r = OP_ANCHOR_D / 2
+    tear = Polygon([(r * math.cos(t), r * math.sin(t)) for t in np.linspace(math.pi * 0.25, math.pi * 1.75, 40)] + [(r * math.sqrt(2), 0)])
+    # local frame of the hole: X = +z (so the point at +X is up in print), Y = across, Z = along the axis
+    Y = np.cross(ax, [0, 0, 1.0]); Y /= np.linalg.norm(Y); X = np.cross(Y, ax)
+    M = np.eye(4); M[:3, 0], M[:3, 1], M[:3, 2] = X, Y, ax
+    L = 8.0
+    h = extrude_polygon(tear, L); h.apply_translation([0, 0, -L + 1.0]); M2 = M.copy(); M2[:3, 3] = p_out; h.apply_transform(M2)
+    c = trimesh.creation.cone(radius=r + CHAMFER + 0.6, height=r + CHAMFER + 0.6, sections=48)
+    c.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0]))                  # apex inward
+    M3 = M.copy(); M3[:3, 3] = p_out + ax * 0.6; c.apply_transform(M3)                              # r + 0.4 where it meets the barrel
+    p_in = p_out - ax * ((BARREL_D / 2 - SHELL_R) / (rad @ ax))                                     # about where it leaves the skin's inside
+    return [h, c], p_in, ax
+
+def spool_onepiece(ribs=False):
+    """Installed orientation = print orientation: motor face (z 0) on the bed."""
+    body = U(extrude_polygon(ratchet_poly(), OP_TEETH_T),
+             cyl(OP_SEP_R, OP_SEP_T, OP_TEETH_T),
+             cyl(BARREL_D / 2, OP_BARREL_W + 0.01, OP_BARREL_Z0, sections=192),
+             _flange_cone(),
+             cyl(OP_FLANGE_R, OP_RIM_T, OP_L - OP_RIM_T))
+    seat_z0 = OP_L - OP_LIP_T - OP_SEAT_L                   # shoulder; the bearing ends 0.6 below the flange face, under the lip
+    bore = OP_RIB_BORE if ribs else OP_BORE
+    cuts = [cyl(bore / 2, OP_SEAT_L, seat_z0), cyl(OP_SHOULDER_R, seat_z0 + 1.01, -1),
+            cyl(OP_LIP_D / 2, OP_LIP_T + 1, OP_L - OP_LIP_T - 0.01),
+            hole_chamfer(OP_LIP_D / 2, OP_L, True, c=OP_LIP_T / 2),   # 45 degree ramp down to the lip: the bearing presses past it
+            hole_chamfer(OP_SHOULDER_R, 0, False),          # bed side: no first-layer lip under spacer A
+            *spoke_windows(SPOKE_W / 2, -1, OP_L + 2),      # no screws, so no bosses: plain spokes
+            *anchor_hole()[0]]
+    m = D(body, *cuts)
+    if ribs: m = U(m, *crush_ribs(seat_z0, seat_z0 + OP_SEAT_L))
+    return m
+
+def _flange_cone():
+    """Solid of revolution under the far flange: r 25 at the barrel's edge widening at 45 degrees to r 28."""
+    h = OP_FLANGE_R - BARREL_D / 2
+    prof = [(0, 0), (BARREL_D / 2, 0), (OP_FLANGE_R, h), (0, h)]
+    v = trimesh.creation.revolve(np.array(prof), sections=192); v.apply_translation([0, 0, OP_CHAMFER_Z0]); return v
+
 # ---------------- bracket ----------------
 def csk(x, z, head_d=6.4):
     """90 degree countersink for an M3 flat-head screw put in from the ceiling face (y = 0): widest at y 0."""
@@ -226,7 +309,7 @@ SOCKET_D = 5.0        # drawn socket: the owner's 4.8 printed as 4.5, so 5.0 pri
 HEAD_D = 7.4          # drawn screw-head recess: owner needs at least 7 mm printed
 SPLINE_LEN = 3.4      # spline height above the servo case top (owner, 2026-09-26)
 SPLINE_TIP_Z = 33.0   # installed z of the spline tip: owner saw it about 2 mm short of the ledge (z 35) with the servo in the tower
-FINGER_Z0 = 35.0      # finger plate z 35..42, level with the ledge it rests on; the ratchet disk is z 36..42
+FINGER_Z0 = 32.5      # finger plate z 32.5..39.5 (owner 2026-10-02: hub 2.5 shorter, finger 2.5 nearer the servo, plate still 7); was 35..42, level with the ledge (z 35..42)
 def finger():
     """Rev C.1 finger, 7 mm wide, plate 7 mm thick (z 35..42, the ledge's full height, so a spline
     height off by 1 mm either way still leaves 5 mm of finger on the 6 mm disk). Tip face beveled
@@ -235,7 +318,7 @@ def finger():
     1.5 mm floor, which sets the height; the horn screw goes in from the top through a 4.6 mm recess.
     Local coords: plate bottom z 0 (installed FINGER_Z0), top z 7; the hub hangs below z 0."""
     L, W, T = 20.5, 7.0, 7.0
-    tip = SPLINE_TIP_Z - FINGER_Z0                      # -2.0: spline tip, local
+    tip = SPLINE_TIP_Z - FINGER_Z0                      # +0.5: spline tip, local (was -2.0 before the hub was shortened 2.5)
     hub_bot = tip - SPLINE_LEN + 0.8                    # 0.8 mm clear of the servo case top
     f = U(bx(-3, L, -W / 2, W / 2, 0, T), cyl(5.5, T, 0), cyl(5.5, -hub_bot, hub_bot))   # hub 11 mm: 1.8 mm wall round the head recess
     dx = W * math.tan(math.radians(20))
@@ -285,6 +368,8 @@ PARTS = {
     "spool_body": spool_body_print,
     "spool_ratchet": spool_ratchet_print,
     "spool_shield": spool_shield_print,
+    "spool_onepiece": spool_onepiece,                                  # Rev C.3, replaces the three above once the owner has it in hand
+    "spool_onepiece_ribs": lambda: spool_onepiece(ribs=True),          # same part, crush-rib bearing hole instead of the plain 10.2
     "bearing_retainer": bearing_retainer_print,
     "bracket": bracket_print,
     "finger": finger_print,
@@ -327,6 +412,56 @@ def assembly():
                         cyl(2.4, SPLINE_LEN, case_top, SERVO_SHAFT_X, AXIS_Y))
     return A
 
+def onepiece_checks(A):
+    """Rev C.3 one-piece spool in place of the three-part stack, with spacer A 4 and spacer B 48."""
+    print("--- one-piece spool (spool_onepiece) ---")
+    P = spool_onepiece()
+    sp = P.copy(); sp.apply_translation([0, AXIS_Y, OP_Z0])
+    near = dict(A)
+    hz = OP_Z0 + OP_L - OP_LIP_T - OP_SEAT_L
+    near["hf0612"] = D(cyl(HF0612_OD / 2 - 0.01, HF0612_LEN, hz + 0.05, 0, AXIS_Y), cyl(3, 14, hz - 1, 0, AXIS_Y))
+    near["spacer_A"] = D(cyl(SPACER_A_R, OP_Z0 - 30, 30, 0, AXIS_Y), cyl(3.25, 20, 29, 0, AXIS_Y))
+    near["spacer_B"] = D(cyl(SPACER_B_R, 100 - OP_Z0 - OP_L, OP_Z0 + OP_L, 0, AXIS_Y), cyl(3.25, 60, OP_Z0 + OP_L - 1, 0, AXIS_Y))
+    print(f"z {OP_Z0:.1f} to {OP_Z0 + OP_L:.1f} ({OP_L:.1f} long); spacer A {OP_Z0 - 30:.1f}, spacer B {100 - OP_Z0 - OP_L:.1f}")
+    for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle",
+              "hf0612", "spacer_A", "spacer_B", "rod_6mm", "bearing_606"):
+        v = I(sp, near[f]).volume
+        if v > 0.05: print(f"CLASH spool_onepiece x {f}: {v:.2f}")
+    fv = A["finger"].vertices
+    rmin = np.min(np.hypot(fv[:, 0], fv[:, 1] - AXIS_Y))
+    print(f"finger tip closest r {rmin:.2f}, separator and flange r {OP_SEP_R}: {rmin - max(OP_SEP_R, OP_FLANGE_R):.2f} mm apart, so no contact at any slide along the rod")
+    print(f"teeth z {OP_Z0:.1f} to {OP_Z0 + OP_TEETH_T:.1f} cover the finger plate z {FINGER_Z0:.1f} to {FINGER_Z0 + 7:.1f}:",
+          OP_Z0 <= FINGER_Z0 and OP_Z0 + OP_TEETH_T >= FINGER_Z0 + 7)
+    rest = D(sp, cyl(40, OP_TEETH_T, OP_Z0, 0, AXIS_Y))
+    slid = [I(A["finger"], rest.copy().apply_translation([0, 0, dz])).volume for dz in (-5, -2.5, 0, 2.5, 5)]
+    print("finger vs separator, barrel, flange with the part slid -5 to +5 mm:", "clear" if max(slid) < 0.01 else f"TOUCHES {np.round(slid, 2)}")
+    seat = []
+    for deg in np.arange(0, 360 / TEETH, 0.25):
+        rr = sp.copy(); rr.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, AXIS_Y, 0]))
+        if I(A["finger"], rr).volume < 0.05: seat.append(deg)
+    print("finger seats in a tooth gap:", bool(seat), f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle)")
+    ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=OP_L); ring.apply_translation([0, AXIS_Y, OP_Z0 + OP_L / 2])
+    print("2 mm swept clearance:", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle")), "mm3")
+    n, c, ar = P.face_normals, P.triangles_center, P.area_faces
+    steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
+    lip = steep & (np.hypot(c[:, 0], c[:, 1]) < OP_BORE / 2 + 0.05) & (abs(c[:, 2] - (OP_L - OP_LIP_T)) < 0.05)
+    print(f"print orientation (ratchet face down): {ar[steep & ~lip].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5), "
+          f"plus the lip's underside {ar[lip].sum():.1f} mm2, a {(OP_BORE - OP_LIP_D) / 2:.2f} mm ledge, under one line width")
+    cut, p_in, ax = anchor_hole()
+    o = p_in + ax * 5; locs, _, _ = P.ray.intersects_location(np.array([o]), np.array([-ax]))
+    first = locs[np.argmin(np.linalg.norm(locs - o, axis=1))] if len(locs) else None
+    print("line hole open through the skin:", first is None or np.hypot(first[0], first[1]) < SHELL_R - 0.5,
+          f"(installed z {OP_Z0 + p_in[2]:.1f}, {OP_ANCHOR_DEG:.0f} deg, between spokes)")
+    rad = np.array([math.cos(math.radians(OP_ANCHOR_DEG)), math.sin(math.radians(OP_ANCHOR_DEG)), 0])
+    ctr = rad * (math.sqrt((SHELL_R - 0.875) ** 2 - 25) - 0.05) + np.array([0, 0, p_in[2]])   # 10 mm stub resting on its ends against the skin
+    hf = near["hf0612"].copy(); hf.apply_translation([0, -AXIS_Y, -OP_Z0])
+    worst = 0.0
+    for th in range(0, 180, 15):
+        d = math.cos(math.radians(th)) * np.cross([0, 0, 1.0], rad) + math.sin(math.radians(th)) * np.array([0, 0, 1.0])
+        st = trimesh.creation.cylinder(radius=0.875, height=10, sections=24); st.apply_transform(trimesh.geometry.align_vectors([0, 0, 1], d)); st.apply_translation(ctr)
+        worst = max(worst, I(P, st).volume, I(hf, st).volume)
+    print("10 x 1.75 filament stub across the hole, every angle 0 to 165 deg: clear of the part and the HF0612:", worst < 0.01)
+
 if __name__ == "__main__":
     for name, fn in PARTS.items():
         m = fn(); m.export(os.path.join(OUT, name + ".stl"))
@@ -352,3 +487,4 @@ if __name__ == "__main__":
     ring.apply_translation([0, AXIS_Y, 43])   # spool spans z 36..50
     for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle"):
         print(f"2 mm swept clearance, spool vs {k}: {I(ring, A[k]).volume:.1f} mm3 overlap")
+    onepiece_checks(A)

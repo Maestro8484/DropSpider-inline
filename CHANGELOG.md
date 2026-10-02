@@ -2,6 +2,12 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-02
+
+### Added
+- `spool_onepiece.stl` (Rev C.3): ratchet, separator, barrel and flange as one part, no screws, 14.5 mm long (the owner's assembled stack measured 14.6), prints ratchet face down with no supports. Teeth 7 mm straight across the finger; separator r 28 and flange r 27, 1.4 mm or more inside the finger's reach, clear with the part slid 5 mm either way; finger seats (7.00 to 11.75 deg). HF0612 (owner measured 9.99 x 11.89) in a 10.2 hole held both ways: printed shoulder on the motor side, 9.9 snap lip at the flange face. `spool_onepiece_ribs.stl` has six crush ribs instead of the plain hole. Line hole printed in (teardrop, leaning the way the line wraps), 10 mm filament stub checked clear at every angle. Not yet printed or fitted; the three-part stack stays in service. Inverted checks unchanged.
+- `finger.stl`: hub onto the servo spline 2.5 mm shorter (owner), plate still 7 mm thick and the spline grip unchanged, so the finger sits 2.5 mm nearer the servo (z 32.5 to 39.5). Whatever spool is on the rod moves 2.5 mm toward the motor with it. No clashes; seats in a tooth gap.
+
 ## 2026-10-01
 
 ### Changed
