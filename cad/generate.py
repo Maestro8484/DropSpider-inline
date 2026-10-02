@@ -309,13 +309,14 @@ SOCKET_D = 5.0        # drawn socket: the owner's 4.8 printed as 4.5, so 5.0 pri
 HEAD_D = 7.4          # drawn screw-head recess: owner needs at least 7 mm printed
 SPLINE_LEN = 3.4      # spline height above the servo case top (owner, 2026-09-26)
 SPLINE_TIP_Z = 33.0   # installed z of the spline tip: owner saw it about 2 mm short of the ledge (z 35) with the servo in the tower
+FLOOR_T = 3.5         # screw-head seat to spline tip (owner 2026-10-02: 1.5 was too thin for the horn screw, +2)
 FINGER_Z0 = 32.5      # finger plate z 32.5..39.5 (owner 2026-10-02: hub 2.5 shorter, finger 2.5 nearer the servo, plate still 7); was 35..42, level with the ledge (z 35..42)
 def finger():
     """Rev C.1 finger, 7 mm wide, plate 7 mm thick (z 35..42, the ledge's full height, so a spline
     height off by 1 mm either way still leaves 5 mm of finger on the 6 mm disk). Tip face beveled
     20 degrees so the ramp-side corner sits 2.5 mm back (checked: seats in a tooth gap).
     No horn: a hub reaches down from the plate onto the SG90 spline. The spline tip bottoms on a
-    1.5 mm floor, which sets the height; the horn screw goes in from the top through a 4.6 mm recess.
+    3.5 mm floor (was 1.5, too thin for the horn screw), which sets the height; the horn screw goes in from the top through the recess.
     Local coords: plate bottom z 0 (installed FINGER_Z0), top z 7; the hub hangs below z 0."""
     L, W, T = 20.5, 7.0, 7.0
     tip = SPLINE_TIP_Z - FINGER_Z0                      # +0.5: spline tip, local (was -2.0 before the hub was shortened 2.5)
@@ -325,13 +326,13 @@ def finger():
     bevel = extrude_polygon(Polygon([(L - dx, W / 2 + 0.01), (L + 0.1, W / 2 + 0.01), (L + 0.1, -W / 2)]), T + 2)
     bevel.apply_translation([0, 0, -1])
     return D(f, cyl(SOCKET_D / 2, tip - hub_bot + 0.1, hub_bot - 0.1),   # spline socket, floor at the spline tip
-             cyl(1.25, 3, tip - 1),                                         # 2.5 mm screw hole through the 1.5 mm floor
-             cyl(HEAD_D / 2, T - (tip + 1.4) + 1, tip + 1.4),               # screw-head recess from the top, 7.6 deep
+             cyl(1.25, FLOOR_T + 2, tip - 1),                               # 2.5 mm screw hole through the floor
+             cyl(HEAD_D / 2, T - (tip + FLOOR_T) + 1, tip + FLOOR_T),       # screw-head recess from the top
              # Stepped bridging: printed top-down, the floor is a roof over the recess. Its first 0.4 mm
              # bridges the recess as two strips beside a 2.5 slot, the next 0.4 bridges the slot leaving a
              # 2.5 square, then the round hole: every layer rests on the one below, nothing floats.
-             bx(-HEAD_D / 2, HEAD_D / 2, -1.25, 1.25, tip + 1.0, tip + 1.4 + 0.01),
-             bx(-1.25, 1.25, -1.25, 1.25, tip + 0.6, tip + 1.0 + 0.01),
+             bx(-HEAD_D / 2, HEAD_D / 2, -1.25, 1.25, tip + FLOOR_T - 0.4, tip + FLOOR_T + 0.01),
+             bx(-1.25, 1.25, -1.25, 1.25, tip + FLOOR_T - 0.8, tip + FLOOR_T - 0.4 + 0.01),
              bevel)
 
 def finger_print():
