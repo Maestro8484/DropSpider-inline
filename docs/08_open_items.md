@@ -23,7 +23,6 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 | ID | Item | Test | If it fails |
 |---|---|---|---|
-| V1 | ESP32 3.3 V signals drive the expansion board's 5 V driver logic | commissioning step 4 | 74AHCT125 buffer |
 | V2 | Servo angle direction (release = smaller angle) | step 5 | swap `setlock`/`setrel` values |
 | V3 | HF0612 press fit in PLA holds without creeping | step 11, then after 20 cycles | CA on the outer ring |
 | V4 | Line stretch as the shock absorber (6 lb mono, owner 2026-09-26, elastic dropped): estimated 12 N peak for a 60 g spider if the motor loses grip; snaps at about 27 N. Not tested; a motor-fault drop is never forced on purpose | step 7 | if a knot ever parts, put 150 mm of 2 mm elastic back at the barrel |
@@ -48,6 +47,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 |---|---|---|
 | V8 | Firmware on PlatformIO's current esp32 core (3.x) | Closed by pinning, not by testing 3.x: `platform = espressif32@6.7.0` (Arduino core 2.0.16) builds clean, 2026-09-24. Moving to core 3.x is a deliberate future change, not an accident of a fresh install |
 | V12 | Board on COM13 is an ESP32 with 4 MB flash | Closed 2026-09-25: the 30-pin DevKit V1 in use, ESP32-D0WD-V3, 4 MB, read by esptool |
+| V1 | ESP32 3.3 V signals drive the driver | Closed 2026-10-01: `jog 1600` gave one smooth turn, no buffer needed (commissioning log) |
 | V17 | Fitted servo is a positioning one, not a 360 | Closed 2026-09-27: `servo 90`, `30`, `150` moved and held; the owner's MG90, about 90 degrees of swing (commissioning log) |
 
 ## Known limits of Rev C.1
