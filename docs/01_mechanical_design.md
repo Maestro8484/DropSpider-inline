@@ -47,7 +47,7 @@ Replaces the three-part stack above once printed and checked. One part, no screw
 | 44.5 to 47 | far flange | Rises off the barrel at 45 degrees to r 27, then a 0.5 mm rim |
 | 34.4 to 46.3 | HF0612 (9.99 across, 11.89 long, owner measured) | Plain 10.2 hole, 12.0 long, between a printed shoulder on the motor side and a snap lip at the flange face (9.9 across, 0.3 deep, with a 45 degree ramp above it). Press in from the flange face past the lip until it stops on the shoulder; then it cannot walk out either way. `spool_onepiece_ribs.stl`: 10.4 hole with six crush ribs reaching to 10.0, same shoulder and lip |
 
-Spacers: on the owner's build, keep the same total shim, but move 2.5 mm of it from the motor side to the 606ZZ side, because the new finger sits 2.5 mm nearer the servo. Check edge-on that the teeth sit across the finger.
+Spacers on the owner's build: motor side, `spacer_A_nose_7_5mm` alone (12 mm on the coupler, last 1 mm 8 mm across, nose to the spool): his 6 mm spacer A plus 4 mm shim, less 2.5 mm because the new finger sits 2.5 mm nearer the servo. The nose bears on the spool's face close to the rod (hole 7.0, so a ring r 3.7 to 4.0), a small rubbing radius while the spool freewheels. 606ZZ side: spacer B plus 2.5 mm more shim than now, with a 12 mm shim against the spool flange (spacer B's 9.6 end would slip into the 9.9 lip). Check edge-on that the teeth sit across the finger.
 
 Line on the barrel: 720 mm (the ceiling install's worked example, doc 06) is 4.6 turns on the 157 mm barrel circumference; 6 lb mono is 0.23 mm thick, so one layer about 1.1 mm wide on a 3.5 mm barrel, and about 8 layers to reach the flange rim.
 
@@ -86,15 +86,17 @@ The same swing means the knot can end up to half a turn either side of the botto
 
 | File | Qty | Orientation | Infill | Walls | Supports | Brim |
 |---|---|---|---|---|---|---|
-| spool_body.stl | 1 | as exported, flange down | gyroid 40% | 4 | none | none |
-| spool_ratchet.stl | 1 | as exported: flat shield face down, counterbores up | gyroid 40% | 4 | none | none |
-| spool_shield.stl | 1 | as exported, flat | gyroid 40% | 4 | none | none |
+| spool_onepiece.stl (Rev C.3, or spool_onepiece_ribs.stl) | 1 | as exported, ratchet face down | cross hatch 15% (owner 2026-10-02: the part is nearly all walls) | 4 | none | none |
+| spool_body.stl (Rev C.2 stack, until the one-piece is fitted) | 1 | as exported, flange down | cross hatch 15% | 4 | none | none |
+| spool_ratchet.stl (Rev C.2 stack) | 1 | as exported: flat shield face down, counterbores up | cross hatch 15% | 4 | none | none |
+| spool_shield.stl (Rev C.2 stack) | 1 | as exported, flat | cross hatch 15% | 4 | none | none |
 | bracket.stl | 1 | base down | gyroid 40% | 4 | tree, **not** build-plate-only | none |
 | fairlead_body.stl | 1 | as exported (flat side down) | gyroid 40% | 4 | none | 5 mm (big flat footprint, stops corner lift) |
 | fairlead_flap.stl | 1 (+1 spare) | as exported (flat side down) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | ld2450_cradle.stl | 1 | as exported (flat, face plate down, 6.7 mm tall) | gyroid 40% | 4 | none | none |
 | finger.stl | 1 (+1 spare) | as exported (flat top face down, hub standing up) | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | spacer_A_6mm.stl, spacer_B_50mm.stl | 1 each | on end | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
+| spacer_A_nose_7_5mm.stl | 1, with spool_onepiece, instead of spacer A and its shims | as exported, on end, 8 mm nose up | rectilinear 100% | 4 | none | 5 mm, 0.1 gap |
 | shim_1mm.stl, shim_2mm.stl | only if needed (05 step 8) | flat | rectilinear 100% | 4 | none | none |
 | fairlead_base.stl | 1, inverted install only (doc 06), instead of fairlead_body | as exported (17 mm tall) | gyroid 40% | 4 | none | 5 mm |
 | ld2450_fork_screw.stl | 1, both installs: the only radar fork, bolted with 2x M3, no glue (the glued ld2450_fork is retired) | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |

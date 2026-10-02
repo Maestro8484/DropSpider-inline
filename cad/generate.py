@@ -167,7 +167,7 @@ OP_BARREL_Z0 = OP_TEETH_T + OP_SEP_T
 OP_CHAMFER_Z0 = OP_BARREL_Z0 + OP_BARREL_W
 OP_L = OP_CHAMFER_Z0 + (OP_FLANGE_R - BARREL_D / 2) + OP_RIM_T
 OP_BORE = 10.2         # plain press hole for the HF0612 (owner 2026-10-01: 10.3 slips under more than the spider's weight)
-OP_SHOULDER_R = 4.25   # hole under the bearing: 8.5 clears the rod, the shoulder stops the bearing's cup only
+OP_SHOULDER_R = 3.5    # hole under the bearing: 7.0 clears the 6 rod, so spacer A's 8 mm nose bears on the face round it (owner 2026-10-02)
 OP_RIB_BORE, OP_RIB_TIP, OP_RIBS, OP_RIB_W = 10.4, 10.0, 6, 1.0   # crush-rib option: 10.4 hole, six ribs 0.2 high (AON3D's 0.2 mm), 1.0 wide at the base
 OP_ANCHOR_D = 1.2      # line hole, teardrop point up so its roof prints
 OP_ANCHOR_DEG = 60.0   # midway between the spokes at 0 and 120: a window lies behind the skin
@@ -216,7 +216,7 @@ def spool_onepiece(ribs=False):
     cuts = [cyl(bore / 2, OP_SEAT_L, seat_z0), cyl(OP_SHOULDER_R, seat_z0 + 1.01, -1),
             cyl(OP_LIP_D / 2, OP_LIP_T + 1, OP_L - OP_LIP_T - 0.01),
             hole_chamfer(OP_LIP_D / 2, OP_L, True, c=OP_LIP_T / 2),   # 45 degree ramp down to the lip: the bearing presses past it
-            hole_chamfer(OP_SHOULDER_R, 0, False),          # bed side: no first-layer lip under spacer A
+            hole_chamfer(OP_SHOULDER_R, 0, False, c=0.2),   # bed side: no first-layer lip under spacer A's nose (0.2, so the nose keeps r 3.7 to 4.0)
             *spoke_windows(SPOKE_W / 2, -1, OP_L + 2),      # no screws, so no bosses: plain spokes
             *anchor_hole()[0]]
     m = D(body, *cuts)
@@ -342,6 +342,11 @@ SPACER_A_R = 6.0   # 12 OD: stops on the ratchet disk's face at z 36 (a 9.6 spac
 SPACER_B_R = 4.8   # 9.6 OD on the spool body face
 SPACER_B_NOSE = 4.0   # 8.0 OD, last 1 mm at the 606ZZ end: bears on the inner ring only, not the shield
 def tube(L, r=SPACER_A_R): return D(cyl(r, L, 0), cyl(3.25, L + 2, -1))
+SPACER_A_NOSE_L = 7.5   # owner's build: spacer A 6 + 4 mm shim (doc 05 step 9) less 2.5 for the shorter finger hub (2026-10-02)
+def spacer_a_nose(L=SPACER_A_NOSE_L):
+    """Motor-side spacer like spacer B: 12 OD on the coupler, last 1 mm 8 OD so it bears on the one-piece spool's face
+    close to the rod (small rubbing radius while the spool freewheels). Nose up in print, no overhang."""
+    return D(U(cyl(SPACER_A_R, L - 1, 0), cyl(SPACER_B_NOSE, 1, L - 1)), cyl(3.25, L + 2, -1))
 def spacer_b(): return D(U(cyl(SPACER_B_R, 49, 0), cyl(SPACER_B_NOSE, 1, 49)), cyl(3.25, 52, -1))   # nose up in print, no overhang
 
 def fairlead_body_print():
@@ -375,6 +380,7 @@ PARTS = {
     "finger": finger_print,
     "spacer_A_6mm": lambda: tube(6),
     "spacer_B_50mm": spacer_b,
+    "spacer_A_nose_7_5mm": spacer_a_nose,                              # motor side, with spool_onepiece
     "shim_1mm": lambda: tube(1),
     "shim_2mm": lambda: tube(2),
     "ld2450_cradle": ld2450_cradle_print,
@@ -420,7 +426,9 @@ def onepiece_checks(A):
     near = dict(A)
     hz = OP_Z0 + OP_L - OP_LIP_T - OP_SEAT_L
     near["hf0612"] = D(cyl(HF0612_OD / 2 - 0.01, HF0612_LEN, hz + 0.05, 0, AXIS_Y), cyl(3, 14, hz - 1, 0, AXIS_Y))
-    near["spacer_A"] = D(cyl(SPACER_A_R, OP_Z0 - 30, 30, 0, AXIS_Y), cyl(3.25, 20, 29, 0, AXIS_Y))
+    near["spacer_A"] = spacer_a_nose(OP_Z0 - 30); near["spacer_A"].apply_translation([0, AXIS_Y, 30])
+    face = I(near["spacer_A"].copy().apply_translation([0, 0, 0.05]), sp).volume / 0.05
+    print(f"spacer A's 8 mm nose on the spool's motor face: {face:.1f} mm2 of contact (nose r {SPACER_B_NOSE}, hole r {OP_SHOULDER_R} + 0.2 chamfer)")
     near["spacer_B"] = D(cyl(SPACER_B_R, 100 - OP_Z0 - OP_L, OP_Z0 + OP_L, 0, AXIS_Y), cyl(3.25, 60, OP_Z0 + OP_L - 1, 0, AXIS_Y))
     print(f"z {OP_Z0:.1f} to {OP_Z0 + OP_L:.1f} ({OP_L:.1f} long); spacer A {OP_Z0 - 30:.1f}, spacer B {100 - OP_Z0 - OP_L:.1f}")
     for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle",
