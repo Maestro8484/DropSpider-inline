@@ -28,7 +28,7 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "pin": "pins: 2x M3 x 25 (hinge), 4x M3 x 20 (struts), nuts", "tie_bar": "tie_bar.stl (2x M3 through the base's x 65 holes)",
          "strut": "strut.stl x2 (the 45 degree bar, pushed)",
          "fairlead_base": "fairlead_base.stl (under the base, 2x M3 from inside)", "brace": "2x steel corner brace, 6 in (owner drills the base)",
-         "line": "6 lb line, out through a 7 mm hole in the base", "bead": "stop bead",
+         "line": "3 lb line, out through a 7 mm hole in the base", "bead": "stop bead",
          "electronics": "room for the controller board on the pad, 52 x 75 x 30 (stand-in box)"}
 
 def rview(m):

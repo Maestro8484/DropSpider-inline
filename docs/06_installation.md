@@ -30,7 +30,7 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 - 4 screws: the 2 holes at the servo end and the 2 pad holes at x = -56 (the middle pair).
 - Into a joist: #4 x 1 in pan-head wood screws.
-- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 6 lb mono the peak pull is about 12 N (1.2 kg) and can never pass about 27 N, where the line snaps. Never hang it on braid without an elastic snubber.
+- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 2 to 4 lb mono and the 13 g spider the peak pull is about 3 to 5 N and can never pass about 18 N, where 4 lb line snaps. Never hang it on braid without an elastic snubber.
 - The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead's two screws are countersunk flush).
 
 ## Alternative: turned over on the beam's inside face (inverted install)
@@ -85,7 +85,7 @@ Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf.
 
 ## Safety
 
-- Soft foam spider only, 60 g maximum, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
+- Soft foam spider only (the owner's is about 13 g): 30 g maximum on 2 to 3 lb line, 60 g on 4 lb, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
 - Keep the drop clear of stairs, and of the swing of the door itself.
-- 6 lb monofilament only (or put the elastic snubber back). Check the knots, the bead, the flap, and the line for nicks before each night.
+- 2 to 4 lb monofilament only (or put the elastic snubber back). Check the knots, the bead, the flap, and the line for nicks before each night.
 - `disarm` (or unplug) when small children are expected to run through.

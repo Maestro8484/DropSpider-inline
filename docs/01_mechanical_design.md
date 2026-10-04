@@ -6,7 +6,7 @@ Status: **released for build, Rev C.1** (clutch flipped, motor-led drop; see `M1
 
 ## What it does, in one paragraph
 
-A foam spider hangs on 6 lb nylon monofilament fishing line wound on a spool. The spool sits on a one-way clutch bearing (HF0612) on a steel rod driven by a small stepper motor. A servo-held finger locks the spool at the top with zero power. On trigger, the motor winds a hair to lift the tooth off the finger, the finger swings out, and the motor spins fast in the unwind direction. The spool runs down behind it on the clutch: it can fall as fast as gravity allows but never faster than the motor, so the motor sets the top speed and the stopping point. After a short hang, the motor winds the spool back up (the clutch locks in that direction), the finger swings back into the ratchet teeth, the motor eases the spool down onto a tooth, and everything powers down.
+A foam spider (about 13 g) hangs on 2 to 4 lb nylon monofilament fishing line (3 lb in use) wound on a spool. The spool sits on a one-way clutch bearing (HF0612) on a steel rod driven by a small stepper motor. A servo-held finger locks the spool at the top with zero power. On trigger, the motor winds a hair to lift the tooth off the finger, the finger swings out, and the motor spins fast in the unwind direction. The spool runs down behind it on the clutch: it can fall as fast as gravity allows but never faster than the motor, so the motor sets the top speed and the stopping point. After a short hang, the motor winds the spool back up (the clutch locks in that direction), the finger swings back into the ratchet teeth, the motor eases the spool down onto a tooth, and everything powers down.
 
 ## Why this layout (decisions already made, do not re-open without cause)
 
@@ -49,7 +49,7 @@ Replaces the three-part stack above once printed and checked. One part, no screw
 
 Spacers on the owner's build: motor side, `spacer_A_nose_7_5mm` alone (12 mm on the coupler, last 1 mm 8 mm across, nose to the spool): his 6 mm spacer A plus 4 mm shim, less 2.5 mm because the new finger sits 2.5 mm nearer the servo. The nose bears on the spool's face close to the rod (hole 7.0, so a ring r 3.7 to 4.0), a small rubbing radius while the spool freewheels. 606ZZ side: spacer B plus 2.5 mm more shim than now, with a 12 mm shim against the spool flange (spacer B's 9.6 end would slip into the 9.9 lip). Check edge-on that the teeth sit across the finger.
 
-Line on the barrel: 720 mm (the ceiling install's worked example, doc 06) is 4.6 turns on the 157 mm barrel circumference; 6 lb mono is 0.23 mm thick, so one layer about 1.1 mm wide on a 3.5 mm barrel, and about 8 layers to reach the flange rim.
+Line on the barrel: 720 mm (the ceiling install's worked example, doc 06) is 4.6 turns on the 157 mm barrel circumference; 2 lb mono is 0.13 mm thick and 4 lb 0.20 (Berkley Trilene XL), so one layer under 1 mm wide on a 3.5 mm barrel, and about 8 layers to reach the flange rim.
 
 ## The lock (read this before touching the servo angles)
 
@@ -70,15 +70,15 @@ Line on the barrel: 720 mm (the ceiling install's worked example, doc 06) is 4.6
 
 ## Line and hard stop
 
-From the spool outward: **6 lb nylon monofilament** (clear fishing line, tied straight to the barrel with an arbor knot; no elastic, no braid, owner's call 2026-09-26), through the fairlead (3.2 mm throat) and the flap's slot, then the **8 mm hard plastic bead** (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
+From the spool outward: **2 to 4 lb nylon monofilament, 3 lb in use** (clear fishing line, tied straight to the barrel with an arbor knot; no elastic, no braid, owner's call 2026-09-26), through the fairlead (3.2 mm throat) and the flap's slot, then the **8 mm hard plastic bead** (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
 
-Why monofilament: it winds cleanly, it is nearly invisible, it is gentler on the PLA fairlead than braid, and it stretches (roughly 15 to 25 percent before it breaks, a typical figure for nylon mono, not measured here). That stretch is the shock absorber. At 6 lb (about 27 N) it is also a fuse: it snaps before it can pull the device off the ceiling.
+Why monofilament: it winds cleanly, it is nearly invisible, it is gentler on the PLA fairlead than braid, and it stretches (roughly 15 to 25 percent before it breaks, a typical figure for nylon mono, not measured here). That stretch is the shock absorber. It is also a fuse: 2 lb breaks at about 9 N, 3 lb at 13 N, 4 lb at 18 N, all far below what would pull the device down.
 
 ## End of drop and why the line must stretch
 
 Rev C.1 note: the motor now stops the spider short of the knot on every normal drop, so this slam only happens if the motor loses its grip mid-drop. The line's own stretch is the backstop.
 
-The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line (braid), a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. About 750 mm of 6 lb mono stretches roughly 70 mm and holds the peak near 12 N for a 60 g spider (estimate from the typical stretch above), under half its breaking strength, and the spider bounces. **Never swap in braid or fluorocarbon (both stretch little) without putting a 150 mm elastic snubber back at the barrel.**
+The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line (braid), a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. With the owner's 13 g spider falling the full 0.7 m (estimate, stretch to break taken as 20 percent): 2 lb peaks near 3.4 N (2.6x under its break), 3 lb near 4.1 N (3.2x), 4 lb near 4.7 N (3.8x), and the spider bounces. A heavier spider needs heavier line: on 2 to 3 lb keep it to 30 g (3 lb then peaks near 6.4 N, 2.1x), on 4 lb to 60 g (10.5 N, 1.7x). In normal running the hardest pull is the motor winding the bead against the stop, about 2.5 N (7 N cm on the 25 mm barrel). **Never swap in braid or fluorocarbon (both stretch little) without putting a 150 mm elastic snubber back at the barrel.**
 
 The same swing means the knot can end up to half a turn either side of the bottom, which is why the rewind overshoots by 0.75 turn and relies on the bead stop.
 
@@ -123,5 +123,5 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 ## Limits of this revision
 
 - Ceiling mount only. Wall mount changes where the line exits and the fairlead does not fit.
-- Spider: soft foam, **60 g or less** (Rev C.1: the motor must stop it at the end of the drop), nothing hard or pointed.
+- Spider: soft foam, nothing hard or pointed. The owner's weighs about 13 g. Upper limit 30 g on 2 to 3 lb line, 60 g on 4 lb (the motor must also stop it at the end of the drop, Rev C.1).
 - Drop length set by line length, about 0.5 to 1.2 m.

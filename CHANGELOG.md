@@ -2,6 +2,11 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-04
+
+### Changed
+- Line: 2 to 4 lb nylon monofilament, 3 lb in use (owner; was 6 lb, which he never had). Spider about 13 g (owner). Worst case if the motor loses grip, 13 g spider, full 0.7 m fall (estimate): 3 lb peaks near 4.1 N against a 13 N break. Spider limit now 30 g on 2 to 3 lb line, 60 g on 4 lb. CLAUDE.md, BOM, docs 01, 05, 06, 08, handoffs and build guide updated.
+
 ## 2026-10-02
 
 ### Added
