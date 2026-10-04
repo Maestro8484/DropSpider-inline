@@ -20,7 +20,7 @@ Porch measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in bel
 | Bottom of the front beam | 2184 mm (86 in) |
 | Spider, retracted | bottom of spider about 2230 mm, hidden above the beam's bottom edge |
 | Spider at rest after the drop | 1550 mm (61 in): face height for teens and adults, above small children |
-| Lowest point if the motor loses grip and the line's stretch catches it | about 1450 mm (57 in) |
+| Lowest point if the motor loses grip and the line's stretch catches it | about 1450 mm (57 in) with no spare line; with the 1.5 m spare on the spool (doc 05 step 5) the 13 g foam spider reaches the floor |
 
 Line length to set (barrel knot to bead) = (ceiling - 85 mm) - (target rest height + spider height + 30 mm for bead and swivel) + 45 mm.
 The 85 mm is where the bead sits against the flap at home; the 45 mm is line between the spool and the flap.

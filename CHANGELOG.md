@@ -5,6 +5,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-04
 
 ### Changed
+- Spare line: wind about 1.5 m under the working line (two drops' worth, owner), `line` set to the working length only. Doc 05 step 5, doc 06 heights.
 - Line: 2 to 4 lb nylon monofilament, 3 lb in use (owner; was 6 lb, which he never had). Spider about 13 g (owner). Worst case if the motor loses grip, 13 g spider, full 0.7 m fall (estimate): 3 lb peaks near 4.1 N against a 13 N break. Spider limit now 30 g on 2 to 3 lb line, 60 g on 4 lb. CLAUDE.md, BOM, docs 01, 05, 06, 08, handoffs and build guide updated.
 
 ## 2026-10-02
