@@ -2,6 +2,12 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-05
+
+### Changed
+- `fairlead_base_ptfe.stl` drawn without the lightening windows (owner: "faster print time > material usage"; 15.7 cm3, was 12.8). The rule is in CLAUDE.md: no windows, pockets or hollows to save filament unless a slice shows they cut print time. The installed `fairlead_base.stl` keeps its windows. Doc 09, doc 05 step 24b; `docs/img/ptfe_tube_path.png` shows the tube's path.
+- `cad/generate.py` no longer writes any STL when run: it only checks. `python generate.py --export <part>` writes that part, and only if its geometry changed; `--export-all` is the full rebuild for `tools/regen_cad.ps1`. Every STL's file date set back to its last real change. `fairlead_flap_inv.stl` restored to the owner's own Fusion file (commit 94d2076), which a check run had overwritten on 2026-10-04. CLAUDE.md, cad/README.md.
+
 ## 2026-10-04
 
 ### Added

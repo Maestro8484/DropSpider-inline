@@ -118,7 +118,8 @@ SW_PILOT_D, SW_PILOT_DEPTH = 1.8, 6.5 # owner 2026-09-28: switch on 2x M2 x 12 s
 REST_SHAVE = 1.25                     # owner 2026-09-28: rest pad shortened 1.25 mm
 COL_R = 1.5                           # owner 2026-09-28: the bore column's four long edges rounded (build123d trial's fillet)
 WIN_R = 1.5                           # corner radius of the lightening windows
-# Lightening windows (owner 2026-09-28, less material). All run along y right through, so they print as
+# Lightening windows (owner 2026-09-28, less material; owner 2026-10-05: print time beats material, so no new part
+# gets windows unless a slice shows they cut time; the ptfe block is drawn without them). All run along y right through, so they print as
 # plain holes up from the bed: nothing bridges, nothing needs support. Each stays 1.6 or more from the bore
 # mouths, the pilots and every feature standing on the plate, and 2 from the plate's outline.
 COL_WIN = (20.6, 27.4, 51.1, 61.9)    # through the column above the bore (x0, x1, z0, z1): clear of the bore's 9 mm mouth, the hinge block and the rest pad
@@ -180,7 +181,7 @@ def rounded(boxes, r):
     return p.buffer(-r, 32).buffer(r, 32).buffer(r, 32).buffer(-r, 32)
 
 
-def fairlead_base(ptfe=False):
+def fairlead_base(ptfe=False, windows=True):
     """v2: mounting plate on the base, a bore column whose underside is the flap's hard stop, the hinge
     boss, the rest stop, and a switch plate on the outer side with a nut gap behind it. Rounded column
     and lightening windows (owner 2026-09-28). ptfe=True: the straight 4.3 bore for the PTFE guide tube."""
@@ -196,16 +197,16 @@ def fairlead_base(ptfe=False):
     splate = bx(GAP_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])   # solid from the column to the switch face (x 31 to 37), no nut gap
     body = G.U(plate, *bosses, column, hinge, rest, splate)
     cuts = [bore_ptfe() if ptfe else bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
-    cuts += [yprism(rounded(w, WIN_R), STOP_Y_INV - 1, 1) for w in [[COL_WIN]] + PLATE_WINS]   # lightening windows, right through
+    if windows: cuts += [yprism(rounded(w, WIN_R), STOP_Y_INV - 1, 1) for w in [[COL_WIN]] + PLATE_WINS]   # lightening windows, right through
     for z in SWV_HOLES_Z:                                               # M2 x 12 self-tapping, 6.5 deep from the switch face
         cuts += [F.xcyl(SW_PILOT_D / 2, PLATE_X[1] - SW_PILOT_DEPTH, PLATE_X[1] + 1, SWV_HOLE_Y, z)]
     cuts += [G.vcyl(1.25, 12, -11, x, z) for x, z in BLOCK_SCREWS]      # 2.5 pilots, 11 deep from the mounting face
     return G.D(body, *cuts)
 
 
-def fairlead_base_print(ptfe=False):
+def fairlead_base_print(ptfe=False, windows=True):
     """Mounting face (y 0) on the bed; everything grows from it, so no supports and a dead-flat face."""
-    m = fairlead_base(ptfe)
+    m = fairlead_base(ptfe, windows)
     m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))   # -y -> +z
     m.apply_translation(-m.bounds[0]); return m
 
@@ -370,9 +371,9 @@ if __name__ == "__main__":
     print(f"line falls {abs(LINE_X - X_BEAM):.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (FL_Y - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")
     # PTFE guide tube in the ptfe block (owner 2026-10-04): no free span for the line between the spool and the fairlead
     print("--- PTFE guide tube (fairlead_base_ptfe) ---")
-    pb = fairlead_base(ptfe=True); tube = ptfe_tube(); tip = ptfe_tip_y()
-    pp = fairlead_base_print(ptfe=True); down = (pp.face_normals[:, 2] < -0.7) & (pp.triangles_center[:, 2] > 0.01)
-    print(f"fairlead_base_ptfe watertight={pb.is_watertight} vol={pb.volume / 1000:.1f}cm3; print overhang off the bed {pp.area_faces[down].sum():.0f} mm2; bore {PTFE_BORE_DRAWN} straight, {-STOP_Y_INV:.0f} long")
+    pb = fairlead_base(ptfe=True, windows=False); tube = ptfe_tube(); tip = ptfe_tip_y()     # owner 2026-10-05: no lightening windows, print time beats material
+    pp = fairlead_base_print(ptfe=True, windows=False); down = (pp.face_normals[:, 2] < -0.7) & (pp.triangles_center[:, 2] > 0.01)
+    print(f"fairlead_base_ptfe (no windows) watertight={pb.is_watertight} vol={pb.volume / 1000:.1f}cm3; print overhang off the bed {pp.area_faces[down].sum():.0f} mm2; bore {PTFE_BORE_DRAWN} straight, {-STOP_Y_INV:.0f} long")
     bv = A["bracket"].vertices; near = (abs(bv[:, 0] - LINE_X) < 8) & (abs(bv[:, 2] - LINE_Z) < 8)
     plate_t = bv[near, 1].max()
     print(f"tube: {PTFE_OD} OD, {tip - STOP_Y_INV:.0f} mm long (cut {math.ceil(tip - STOP_Y_INV)}), flush with the column's underside at y {STOP_Y_INV:.0f}, through the base plate (y 0 to {plate_t:.0f}), "

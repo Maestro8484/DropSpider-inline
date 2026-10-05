@@ -43,6 +43,7 @@ cd cad; python generate.py      # parts + clash checks only
 - Armed idle = driver off and servo detached.
 - The line is nylon and must stretch: bonded nylon upholstery thread, size 69 (Tex 70), black, 0.29 mm, 11 lb, about 22 percent stretch (owner 2026-10-04). It replaces 3 lb nylon monofilament, whose coil memory sprang loose wraps off the barrel; a limp thread lies flat on the barrel slack or taut. Its stretch is the shock absorber (elastic snubber dropped 2026-09-26). The spider is brought to about 30 g (owner 2026-10-04, weight added to the 13 g spider, so the wraps lay at twice the tension); keep it under 60 g until the bench says more. Polyester thread is the fallback for a prop left outdoors for months (half the stretch). Never recommend braid or fluorocarbon without the 150 mm elastic snubber back at the barrel.
 - `cad/generate.py` is the source of truth for geometry. Edit it, never the STLs.
+- Print time beats material (owner 2026-10-05: "faster print time > material usage"). No lightening windows, pockets or hollows on a part to save filament unless a slice under his stock settings shows they cut print time. Extra walls round a hole cost more time than the infill they remove. The spool's big spoke windows stay (his 2026-09-28 call).
 - The assembly frame (y from the mount face, z from the motor plate) is used in every doc. Keep it.
 
 ## Firmware notes
