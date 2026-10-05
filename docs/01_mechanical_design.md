@@ -43,6 +43,8 @@ Replaces the three-part stack above, and the Rev C.3 one-piece, once printed and
 
 Why it changed (owner 2026-10-04): on the Rev C.3 one-piece the line came off the far (606ZZ) side, over its 2 mm far wall, which was a 45 degree ramp, and wound onto the rod and spacer. The line's feed point (where it leaves the spool toward the base hole, z 45) had landed on that ramp, 0.5 mm past the barrel. Rev C.4 centres the barrel on the feed point and makes the far wall a vertical cap 7 mm tall.
 
+![Old C.3 beside new C.4, cut through the rod](img/spool_c3_vs_c4.png)
+
 | z (mm) | Part | Notes |
 |---|---|---|
 | 32.5 to 39.5 | teeth | Same 12 teeth (tip r 33, root r 29), 7 mm deep, straight across the finger plate |
