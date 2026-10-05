@@ -11,7 +11,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-04
 
 ### Added
-- `spool_cap.stl` (Rev C.4): the spool's far wall as a flat disc, r 32, 2.0 thick, 7 mm above the barrel and vertical (the C.3 one-piece's far wall was 2 mm tall and a 45 degree ramp, and the line came off over it onto the rod and spacer, owner). Three lugs drop into the spoke windows and lock it to the body (1.5 degrees of play); spacer B clamps it; no screws, no glue. Prints outer face down, lugs up, no supports. REPO-ONLY.
+- `spool_cap.stl` (Rev C.4): the spool's far wall as a flat disc, r 32, 2.0 thick, 7 mm above the barrel and vertical (the C.3 one-piece's far wall was 2 mm tall and a 45 degree ramp, and the line came off over it onto the rod and spacer, owner). Screwed to the body with 3x M3x8 into pilots in the spokes (2026-10-05, owner: a cap held only by the snug rod stack could lift up to the end play and a 0.29 mm thread would wedge in the crack; the first draft that day used lugs and no screws). Prints line-side face down, no supports. REPO-ONLY.
 - `fairlead_base_ptfe.stl` and the PTFE guide tube option (owner's idea): a 4 mm OD PTFE tube up through the base hole cuts the line's free span from 36 mm to 25 mm and sets the feed point square on the barrel; tip 11 mm above the base's inner face, 2 mm outside the cap. Trial first by wedging the tube in the plain block's tapered mouth; the ptfe block (straight 4.3 bore, tube cut 41 mm) only if it walks. Doc 09, doc 05 steps 24a and 24b. Model checks pass; REPO-ONLY.
 
 ### Changed

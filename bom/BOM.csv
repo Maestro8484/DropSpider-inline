@@ -28,7 +28,7 @@ N13,4 mm OD PTFE tube (3D printer kind; 2 mm bore),41 mm,any,,ONLY IF,optional g
 N5,470 uF 16 V electrolytic capacitor,1,any,,ONLY IF ESP32 RESETS,at the servo; skip unless the board restarts when the finger moves
 N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
 N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling install only; the inverted install screws the owner's braces to the beam with his own screws
-N8,M3x8 self-tapping or machine screws,3,any,,have?,spool disk to body
+N8,M3x8 self-tapping or machine screws,3,any,,have?,spool_cap to the one-piece body (Rev C.4); earlier the disk to the body
 N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
 N11,soft foam spider about 13 g brought to about 30 g with added weight (owner 2026-10-04); under 60 g until the bench says more,1,any,,HAVE,Rev C.1: motor must stop it
