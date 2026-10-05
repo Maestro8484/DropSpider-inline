@@ -5,13 +5,14 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-05
 
 ### Changed
+- Spool bearing hole: one plain 10.2 diameter from the shoulder through the far face with a 0.4 lead-in, no snap lip (owner: the C.3 lip printed too tight and he carved it out with a deburring tool; "the entire bushing should just be the narrower smaller diameter"); the screwed-on cap keeps the bearing in. `spool_onepiece_ribs.stl` (crush-rib hole) dropped: one spool STL. Owner's word for the HF0612 from now on: the one-way bearing. Doc 01, doc 05, build guide, cad/README.
 - `fairlead_base_ptfe.stl` drawn without the lightening windows (owner: "faster print time > material usage"; 15.7 cm3, was 12.8). The rule is in CLAUDE.md: no windows, pockets or hollows to save filament unless a slice shows they cut print time. The installed `fairlead_base.stl` keeps its windows. Doc 09, doc 05 step 24b; `docs/img/ptfe_tube_path.png` shows the tube's path.
 - `cad/generate.py` no longer writes any STL when run: it only checks. `python generate.py --export <part>` writes that part, and only if its geometry changed; `--export-all` is the full rebuild for `tools/regen_cad.ps1`. Every STL's file date set back to its last real change. `fairlead_flap_inv.stl` restored to the owner's own Fusion file (commit 94d2076), which a check run had overwritten on 2026-10-04. CLAUDE.md, cad/README.md.
 
 ## 2026-10-04
 
 ### Added
-- `spool_cap.stl` (Rev C.4): the spool's far wall as a flat disc, r 32, 2.0 thick, 7 mm above the barrel and vertical (the C.3 one-piece's far wall was 2 mm tall and a 45 degree ramp, and the line came off over it onto the rod and spacer, owner). Screwed to the body with 3x M3x8 into pilots in the spokes (2026-10-05, owner: a cap held only by the snug rod stack could lift up to the end play and a 0.29 mm thread would wedge in the crack; the first draft that day used lugs and no screws). Prints line-side face down, no supports. REPO-ONLY.
+- `spool_cap.stl` (Rev C.4): the spool's far wall as a flat disc, r 32, 2.0 thick, 7 mm above the barrel and vertical (the C.3 one-piece's far wall was 2 mm tall and a 45 degree ramp, and the line came off over it onto the rod and spacer, owner). Three lugs drop into the spoke windows (owner 2026-10-05: keep them, they align the cap and hold the anchored thread in its window) and 3x M3x8 into pilots in the spokes clamp it (owner: a cap held only by the snug rod stack could lift up to the end play and a 0.29 mm thread would wedge in the crack). Prints outer face down, lugs up, no supports. REPO-ONLY.
 - `fairlead_base_ptfe.stl` and the PTFE guide tube option (owner's idea): a 4 mm OD PTFE tube up through the base hole cuts the line's free span from 36 mm to 25 mm and sets the feed point square on the barrel; tip 11 mm above the base's inner face, 2 mm outside the cap. Trial first by wedging the tube in the plain block's tapered mouth; the ptfe block (straight 4.3 bore, tube cut 41 mm) only if it walks. Doc 09, doc 05 steps 24a and 24b. Model checks pass; REPO-ONLY.
 
 ### Changed

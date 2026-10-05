@@ -164,31 +164,25 @@ OP_TEETH_T = 7.0       # teeth z 0..7, the finger plate's thickness
 OP_SEP_R, OP_SEP_T = 28.0, 3.75       # separator z 7..10.75 (C.3: 1.5), so the barrel is centred on the line at z 45
 OP_BARREL_W = 3.5      # flat barrel z 10.75..14.25, r 25 (same width as the Rev C.2 barrel); the body ends here, flat
 HF0612_LEN = 11.89     # owner measured 2026-10-02 (9.99 across)
-OP_SEAT_L = 12.0       # shoulder to the lip's underside: 0.1 longer than the bearing
-OP_LIP_D, OP_LIP_T = 9.9, 0.6   # snap lip at the far face: 0.3 straight at 9.9 drawn (prints about 9.7 to 9.8) against the 9.99 bearing, under a 0.3 45 degree ramp so it presses past
+OP_SEAT_L = 12.0       # shoulder to the far face: 0.1 longer than the bearing, which the cap then covers
+# No snap lip (owner 2026-10-05: the C.3 lip printed too tight, he carved it out with a deburring tool; "the entire
+# bushing should just be the narrower smaller diameter"). The hole is one plain diameter, OP_BORE, from the shoulder
+# right through the far face, with a 0.4 lead-in chamfer; the screwed-on cap (hole 7.0) keeps the bearing in.
 OP_BARREL_Z0 = OP_TEETH_T + OP_SEP_T
 OP_L = OP_BARREL_Z0 + OP_BARREL_W     # 14.25: the body ends at the barrel's far edge (C.3 was 14.5 with the ramp and rim)
 CAP_R, CAP_T = 32.0, 2.0              # far wall: flat disc, 7 above the barrel (the Rev C.2 flange's r 32), on the body's far face
 CAP_HOLE_D = 7.0                      # clears the 6 rod; spacer B's 9.6 end bears on the cap round it (ring r 3.5 to 4.8)
+CAP_LUG_H = 1.5                       # three lugs, 1.5 tall (owner 2026-10-05: no higher than needed), on the cap's line-side face drop into the spoke windows (owner 2026-10-05: keep them, they
+CAP_LUG_R0, CAP_LUG_R1 = 11.0, 19.0   # align the cap and hold the anchored string in its window); clear of the hub (r 9) and the stub at the skin
+CAP_LUG_CLR = 0.4                     # drawn gap, lug side to spoke side (windows print 0.1 to 0.2 small a side, so about 0.2 real)
 CAP_SCREW_D = 3.4                     # the cap's three screw holes, on the bolt circle (r 21, one per spoke): M3 clearance
 CAP_BOSS_R = 3.5                      # boss round each pilot in the body (the windows are cut leaving it), as the Rev C.2 spool body
 CAP_PILOT_D, CAP_PILOT_L = 2.5, 8.0   # M3x8 pilots into the spokes from the far face: 6 mm of thread under the 2 mm cap; 2.25 wall round each
 OP_BORE = 10.2         # plain press hole for the HF0612 (owner 2026-10-01: 10.3 slips under more than the spider's weight)
 OP_SHOULDER_R = 3.5    # hole under the bearing: 7.0 clears the 6 rod, so spacer A's 8 mm nose bears on the face round it (owner 2026-10-02)
-OP_RIB_BORE, OP_RIB_TIP, OP_RIBS, OP_RIB_W = 10.4, 10.0, 6, 1.0   # crush-rib option: 10.4 hole, six ribs 0.2 high (AON3D's 0.2 mm), 1.0 wide at the base
 OP_ANCHOR_D = 1.2      # line hole, teardrop point up so its roof prints
 OP_ANCHOR_DEG = 60.0   # midway between the spokes at 0 and 120: a window lies behind the skin
 OP_ANCHOR_LEAN = 45.0  # leans counterclockwise (seen from behind the motor), the way the line wraps off the hole while winding
-
-def crush_ribs(z0, z1):
-    """Six triangular ribs inside the 10.4 hole, tips at r 5.0, standing proud by 0.2."""
-    R = OP_RIB_BORE / 2 + 0.3                       # rib roots buried 0.3 in the wall
-    tri = Polygon([(OP_RIB_TIP / 2, 0), (R, -OP_RIB_W / 2 - 0.3), (R, OP_RIB_W / 2 + 0.3)])
-    out = []
-    for i in range(OP_RIBS):
-        r = extrude_polygon(tri, z1 - z0); r.apply_translation([0, 0, z0])
-        r.apply_transform(trimesh.transformations.rotation_matrix(2 * math.pi * i / OP_RIBS + math.pi / OP_RIBS, [0, 0, 1])); out.append(r)
-    return out
 
 def anchor_hole():
     """Teardrop line hole through the barrel skin, mid-width, leaning counterclockwise (seen from behind the motor),
@@ -211,39 +205,50 @@ def anchor_hole():
     p_in = p_out - ax * ((BARREL_D / 2 - SHELL_R) / (rad @ ax))                                     # about where it leaves the skin's inside
     return [h, c], p_in, ax
 
-def spool_onepiece(ribs=False):
+def spool_onepiece():
     """Installed orientation = print orientation: motor face (z 0) on the bed."""
     body = U(extrude_polygon(ratchet_poly(), OP_TEETH_T),
              cyl(OP_SEP_R, OP_SEP_T, OP_TEETH_T),
              cyl(BARREL_D / 2, OP_BARREL_W, OP_BARREL_Z0, sections=192))
-    seat_z0 = OP_L - OP_LIP_T - OP_SEAT_L                   # shoulder; the bearing ends 0.6 below the far face, under the lip
-    bore = OP_RIB_BORE if ribs else OP_BORE
-    cuts = [cyl(bore / 2, OP_SEAT_L, seat_z0), cyl(OP_SHOULDER_R, seat_z0 + 1.01, -1),
-            cyl(OP_LIP_D / 2, OP_LIP_T + 1, OP_L - OP_LIP_T - 0.01),
-            hole_chamfer(OP_LIP_D / 2, OP_L, True, c=OP_LIP_T / 2),   # 45 degree ramp down to the lip: the bearing presses past it
+    seat_z0 = OP_L - OP_SEAT_L                              # shoulder; the bearing ends 0.11 below the far face, under the cap
+    cuts = [cyl(OP_BORE / 2, OP_SEAT_L + 1, seat_z0), cyl(OP_SHOULDER_R, seat_z0 + 1.01, -1),
+            hole_chamfer(OP_BORE / 2, OP_L, True),          # 0.4 lead-in at the far face: the bearing presses in from here
             hole_chamfer(OP_SHOULDER_R, 0, False, c=0.2),   # bed side: no first-layer lip under spacer A's nose (0.2, so the nose keeps r 3.7 to 4.0)
             *spoke_windows(CAP_BOSS_R, -1, OP_L + 2),       # windows leave a 3.5 boss round each cap screw pilot
             *[cyl(CAP_PILOT_D / 2, CAP_PILOT_L + 1, OP_L - CAP_PILOT_L, x, y) for x, y in BOLTS],   # cap screw pilots, 8 deep from the far face
             *anchor_hole()[0]]
-    m = D(body, *cuts)
-    if ribs: m = U(m, *crush_ribs(seat_z0, seat_z0 + OP_SEAT_L))
-    return m
+    return D(body, *cuts)
+
+def cap_lug_polys():
+    """The three lugs as flat outlines: each spoke window shrunk by CAP_LUG_CLR all round, kept to the band r 11 to 19,
+    so every lug side runs parallel to its spoke 0.4 away and the lug drops in by hand. Same angular places as the
+    windows (midway between the spokes at 0, 120 and 240 degrees)."""
+    from shapely.geometry import Point
+    band = Point(0, 0).buffer(CAP_LUG_R1, 256).difference(Point(0, 0).buffer(CAP_LUG_R0, 256))
+    out = []
+    for w in spoke_window_polys(CAP_BOSS_R):
+        p = w.buffer(-CAP_LUG_CLR, 64).intersection(band)
+        out += list(getattr(p, "geoms", [p]))
+    return out
 
 def spool_cap():
     """Rev C.4 far wall, in the body's frame: a flat disc r 32, CAP_T thick, its line-side face at z OP_L (on the body's
-    far face). Centre hole 7.0 (the rod) and three 3.4 screw holes on the bolt circle, all chamfered both faces (no
-    first-layer lip can hold the cap off the body). 3x M3x8 through it into the body's spokes clamp the seam shut and
-    carry the turn; spacer B's end bears on the outer face round the centre hole."""
+    far face), three lugs reaching down into the spoke windows to z OP_L - CAP_LUG_H (they align the cap and hold the
+    anchored string in its window), centre hole 7.0 (the rod) and three 3.4 screw holes on the bolt circle, all chamfered
+    both faces. 3x M3x8 through it into the body's spokes clamp the seam shut; spacer B's end bears on the outer face."""
     disc = cyl(CAP_R, CAP_T, OP_L, sections=192)
-    holes = [cyl(CAP_HOLE_D / 2, CAP_T + 2, OP_L - 1)] + [cyl(CAP_SCREW_D / 2, CAP_T + 2, OP_L - 1, x, y) for x, y in BOLTS]
+    lugs = [extrude_polygon(p, CAP_LUG_H + 0.01).apply_translation([0, 0, OP_L - CAP_LUG_H]) for p in cap_lug_polys()]
+    m = U(disc, *lugs)
+    holes = [cyl(CAP_HOLE_D / 2, CAP_T + CAP_LUG_H + 2, OP_L - CAP_LUG_H - 1)] + [cyl(CAP_SCREW_D / 2, CAP_T + 2, OP_L - 1, x, y) for x, y in BOLTS]
     ch = [hole_chamfer(CAP_HOLE_D / 2, OP_L + CAP_T, True), hole_chamfer(CAP_HOLE_D / 2, OP_L, False)]
     ch += [k for x, y in BOLTS for k in (hole_chamfer(CAP_SCREW_D / 2, OP_L + CAP_T, True).apply_translation([x, y, 0]),
                                          hole_chamfer(CAP_SCREW_D / 2, OP_L, False).apply_translation([x, y, 0]))]
-    return D(disc, *holes, *ch)
+    return D(m, *holes, *ch)
 
 def spool_cap_print():
-    """Line-side face on the bed (the smoothest face, toward the wraps); screw heads sit on the top face."""
-    m = spool_cap(); m.apply_translation([0, 0, -OP_L]); return m
+    """Outer face (spacer B side) on the bed, lugs up: nothing hangs over air. Flipped about x; the windows are symmetric
+    about the x axis (spokes at 0, 120, 240), so the lugs and screw holes still land in place."""
+    m = spool_cap(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); m.apply_translation([0, 0, OP_L + CAP_T]); return m
 
 def cap_screws():
     """3x M3x8 pan heads in the body's frame: shank r 1.5 from the head's underside down into the pilot, head 5.5 across, 2.5 tall."""
@@ -398,8 +403,7 @@ PARTS = {
     "spool_ratchet": spool_ratchet_print,
     "spool_shield": spool_shield_print,
     "spool_onepiece": spool_onepiece,                                  # Rev C.3, replaces the three above once the owner has it in hand
-    "spool_onepiece_ribs": lambda: spool_onepiece(ribs=True),          # same part, crush-rib bearing hole instead of the plain 10.2
-    "spool_cap": spool_cap_print,                                      # Rev C.4 far wall on the one-piece: flat disc, 3x M3x8 into the spokes
+    "spool_cap": spool_cap_print,                                      # Rev C.4 far wall on the one-piece: flat disc, three lugs into the windows, 3x M3x8 into the spokes
     "bearing_retainer": bearing_retainer_print,
     "bracket": bracket_print,
     "finger": finger_print,
@@ -453,7 +457,7 @@ def onepiece_checks(A):
     both = U(sp, cp)
     L = OP_L + CAP_T
     near = dict(A)
-    hz = OP_Z0 + OP_L - OP_LIP_T - OP_SEAT_L
+    hz = OP_Z0 + OP_L - OP_SEAT_L
     near["hf0612"] = D(cyl(HF0612_OD / 2 - 0.01, HF0612_LEN, hz + 0.05, 0, AXIS_Y), cyl(3, 14, hz - 1, 0, AXIS_Y))
     near["spacer_A"] = spacer_a_nose(OP_Z0 - 30); near["spacer_A"].apply_translation([0, AXIS_Y, 30])
     face = I(near["spacer_A"].copy().apply_translation([0, 0, 0.05]), sp).volume / 0.05
@@ -475,7 +479,13 @@ def onepiece_checks(A):
         v = I(cp, near[f]).volume
         if v > 0.05: print(f"CLASH spool_cap x {f}: {v:.2f}")
     fit = I(sp, cp).volume
-    print(f"cap sits on the body's far face with no overlap ({fit:.2f} mm3): {fit < 0.01}")
+    print(f"cap lugs drop into the spoke windows, cap flat on the body's far face (overlap {fit:.2f} mm3): {fit < 0.01}")
+    bind = None
+    for deg in np.arange(0.25, 6.0, 0.25):
+        rr = cp.copy(); rr.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, AXIS_Y, 0]))
+        if I(sp, rr).volume > 0.5: bind = deg; break
+    lugs = cap_lug_polys()
+    print(f"three lugs ({len(lugs)}), {min(p.area for p in lugs):.0f} mm2 each, r {CAP_LUG_R0} to {CAP_LUG_R1}, {CAP_LUG_H} deep: they meet the spokes at {bind} deg of play (drawn {CAP_LUG_CLR} a side), so the lugs align the cap and the screws clamp it")
     screws = [m.copy().apply_translation([0, AXIS_Y, OP_Z0]) for m in cap_screws()]
     thru = max(I(cp, m).volume for m in screws)
     wall = []
@@ -504,12 +514,11 @@ def onepiece_checks(A):
     print("2 mm swept clearance (teeth and cap):", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle")), "mm3")
     n, c, ar = P.face_normals, P.triangles_center, P.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
-    lip = steep & (np.hypot(c[:, 0], c[:, 1]) < OP_BORE / 2 + 0.05) & (abs(c[:, 2] - (OP_L - OP_LIP_T)) < 0.05)
-    print(f"body print orientation (ratchet face down): {ar[steep & ~lip].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5), "
-          f"plus the lip's underside {ar[lip].sum():.1f} mm2, a {(OP_BORE - OP_LIP_D) / 2:.2f} mm ledge, under one line width")
+    print(f"body print orientation (ratchet face down): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5)")
+    print(f"bearing hole: one plain {OP_BORE} diameter from the shoulder (z {OP_Z0 + hz - OP_Z0:.2f}) through the far face, no lip; the bearing's far end sits {OP_L - OP_SEAT_L + OP_SEAT_L - HF0612_LEN - (OP_L - OP_SEAT_L):.2f} below the face, under the cap's 7.0 hole, so the cap keeps it in")
     Cp = spool_cap_print(); n, c, ar = Cp.face_normals, Cp.triangles_center, Cp.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
-    print(f"cap print orientation (line-side face down): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5); "
+    print(f"cap print orientation (outer face down, lugs up): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5); "
           f"{Cp.extents[2]:.1f} tall, watertight {Cp.is_watertight}")
     cut, p_in, ax = anchor_hole()
     o = p_in + ax * 5; locs, _, _ = P.ray.intersects_location(np.array([o]), np.array([-ax]))
