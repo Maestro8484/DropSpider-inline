@@ -146,26 +146,32 @@ def spool_body_print():
     b.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); b.apply_translation([0, 0, 14])   # flange on the bed
     return b
 
-# Rev C.3 one-piece spool (handoff_spool_onepiece.md, 2026-10-02): ratchet, separator, barrel and far flange as one
-# part, no screws. Prints ratchet face down with no supports: everything above the teeth is smaller than them, and
-# the far flange rises off the barrel on a 45 degree chamfer. Part z 0 = motor face, installed at OP_Z0, print
-# orientation = installed orientation. 14.5 long, the owner's assembled three-part stack measured 14.6 (owner
-# 2026-10-02). The separator is r 28, inside the finger's reach (closest r 29.4), so the finger can overlap it
-# along the rod and never touch it; the teeth are the finger plate's 7 mm and sit across it. The HF0612 (owner
-# measured 9.99 across, 11.89 long) is held both ways: a printed shoulder on the motor side, and a small snap lip
-# at the flange face that it is pressed past. Line anchor printed in: the hole doc 05 step 5 drilled by hand.
+# Rev C.3 one-piece spool (handoff_spool_onepiece.md, 2026-10-02): ratchet, separator, barrel as one part, no
+# screws. Prints ratchet face down with no supports: everything above the teeth is smaller than them. Part z 0 =
+# motor face, installed at OP_Z0, print orientation = installed orientation. The separator is r 28, inside the
+# finger's reach (closest r 29.4), so the finger can overlap it along the rod and never touch it; the teeth are the
+# finger plate's 7 mm and sit across it. The HF0612 (owner measured 9.99 across, 11.89 long) is held both ways: a
+# printed shoulder on the motor side, and a small snap lip at the far face that it is pressed past. Line anchor
+# printed in: the hole doc 05 step 5 drilled by hand.
+# Rev C.4 (handoff_spool_rev_c4.md, 2026-10-04): the line came off the far side over the C.3 flange, a 2 mm wall
+# that was a 45 degree ramp, and the line's feed point (z 45) landed on that ramp, 0.5 past the barrel. Now the
+# separator is 3.75 thick so the barrel is centred on z 45, the body ends flat at the barrel's far edge, and the
+# far wall is a separate flat cap (spool_cap): a 2 mm disc, r 32, 7 mm above the barrel, with three lugs that drop
+# into the spoke windows so it turns with the spool. Spacer B clamps it; no screws, no glue.
 OP_Z0 = 32.5           # installed z of the motor face = FINGER_Z0, so the teeth sit across the finger plate
 OP_TEETH_T = 7.0       # teeth z 0..7, the finger plate's thickness
-OP_SEP_R, OP_SEP_T = 28.0, 1.5        # separator z 7..8.5
-OP_BARREL_W = 3.5      # flat barrel z 8.5..12, r 25 (same width as the Rev C.2 barrel)
-OP_FLANGE_R = 27.0     # far flange: 45 degree chamfer r 25 to 27 (z 12..14), then a 0.5 rim (14..14.5)
-OP_RIM_T = 0.5
+OP_SEP_R, OP_SEP_T = 28.0, 3.75       # separator z 7..10.75 (C.3: 1.5), so the barrel is centred on the line at z 45
+OP_BARREL_W = 3.5      # flat barrel z 10.75..14.25, r 25 (same width as the Rev C.2 barrel); the body ends here, flat
 HF0612_LEN = 11.89     # owner measured 2026-10-02 (9.99 across)
 OP_SEAT_L = 12.0       # shoulder to the lip's underside: 0.1 longer than the bearing
-OP_LIP_D, OP_LIP_T = 9.9, 0.6   # snap lip at the flange face: 0.3 straight at 9.9 drawn (prints about 9.7 to 9.8) against the 9.99 bearing, under a 0.3 45 degree ramp so it presses past
+OP_LIP_D, OP_LIP_T = 9.9, 0.6   # snap lip at the far face: 0.3 straight at 9.9 drawn (prints about 9.7 to 9.8) against the 9.99 bearing, under a 0.3 45 degree ramp so it presses past
 OP_BARREL_Z0 = OP_TEETH_T + OP_SEP_T
-OP_CHAMFER_Z0 = OP_BARREL_Z0 + OP_BARREL_W
-OP_L = OP_CHAMFER_Z0 + (OP_FLANGE_R - BARREL_D / 2) + OP_RIM_T
+OP_L = OP_BARREL_Z0 + OP_BARREL_W     # 14.25: the body ends at the barrel's far edge (C.3 was 14.5 with the ramp and rim)
+CAP_R, CAP_T = 32.0, 2.0              # far wall: flat disc, 7 above the barrel (the Rev C.2 flange's r 32), on the body's far face
+CAP_HOLE_D = 7.0                      # clears the 6 rod; spacer B's 9.6 end bears on the cap round it (ring r 3.5 to 4.8)
+CAP_LUG_H = 3.0                       # lugs stand off the cap's line-side face into the spoke windows
+CAP_LUG_R0, CAP_LUG_R1 = 11.0, 19.0   # lugs live in the middle of each window: clear of the HF0612 hub (r 9) and the line stub at the skin (r 21.9 in)
+CAP_LUG_CLR = 0.4                     # drawn gap, lug side to spoke side (windows print 0.1 to 0.2 small a side, so about 0.2 real)
 OP_BORE = 10.2         # plain press hole for the HF0612 (owner 2026-10-01: 10.3 slips under more than the spider's weight)
 OP_SHOULDER_R = 3.5    # hole under the bearing: 7.0 clears the 6 rod, so spacer A's 8 mm nose bears on the face round it (owner 2026-10-02)
 OP_RIB_BORE, OP_RIB_TIP, OP_RIBS, OP_RIB_W = 10.4, 10.0, 6, 1.0   # crush-rib option: 10.4 hole, six ribs 0.2 high (AON3D's 0.2 mm), 1.0 wide at the base
@@ -208,10 +214,8 @@ def spool_onepiece(ribs=False):
     """Installed orientation = print orientation: motor face (z 0) on the bed."""
     body = U(extrude_polygon(ratchet_poly(), OP_TEETH_T),
              cyl(OP_SEP_R, OP_SEP_T, OP_TEETH_T),
-             cyl(BARREL_D / 2, OP_BARREL_W + 0.01, OP_BARREL_Z0, sections=192),
-             _flange_cone(),
-             cyl(OP_FLANGE_R, OP_RIM_T, OP_L - OP_RIM_T))
-    seat_z0 = OP_L - OP_LIP_T - OP_SEAT_L                   # shoulder; the bearing ends 0.6 below the flange face, under the lip
+             cyl(BARREL_D / 2, OP_BARREL_W, OP_BARREL_Z0, sections=192))
+    seat_z0 = OP_L - OP_LIP_T - OP_SEAT_L                   # shoulder; the bearing ends 0.6 below the far face, under the lip
     bore = OP_RIB_BORE if ribs else OP_BORE
     cuts = [cyl(bore / 2, OP_SEAT_L, seat_z0), cyl(OP_SHOULDER_R, seat_z0 + 1.01, -1),
             cyl(OP_LIP_D / 2, OP_LIP_T + 1, OP_L - OP_LIP_T - 0.01),
@@ -223,11 +227,32 @@ def spool_onepiece(ribs=False):
     if ribs: m = U(m, *crush_ribs(seat_z0, seat_z0 + OP_SEAT_L))
     return m
 
-def _flange_cone():
-    """Solid of revolution under the far flange: r 25 at the barrel's edge widening at 45 degrees to r 28."""
-    h = OP_FLANGE_R - BARREL_D / 2
-    prof = [(0, 0), (BARREL_D / 2, 0), (OP_FLANGE_R, h), (0, h)]
-    v = trimesh.creation.revolve(np.array(prof), sections=192); v.apply_translation([0, 0, OP_CHAMFER_Z0]); return v
+def cap_lug_polys():
+    """The three lugs as flat outlines: each spoke window shrunk by CAP_LUG_CLR all round, kept to the band r 11 to 19,
+    so every lug side runs parallel to its spoke 0.4 away and the lug drops in by hand. Same angular places as the
+    windows (midway between the spokes at 0, 120 and 240 degrees)."""
+    from shapely.geometry import Point
+    band = Point(0, 0).buffer(CAP_LUG_R1, 256).difference(Point(0, 0).buffer(CAP_LUG_R0, 256))
+    out = []
+    for w in spoke_window_polys(SPOKE_W / 2):
+        p = w.buffer(-CAP_LUG_CLR, 64).intersection(band)
+        out += list(getattr(p, "geoms", [p]))
+    return out
+
+def spool_cap():
+    """Rev C.4 far wall, in the body's frame: a flat disc r 32, CAP_T thick, its line-side face at z OP_L (on the body's
+    far face), lugs reaching down into the spoke windows to z OP_L - CAP_LUG_H. Centre hole 7.0 (the rod), chamfered
+    both ends. Spacer B's end bears on the outer face round the hole. No screws: the lugs carry the turn, spacer B the clamp."""
+    disc = cyl(CAP_R, CAP_T, OP_L, sections=192)
+    lugs = [extrude_polygon(p, CAP_LUG_H + 0.01).apply_translation([0, 0, OP_L - CAP_LUG_H]) for p in cap_lug_polys()]
+    m = U(disc, *lugs)
+    return D(m, cyl(CAP_HOLE_D / 2, CAP_T + CAP_LUG_H + 2, OP_L - CAP_LUG_H - 1),
+             hole_chamfer(CAP_HOLE_D / 2, OP_L + CAP_T, True), hole_chamfer(CAP_HOLE_D / 2, OP_L, False))
+
+def spool_cap_print():
+    """Outer face (spacer B side) on the bed, lugs up: nothing hangs over air. Flipped about x; the windows are symmetric
+    about the x axis (spokes at 0, 120, 240), so the lugs still land in them."""
+    m = spool_cap(); m.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])); m.apply_translation([0, 0, OP_L + CAP_T]); return m
 
 # ---------------- bracket ----------------
 def csk(x, z, head_d=6.4):
@@ -376,6 +401,7 @@ PARTS = {
     "spool_shield": spool_shield_print,
     "spool_onepiece": spool_onepiece,                                  # Rev C.3, replaces the three above once the owner has it in hand
     "spool_onepiece_ribs": lambda: spool_onepiece(ribs=True),          # same part, crush-rib bearing hole instead of the plain 10.2
+    "spool_cap": spool_cap_print,                                      # Rev C.4 far wall on the one-piece: flat disc with three lugs
     "bearing_retainer": bearing_retainer_print,
     "bracket": bracket_print,
     "finger": finger_print,
@@ -387,6 +413,7 @@ PARTS = {
     "ld2450_cradle": ld2450_cradle_print,
     "ld2450_fork_screw": lambda: __import__("sensor_mount").ld2450_fork_screw_print(),   # the radar fork, both installs: 2x M3, no glue (owner 2026-09-27; the glued ld2450_fork is retired)
     "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),
+    "fairlead_base_ptfe": lambda: __import__("inverted").fairlead_base_print(ptfe=True),   # same block, straight 4.3 bore for the 4 mm PTFE guide tube (2026-10-04)
     "fairlead_flap_inv": lambda: __import__("inverted").fairlead_flap_inv_print(),   # inverted install only: doc 09 flap plus the tab under the switch roller (2026-09-28)             # inverted install only (docs/06): fairlead block under the base
 }
 
@@ -420,56 +447,87 @@ def assembly():
     return A
 
 def onepiece_checks(A):
-    """Rev C.3 one-piece spool in place of the three-part stack, with spacer A 4 and spacer B 48."""
-    print("--- one-piece spool (spool_onepiece) ---")
-    P = spool_onepiece()
+    """Rev C.4 one-piece spool and its cap in place of the three-part stack, with spacer A 2.5 and spacer B 51.25."""
+    print("--- one-piece spool (spool_onepiece) and cap (spool_cap), Rev C.4 ---")
+    P = spool_onepiece(); C = spool_cap()
     sp = P.copy(); sp.apply_translation([0, AXIS_Y, OP_Z0])
+    cp = C.copy(); cp.apply_translation([0, AXIS_Y, OP_Z0])
+    both = U(sp, cp)
+    L = OP_L + CAP_T
     near = dict(A)
     hz = OP_Z0 + OP_L - OP_LIP_T - OP_SEAT_L
     near["hf0612"] = D(cyl(HF0612_OD / 2 - 0.01, HF0612_LEN, hz + 0.05, 0, AXIS_Y), cyl(3, 14, hz - 1, 0, AXIS_Y))
     near["spacer_A"] = spacer_a_nose(OP_Z0 - 30); near["spacer_A"].apply_translation([0, AXIS_Y, 30])
     face = I(near["spacer_A"].copy().apply_translation([0, 0, 0.05]), sp).volume / 0.05
     print(f"spacer A's 8 mm nose on the spool's motor face: {face:.1f} mm2 of contact (nose r {SPACER_B_NOSE}, hole r {OP_SHOULDER_R} + 0.2 chamfer)")
-    near["spacer_B"] = D(cyl(SPACER_B_R, 100 - OP_Z0 - OP_L, OP_Z0 + OP_L, 0, AXIS_Y), cyl(3.25, 60, OP_Z0 + OP_L - 1, 0, AXIS_Y))
-    print(f"z {OP_Z0:.1f} to {OP_Z0 + OP_L:.1f} ({OP_L:.1f} long); spacer A {OP_Z0 - 30:.1f}, spacer B {100 - OP_Z0 - OP_L:.1f}")
+    near["spacer_B"] = D(cyl(SPACER_B_R, 100 - OP_Z0 - L, OP_Z0 + L, 0, AXIS_Y), cyl(3.25, 60, OP_Z0 + L - 1, 0, AXIS_Y))
+    faceB = I(near["spacer_B"].copy().apply_translation([0, 0, -0.05]), cp).volume / 0.05
+    print(f"spacer B's 9.6 end on the cap's outer face: {faceB:.1f} mm2 of contact (ring r {CAP_HOLE_D / 2} + chamfer to {SPACER_B_R})")
+    print(f"body z {OP_Z0:.2f} to {OP_Z0 + OP_L:.2f} ({OP_L:.2f}), cap to {OP_Z0 + L:.2f} ({L:.2f} in all); spacer A {OP_Z0 - 30:.2f}, spacer B {100 - OP_Z0 - L:.2f} "
+          f"(C.3 one-piece was {OP_Z0 + 14.5 - OP_Z0:.1f} long, spacer B 53.0: {53.0 - (100 - OP_Z0 - L):.2f} less shim on the 606ZZ side)")
+    bz0, bz1 = OP_Z0 + OP_BARREL_Z0, OP_Z0 + OP_L
+    import inverted as V
+    print(f"barrel flat z {bz0:.2f} to {bz1:.2f}, line feed point z {V.LINE_Z:.1f}: {V.LINE_Z - bz0:.2f} from the separator, {bz1 - V.LINE_Z:.2f} from the cap; "
+          f"centred with 1 mm to spare each side: {V.LINE_Z - bz0 >= 1.0 and bz1 - V.LINE_Z >= 1.0}")
+    print(f"cap wall {CAP_R - BARREL_D / 2:.1f} above the barrel, separator wall {OP_SEP_R - BARREL_D / 2:.1f} (C.3 far wall was 2.0, a ramp)")
     for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle",
               "hf0612", "spacer_A", "spacer_B", "rod_6mm", "bearing_606"):
         v = I(sp, near[f]).volume
         if v > 0.05: print(f"CLASH spool_onepiece x {f}: {v:.2f}")
+        v = I(cp, near[f]).volume
+        if v > 0.05: print(f"CLASH spool_cap x {f}: {v:.2f}")
+    fit = I(sp, cp).volume
+    print(f"cap lugs drop into the spoke windows (cap x body overlap {fit:.2f} mm3): {fit < 0.01}")
+    bind = None
+    for deg in np.arange(0.25, 6.0, 0.25):
+        rr = cp.copy(); rr.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, AXIS_Y, 0]))
+        if I(sp, rr).volume > 0.5: bind = deg; break
+    print(f"cap locked against turning on the body: {bind is not None} (lugs meet the spokes at {bind} deg of play, drawn {CAP_LUG_CLR} a side)")
+    lugs = [p for p in cap_lug_polys()]
+    print(f"three lugs: {len(lugs)}, each {min(p.area for p in lugs):.0f} to {max(p.area for p in lugs):.0f} mm2, r {CAP_LUG_R0} to {CAP_LUG_R1}, {CAP_LUG_H} deep")
     fv = A["finger"].vertices
     rmin = np.min(np.hypot(fv[:, 0], fv[:, 1] - AXIS_Y))
-    print(f"finger tip closest r {rmin:.2f}, separator and flange r {OP_SEP_R}: {rmin - max(OP_SEP_R, OP_FLANGE_R):.2f} mm apart, so no contact at any slide along the rod")
+    print(f"finger tip closest r {rmin:.2f}, separator r {OP_SEP_R}: {rmin - OP_SEP_R:.2f} mm apart, so no contact at any slide along the rod; cap r {CAP_R} starts {OP_Z0 + OP_L - (FINGER_Z0 + 7):.2f} past the finger plate")
     print(f"teeth z {OP_Z0:.1f} to {OP_Z0 + OP_TEETH_T:.1f} cover the finger plate z {FINGER_Z0:.1f} to {FINGER_Z0 + 7:.1f}:",
           OP_Z0 <= FINGER_Z0 and OP_Z0 + OP_TEETH_T >= FINGER_Z0 + 7)
-    rest = D(sp, cyl(40, OP_TEETH_T, OP_Z0, 0, AXIS_Y))
+    rest = D(both, cyl(40, OP_TEETH_T, OP_Z0, 0, AXIS_Y))
     slid = [I(A["finger"], rest.copy().apply_translation([0, 0, dz])).volume for dz in (-5, -2.5, 0, 2.5, 5)]
-    print("finger vs separator, barrel, flange with the part slid -5 to +5 mm:", "clear" if max(slid) < 0.01 else f"TOUCHES {np.round(slid, 2)}")
+    print("finger vs separator, barrel, cap with the part slid -5 to +5 mm:", "clear" if max(slid) < 0.01 else f"TOUCHES {np.round(slid, 2)}")
     seat = []
     for deg in np.arange(0, 360 / TEETH, 0.25):
         rr = sp.copy(); rr.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, AXIS_Y, 0]))
         if I(A["finger"], rr).volume < 0.05: seat.append(deg)
     print("finger seats in a tooth gap:", bool(seat), f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle)")
-    ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=OP_L); ring.apply_translation([0, AXIS_Y, OP_Z0 + OP_L / 2])
-    print("2 mm swept clearance:", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle")), "mm3")
+    ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=L); ring.apply_translation([0, AXIS_Y, OP_Z0 + L / 2])
+    print("2 mm swept clearance (teeth and cap):", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle")), "mm3")
     n, c, ar = P.face_normals, P.triangles_center, P.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
     lip = steep & (np.hypot(c[:, 0], c[:, 1]) < OP_BORE / 2 + 0.05) & (abs(c[:, 2] - (OP_L - OP_LIP_T)) < 0.05)
-    print(f"print orientation (ratchet face down): {ar[steep & ~lip].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5), "
+    print(f"body print orientation (ratchet face down): {ar[steep & ~lip].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5), "
           f"plus the lip's underside {ar[lip].sum():.1f} mm2, a {(OP_BORE - OP_LIP_D) / 2:.2f} mm ledge, under one line width")
+    Cp = spool_cap_print(); n, c, ar = Cp.face_normals, Cp.triangles_center, Cp.area_faces
+    steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
+    print(f"cap print orientation (outer face down, lugs up): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5); "
+          f"{Cp.extents[2]:.1f} tall, watertight {Cp.is_watertight}")
     cut, p_in, ax = anchor_hole()
     o = p_in + ax * 5; locs, _, _ = P.ray.intersects_location(np.array([o]), np.array([-ax]))
     first = locs[np.argmin(np.linalg.norm(locs - o, axis=1))] if len(locs) else None
     print("line hole open through the skin:", first is None or np.hypot(first[0], first[1]) < SHELL_R - 0.5,
-          f"(installed z {OP_Z0 + p_in[2]:.1f}, {OP_ANCHOR_DEG:.0f} deg, between spokes)")
+          f"(installed z {OP_Z0 + p_in[2]:.2f}, {OP_ANCHOR_DEG:.0f} deg, between spokes)")
     rad = np.array([math.cos(math.radians(OP_ANCHOR_DEG)), math.sin(math.radians(OP_ANCHOR_DEG)), 0])
     ctr = rad * (math.sqrt((SHELL_R - 0.875) ** 2 - 25) - 0.05) + np.array([0, 0, p_in[2]])   # 10 mm stub resting on its ends against the skin
     hf = near["hf0612"].copy(); hf.apply_translation([0, -AXIS_Y, -OP_Z0])
-    worst = 0.0
-    for th in range(0, 180, 15):
+    worst = {"body": 0.0, "cap": 0.0, "HF0612": 0.0}
+    room = OP_L - p_in[2] - 0.1                                   # stub centre to the cap's face: the stub tips until its end's top edge meets the cap
+    tilt = max(t for t in range(0, 90) if 5 * math.sin(math.radians(t)) + 0.875 * math.cos(math.radians(t)) <= room)
+    for th in np.arange(-tilt, tilt + 0.1, 3):
         d = math.cos(math.radians(th)) * np.cross([0, 0, 1.0], rad) + math.sin(math.radians(th)) * np.array([0, 0, 1.0])
         st = trimesh.creation.cylinder(radius=0.875, height=10, sections=24); st.apply_transform(trimesh.geometry.align_vectors([0, 0, 1], d)); st.apply_translation(ctr)
-        worst = max(worst, I(P, st).volume, I(hf, st).volume)
-    print("10 x 1.75 filament stub across the hole, every angle 0 to 165 deg: clear of the part and the HF0612:", worst < 0.01)
+        for k, m in (("body", P), ("cap", C), ("HF0612", hf)): worst[k] = max(worst[k], I(m, st).volume)
+    print(f"10 x 1.75 filament stub across the hole, flat along the barrel and tipped up to {tilt} deg either way (the cap's face is {room + 0.1:.2f} past the hole): "
+          f"clear of the body, the cap's lugs and the HF0612: {max(worst.values()) < 0.01}" + ("" if max(worst.values()) < 0.01 else f" HITS {worst}"))
+    touch = I(sp, cp.copy().apply_translation([0, 0, -0.05])).volume / 0.05
+    print(f"cap's line-side face sits on the body's far face: {touch:.0f} mm2 of contact (the window ends are closed by the cap, so the stub cannot leave the window)")
 
 if __name__ == "__main__":
     for name, fn in PARTS.items():

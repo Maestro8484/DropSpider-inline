@@ -110,6 +110,10 @@ SWV_BODY_BOT = SWV_BODY_TOP - (F.SW_BODY_BOT - F.SW_BODY_TOP)   # lever face, -2
 SWV_ROLL_Y = SWV_BODY_BOT - 9.8 + 2.4 # roller centre (lever and roller stack 9.8): 0.2 above the tab with the flap level
 SWV_HOLES_Z = (SWV_Z0 + 5.25, SWV_Z0 + 5.25 + 9.5)
 BORE_R = 2.0                          # bore throat radius (4.0 mm)
+PTFE_OD, PTFE_BORE_DRAWN = 4.0, 4.3   # owner 2026-10-04: a 4 mm PTFE guide tube (the 3D printer kind, 2 mm bore) runs from the column's underside up
+                                      # through the base to just short of the spool, so the line has no free span to balloon in. Bore drawn 4.3,
+                                      # straight (holes print 0.1 to 0.2 small a side): a snug push fit, no glue. The plain block keeps its flared 4.0 bore.
+PTFE_TIP_CLR = 2.0                    # tube tip to the spinning cap: the same 2 mm as every other spool clearance
 SW_PILOT_D, SW_PILOT_DEPTH = 1.8, 6.5 # owner 2026-09-28: switch on 2x M2 x 12 self-tapping into the plastic, holes 6.5 deep; 1.8 drawn prints about 1.6
 REST_SHAVE = 1.25                     # owner 2026-09-28: rest pad shortened 1.25 mm
 COL_R = 1.5                           # owner 2026-09-28: the bore column's four long edges rounded (build123d trial's fillet)
@@ -144,6 +148,23 @@ def bore_inv():
     v.apply_translation([LINE_X, 0.05, LINE_Z]); return v
 
 
+def bore_ptfe():
+    """Straight bore for the PTFE tube, right through the column (y 0.5 to the stop face and 0.5 past it)."""
+    return G.vcyl(PTFE_BORE_DRAWN / 2, -STOP_Y_INV + 1.0, STOP_Y_INV - 0.5, LINE_X, LINE_Z)
+
+
+def ptfe_tip_y():
+    """Highest the tube's tip may reach: its wall nearest the rod (x LINE_X - 2) stays PTFE_TIP_CLR outside the cap's swept r 32."""
+    R = G.CAP_R + PTFE_TIP_CLR
+    return G.AXIS_Y - math.sqrt(R ** 2 - (LINE_X - PTFE_OD / 2) ** 2)
+
+
+def ptfe_tube():
+    """The tube in place: flush with the column's underside (the stop face), up through the base, tip at ptfe_tip_y()."""
+    y0, y1 = STOP_Y_INV, ptfe_tip_y()
+    return G.D(G.vcyl(PTFE_OD / 2, y1 - y0, y0, LINE_X, LINE_Z), G.vcyl(1.0, y1 - y0 + 2, y0 - 1, LINE_X, LINE_Z))
+
+
 def yprism(poly, y0, y1):
     """A shapely polygon drawn in (x, z), extruded along y from y0 to y1."""
     m = G.extrude_polygon(poly, y1 - y0)
@@ -159,10 +180,10 @@ def rounded(boxes, r):
     return p.buffer(-r, 32).buffer(r, 32).buffer(r, 32).buffer(-r, 32)
 
 
-def fairlead_base():
+def fairlead_base(ptfe=False):
     """v2: mounting plate on the base, a bore column whose underside is the flap's hard stop, the hinge
     boss, the rest stop, and a switch plate on the outer side with a nut gap behind it. Rounded column
-    and lightening windows (owner 2026-09-28)."""
+    and lightening windows (owner 2026-09-28). ptfe=True: the straight 4.3 bore for the PTFE guide tube."""
     bx = G.bx
     x0, x1, z0, z1 = COL
     plate = bx(19, 37, -4, 0, 24, 93)                                   # mounting plate, same footprint as v1 plus the switch plate
@@ -174,7 +195,7 @@ def fairlead_base():
     rest = G.I(bx(24.0, x1, rest_y0, STOP_Y_INV, 63.5, 67.5), yprism(col_xz, rest_y0 - 1, STOP_Y_INV + 1))   # rest stop over the flap tail, shortened 1.25 (owner); trimmed to the column's round corner so it hangs over nothing
     splate = bx(GAP_X[0], PLATE_X[1], PLATE_Y0, 0, PLATE_Z[0], PLATE_Z[1])   # solid from the column to the switch face (x 31 to 37), no nut gap
     body = G.U(plate, *bosses, column, hinge, rest, splate)
-    cuts = [bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
+    cuts = [bore_ptfe() if ptfe else bore_inv(), F.xcyl(0.95, 28.5, 37, PIN_Y, HINGE_Z)]
     cuts += [yprism(rounded(w, WIN_R), STOP_Y_INV - 1, 1) for w in [[COL_WIN]] + PLATE_WINS]   # lightening windows, right through
     for z in SWV_HOLES_Z:                                               # M2 x 12 self-tapping, 6.5 deep from the switch face
         cuts += [F.xcyl(SW_PILOT_D / 2, PLATE_X[1] - SW_PILOT_DEPTH, PLATE_X[1] + 1, SWV_HOLE_Y, z)]
@@ -182,9 +203,9 @@ def fairlead_base():
     return G.D(body, *cuts)
 
 
-def fairlead_base_print():
+def fairlead_base_print(ptfe=False):
     """Mounting face (y 0) on the bed; everything grows from it, so no supports and a dead-flat face."""
-    m = fairlead_base()
+    m = fairlead_base(ptfe)
     m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))   # -y -> +z
     m.apply_translation(-m.bounds[0]); return m
 
@@ -347,3 +368,26 @@ if __name__ == "__main__":
           f"the PLA base only sits on their flat legs (x {X_BEAM - BRACE_LEG:.0f} to {X_BEAM - BRACE_T:.0f}), in compression; "
           f"the braces' top beam screws see about {M / (BRACE_LEG - 20) / 2:.0f} N each")
     print(f"line falls {abs(LINE_X - X_BEAM):.0f} mm from the beam's face; base {CEILING_Y:.0f} below the ceiling; bead at rest {CEILING_Y - (FL_Y - 4):.0f} below the ceiling; spider bottom = that + 30 + spider height (beam edge 254)")
+    # PTFE guide tube in the ptfe block (owner 2026-10-04): no free span for the line between the spool and the fairlead
+    print("--- PTFE guide tube (fairlead_base_ptfe) ---")
+    pb = fairlead_base(ptfe=True); tube = ptfe_tube(); tip = ptfe_tip_y()
+    pp = fairlead_base_print(ptfe=True); down = (pp.face_normals[:, 2] < -0.7) & (pp.triangles_center[:, 2] > 0.01)
+    print(f"fairlead_base_ptfe watertight={pb.is_watertight} vol={pb.volume / 1000:.1f}cm3; print overhang off the bed {pp.area_faces[down].sum():.0f} mm2; bore {PTFE_BORE_DRAWN} straight, {-STOP_Y_INV:.0f} long")
+    bv = A["bracket"].vertices; near = (abs(bv[:, 0] - LINE_X) < 8) & (abs(bv[:, 2] - LINE_Z) < 8)
+    plate_t = bv[near, 1].max()
+    print(f"tube: {PTFE_OD} OD, {tip - STOP_Y_INV:.0f} mm long (cut {math.ceil(tip - STOP_Y_INV)}), flush with the column's underside at y {STOP_Y_INV:.0f}, through the base plate (y 0 to {plate_t:.0f}), "
+          f"tip at y {tip:.1f}: {tip - plate_t:.1f} above the base's inner face, {G.AXIS_Y - tip:.1f} below where the line leaves the barrel (y {G.AXIS_Y:.0f})")
+    print(f"free span of line, barrel to the nearest guide: was {G.AXIS_Y - plate_t:.0f} mm to a 7 mm hole; now {G.AXIS_Y - tip:.1f} mm to a 2 mm bore")
+    sp = G.spool_onepiece(); sp.apply_translation([0, G.AXIS_Y, G.OP_Z0]); cp = G.spool_cap(); cp.apply_translation([0, G.AXIS_Y, G.OP_Z0])
+    spool = G.U(sp, cp); fat = G.vcyl(PTFE_OD / 2 + PTFE_TIP_CLR, tip - STOP_Y_INV, STOP_Y_INV, LINE_X, LINE_Z)
+    worst = 0.0
+    for deg in range(0, 360, 15):
+        r = spool.copy(); r.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, G.AXIS_Y, 0]))
+        worst = max(worst, G.I(fat, r).volume)
+    print(f"tube plus {PTFE_TIP_CLR} mm all round vs the spool body and cap at every 15 deg: {'clear' if worst < 0.01 else 'HITS %.2f mm3' % worst}")
+    for k in ("bracket", "finger", "fairlead_flap", "switch_kw12", "servo_sg90", "ld2450_fork_screw", "ld2450_cradle", "electronics"):
+        v = G.I(tube, A[k]).volume
+        if v > 0.05: print(f"CLASH ptfe_tube x {k}: {v:.2f}")
+    print(f"tube inside the ptfe block's bore: {G.I(tube, pb).volume:.2f} mm3 overlap (0 = fits; the plain block's throat is drawn 4.0 and prints about 3.7 to 3.8, so it does not take the 4.0 tube)")
+    path = G.vcyl(0.3, 100, -60, LINE_X, LINE_Z)
+    print(f"line path clear through the tube and the ptfe block: {G.I(path, tube).volume < 0.01 and G.I(path, pb).volume < 0.01}")
