@@ -20,20 +20,21 @@ H1,uxcell 5 to 6 mm rigid coupler L20 D12,1,amazon.com,B07P5Z25H8,ordered,blue t
 H2,6 mm x 100 mm hardened chrome rod,1,amazon.com,B0D2BK3X8P,ordered,
 H3,HF0612 one-way needle bearing,1,amazon.com,B0BKY2ZSTR,ordered,5 pk; orientation matters
 H4,606ZZ bearing 6x17x6,1,amazon.com,B0FQ4WJ8FQ,ordered,10 pk
-N1,2 mm round elastic cord,150 mm,any,,ONLY IF,snubber: only if the line is braid or fluorocarbon; not with nylon mono
+N1,2 mm round elastic cord,150 mm,any,,ONLY IF,snubber: only if the line is braid or fluorocarbon; not with the nylon thread
 N2,8 mm hard plastic bead,1,any,,TO BUY,stop bead
 N3,small fishing barrel swivel (size 10 to 14),1,any,,TO BUY,
-N4,2 to 4 lb nylon monofilament fishing line (3 lb in use),2 m,any,,HAVE,its stretch is the shock absorber; 3 lb snaps at about 13 N
+N4,bonded nylon upholstery thread size 69 (Tex 70) black (0.29 mm; 11 lb; about 22 percent stretch; owner 2026-10-04),2.2 m,WAWAK or any,,have?,its stretch is the shock absorber; replaces 3 lb nylon mono (coil memory sprang wraps off the barrel); polyester thread is the fallback for months outdoors
+N13,4 mm OD PTFE tube (3D printer kind; 2 mm bore),41 mm,any,,ONLY IF,optional guide tube up through the base hole (inverted install; doc 09)
 N5,470 uF 16 V electrolytic capacitor,1,any,,ONLY IF ESP32 RESETS,at the servo; skip unless the board restarts when the finger moves
 N6,5.5 x 2.1 mm DC extension cable 3 to 5 m,1,any,,TO BUY,12 V to ceiling
 N7,#4 x 1 in pan-head screws + ribbed drywall anchors,4,any,,TO BUY,ceiling install only; the inverted install screws the owner's braces to the beam with his own screws
 N8,M3x8 self-tapping or machine screws,3,any,,have?,spool disk to body
 N9,M2.5x6 screws,4,any,,have?,motor
 N10,4-conductor cable 1 m or dupont extensions,1,any,,have?,sensor lead
-N11,soft foam spider about 13 g (owner); 30 g max on 2 to 3 lb line,1,any,,HAVE,Rev C.1: motor must stop it
+N11,soft foam spider about 13 g brought to about 30 g with added weight (owner 2026-10-04); under 60 g until the bench says more,1,any,,HAVE,Rev C.1: motor must stop it
 N12,74AHCT125 quad buffer,1,any,,ONLY IF V1 FAILS,logic level
-PRINT,bracket / spool_body / spool_ratchet / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork_screw / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
-PRINT-INV,fairlead_base (replaces fairlead_body),1,printed,cad/stl,ONLY IF inverted install,doc 06 alternative and doc 09
+PRINT,bracket / spool_onepiece + spool_cap (Rev C.4) / spacer_A_nose_7_5mm / fairlead_body / fairlead_flap (+1 spare) / finger (+1 spare) / ld2450_fork_screw / ld2450_cradle / spacer_A_6mm / spacer_B_50mm / shims only if needed,,printed,cad/stl,,PLA; finger PETG preferred; cad/retired/line_guide.stl is obsolete
+PRINT-INV,fairlead_base (replaces fairlead_body); fairlead_base_ptfe instead only if a wedged PTFE tube walks,1,printed,cad/stl,ONLY IF inverted install,doc 06 alternative and doc 09
 I1,M3 x 12 screw,2,any,,have?,inverted install only: fairlead_base to the base from inside; cuts its own thread
 I3,M3 x 10 bolt + M3 nut,2,any,,have?,inverted install only: ld2450_fork_screw to the base, nuts inside
 H10,M3 x 10 countersunk screw + M3 nut,2,any,,have?,ceiling install: ld2450_fork_screw to the base, heads flush with the ceiling face, nuts on the fork

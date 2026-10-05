@@ -1,10 +1,10 @@
-# Handoff: spool Rev C.4, the line must stay on the spool
+# Handoff: spool Rev C.4 on the bench, the line must stay on the spool
 
-The line comes off the far (606ZZ) side of `spool_onepiece` and winds onto the rod and spacer (owner 2026-10-04: "line slips off side once = spool all off on smaller axle side"). Redesign the spool so it cannot, keeping what the one-piece fixed. For a CAD session working with the owner (Joe).
+Print, fit and bench-test the Rev C.4 spool (`spool_onepiece` plus `spool_cap`), the bonded nylon thread and the 30 g spider, then close open item V22. For the owner (Joe) at the bench, with a session to log results and update docs.
 
 ## Ground truth first
 
-This file is a work order, not a record. The repo on disk wins: `cad/generate.py` is the source of truth for every dimension below. If this file and the code disagree, the code is right and this file is stale; say so out loud. Staleness check:
+This file is a work order, not a record. The repo on disk wins: `cad/generate.py` and `cad/inverted.py` are the source of truth for every dimension below, and doc 01 describes the design. If this file and the code disagree, the code is right and this file is stale; say so out loud. Staleness check:
 
 ```
 git log -1 --oneline                                  # where the repo is now
@@ -13,44 +13,36 @@ git log -1 --oneline -- docs/handoff_spool_rev_c4.md  # when this file was last 
 
 ## Before you start
 
-1. Ask Joe one line: is `spool_onepiece` the spool on the rod, and where did the line climb out (over the far flange, between the flange and spacer B)? This handoff assumes yes and over the far flange. If it is the old three-part stack, the causes below change; stop and re-read.
-2. Run `cd cad; python generate.py`; every line of the "one-piece spool" block must pass before you change anything.
-3. Read open item V22 in `docs/08_open_items.md`: the causes found in the model, which this work removes.
+1. Run `cd cad; python generate.py`: every line of the one-piece spool and cap block must pass (lugs drop in and lock, feed point centred on the barrel, finger clear and seats, stub clear).
+2. Run `cd cad; python inverted.py`: the PTFE guide tube block must pass (tube clear of the spool body and cap at every angle, line path clear).
+3. Read open item V22 in `docs/08_open_items.md`: still open, waiting on the bench test below.
 
-## What the model shows (the causes, each checked in `cad/generate.py`)
+## Read first
 
-- **The far wall is 2 mm tall and a ramp.** `OP_FLANGE_R` 27 against the 25 barrel, and its inner face is the 45 degree chamfer that let it print without supports: a slope the line can walk up. The old Rev C.2 walls were 7 mm (r 32), vertical.
-- **The line feeds onto that ramp, not the barrel.** The line leaves the spool toward the base hole at z 45 (`inverted.LINE_Z`). After the finger moved 2.5 mm nearer the servo, the barrel sits at z 41 to 44.5 (`OP_Z0` 32.5), so the feed point is 0.5 mm past the barrel's far edge, on the ramp. The 2.5 mm shim move given to Joe on 2026-10-02 put it there.
-- **The motor-side wall is 3 mm** (separator r 28), the most the finger allows (it reaches in to r 29.4); the ratchet face beyond it stands to r 29.
-- **Light line, light spider.** 3 lb mono and a 13 g spider: about 0.13 N of tension on the wraps, so they wind loose, and a loose coil of mono springs outward. Not measured.
-- Prior art, read 2026-10-04: winch drums keep the flange at least 2.5 line diameters above the top wrap and the fleet angle (line's angle off square to the drum) under 2 degrees on a smooth drum ([Firgelli](https://www.firgelliauto.com/blogs/mechanisms/drum-and-rope-conversion), [Dymot](https://www.dymot.co.za/rope-fleeting-angle/)). Those rules assume a tensioned rope. Here the wall is 10 line diameters, which passes the rule, so the escape is slack and loose wraps plus the off-centre feed, the fishing reel's problem more than the winch's.
+1. `docs/01_mechanical_design.md`, section "Rev C.4 spool": parts, z table, cap, stack, line.
+2. `docs/05_assembly.md`, section B (bearing, anchor the line before the cap, cap, wind), step 9 (stack), step 17 (spider), steps 24a and 24b (PTFE tube).
+3. `docs/09_fairlead_switch.md`, the PTFE guide tube paragraph.
 
-## Stopgap Joe can do now, no printing (give it to him first)
+## The work, in order
 
-1. Far side, in this order: spool, the old `spool_shield` disc (64 mm, already printed), a 12 mm shim, spacer B. The disc is a 7 mm vertical wall.
-2. Shift the spool 2 mm toward the 606ZZ: a 2 mm shim between the coupler and `spacer_A_nose_7_5mm`, and 3.5 mm less on the 606ZZ side (2 for the shift, 1.5 for the disc). The barrel then sits under the line hole; the teeth still overlap the finger 5 mm, the minimum in doc 05 step 14.
-3. Rewind the line under a little hand tension so the wraps lie tight.
-
-## The work, in order (advised design; build it, then show Joe)
-
-1. **Keep the body's good parts:** bearing seat with shoulder and snap lip, teeth straight across the finger (z 32.5 to 39.5), separator r 28, printed line hole, ratchet face down with no supports.
-2. **Centre the barrel on the line:** thicken the separator from 1.5 to 3.75 mm so the 3.5 mm barrel runs z 43.25 to 46.75, centred on z 45. Add a check to `onepiece_checks`: the feed point (`inverted.LINE_Z`) lies inside the barrel's flat with at least 1 mm to spare each side.
-3. **Far wall as a separate flat cap:** the body ends at the barrel's far edge (no ramp). A 2 mm disc, r 32 (7 mm above the barrel), vertical face toward the line, centre hole 7.0, three lugs that drop into the three spoke windows so it turns with the spool. Spacer B (or a 12 mm shim) clamps it; no screws, no glue. It prints flat with no supports. The bearing stays wholly in the body, so the wobble fix is kept. Export `spool_cap.stl`.
-4. **Line hole** stays mid-barrel (it moves to z 45 with the barrel); re-run the stub check.
-5. **Stack:** body plus cap in the model is about 16.25 long (z 32.5 to 48.75); write the new spacer and shim numbers for Joe's build, as a change from what he has on the rod.
-6. **Optional, offer, do not default: PTFE guide tube (Joe's idea, 4 mm OD).** What it can and cannot do, from the model: it cannot enter the 3.5 mm channel (4 mm OD) and its tip must stay outside the spinning teeth and cap plus 2 mm (r 35), so the tip ends about 25 mm below where the line leaves the barrel. It is then a closer, low-friction fairlead that sets where along the barrel the line lands; it does not stop a loose coil jumping a low wall. The base hole (7 mm) takes it with about 1.5 mm of sideways play; the fairlead block's 3.2 mm throat does not, so the tube ends above the block unless the block is reprinted with a 4.1 bore. Worth it if the PLA bore's friction slows the 13 g spider; design a printed holder only if Joe says yes.
-7. **Optional, offer: taper the barrel 1 to 2 degrees,** larger at the separator, so tension slides the wraps toward the tall cap and away from the 3 mm separator. Physics, not tested; build only if the bench test still shows climbing on the motor side.
-8. Export only the changed STLs. Update doc 01's one-piece section and print table, doc 05 section B, and the build guide's spool step; close V22 when the bench test passes.
+1. **Print** `spool_onepiece.stl` (ratchet face down) and `spool_cap.stl` (outer face down, lugs up), both as exported, no supports. Slicer settings are Joe's.
+2. **Assemble the spool** per doc 05 section B: HF0612 from the far face past the lip, direction check, line anchored through the printed hole with the filament stub BEFORE the cap, cap lugs into the windows (a stroke of a file on a lug's side if it will not drop in), wind clockwise seen from behind the motor under light hand tension.
+3. **Stack:** against the C.3 stack, take one `shim_2mm` out on the 606ZZ side (0.25 mm of play left). If the 2026-10-04 stopgap is fitted (old `spool_shield` disc plus a 2 mm shift shim), both come out. Check edge-on that the teeth sit across the finger.
+4. **Line and spider:** bonded nylon upholstery thread, size 69 (Tex 70), black; 2.2 m on the barrel (1.5 m spare under the working line). Spider brought to about 30 g with weight added inside it.
+5. **PTFE guide tube, optional:** the wedge trial first, no print (doc 05 step 24a), tip 11 mm above the base's inner face. Print `fairlead_base_ptfe.stl` only if the wedged tube walks or wobbles (step 24b).
+6. **Bench test** (below), logged in `docs/commissioning_log.md`.
+7. **When it passes:** close V22 in `docs/08_open_items.md` (one line: date, what fixed it), one line in `CHANGELOG.md`, remove roadmap line 3, move this file to `docs/retired/` with its Retired line.
+8. **If wraps still nest or climb:** the two held levers (owner 2026-10-04), each a design decision for Joe before any CAD: a deep-groove spool (44 mm barrel, so the motor-side wall is 6 mm; costs the firmware's `BARREL_DIA_MM` and moves the line 3 mm), or a slack take-up arm. If loose loops form on the spool during the drop or the bounce, that is slack reaching the spool: the spider stopped or bounced before the motor did (the one-way bearing stops the spool running on past the motor, so this is not a baitcaster backlash). That is a firmware matter (the stop rate `dropdec`, the hang time `settle`) for `docs/handoff_task1_firmware.md`, not this spool.
 
 ## Tests
 
-- `python generate.py`: all one-piece checks pass, plus the new feed-point check; the cap is watertight and prints flat.
-- `python inverted.py`: line path and every check unchanged.
-- Bench, logged by Joe in `docs/commissioning_log.md`: 2.2 m of line on (1.5 m spare), ten drops and rewinds with the real spider, no wrap leaves the barrel. A phone slow-motion video of one drop: if loose loops form on the spool during the drop or the bounce, that is the spool running on after the spider slows (a baitcaster backlash), a firmware matter for `docs/handoff_task1_firmware.md`, not this spool.
+- Bench, logged by Joe in `docs/commissioning_log.md`: 2.2 m of thread on (1.5 m spare), the 30 g spider, ten drops and rewinds. Pass: no wrap leaves the barrel.
+- A phone slow-motion video of one drop. Pass: no loose loops on the spool during the drop or the bounce.
+- Cap fit at assembly: lugs drop in by hand or after a file stroke; the cap turns with the body. Logged with the bench test.
 
 ## Done when
 
-Ten drops and rewinds on the bench with no line off the spool, and the docs describe the new spool.
+Ten drops and rewinds on the bench with no line off the spool, logged, and V22 closed.
 
 ## Rules for the session
 

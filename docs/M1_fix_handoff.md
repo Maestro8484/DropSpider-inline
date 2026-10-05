@@ -29,7 +29,7 @@ All directions seen from behind the motor (standing behind the stepper motor, lo
 | Drop: spool catches up to the rod's speed | spool CCW relative | **locks** | fall speed capped at the motor's speed |
 | Lock seat: motor turns rod CCW after a tooth lands on the finger | spool CW relative | free | motor runs on harmlessly, spool stays on the tooth |
 
-The spool can never travel faster than the motor. So the motor sets the top speed and the stopping point of every drop, and the knot never slams. The line's stretch (2 to 4 lb nylon mono) is the backstop in case the motor loses its grip.
+The spool can never travel faster than the motor. So the motor sets the top speed and the stopping point of every drop, and the knot never slams. The line's stretch (bonded nylon thread, size 69) is the backstop in case the motor loses its grip.
 
 ## Second finding: M2, the finger cannot release under load
 

@@ -16,7 +16,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | Every STL is watertight (printable solid) | `cad/generate.py` checks on export |
 | No part collides with the spinning spool; 2 mm clearance all round | swept-clearance check in `generate.py` |
 | Finger tip reaches inside the tooth root | `generate.py` prints tip position |
-| Spool body and ratchet print with zero supports | flat faces down, no overhangs |
+| Spool body and cap (Rev C.4) print with zero supports | flat faces down; `generate.py` reports 0.00 mm2 steeper than 45 degrees on the body |
 | Firmware compiles and links (46% flash, 17% RAM) | `pio run`, espressif32@6.7.0 (Arduino core 2.0.16), ESP32Servo 3.0.6, FastAccelStepper 0.33.14, 2026-09-24 |
 
 ## Not yet verified (hardware needed)
@@ -25,7 +25,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 |---|---|---|---|
 | V2 | Servo angle direction (release = smaller angle) | step 5 | swap `setlock`/`setrel` values |
 | V3 | HF0612 press fit in PLA holds without creeping | step 11, then after 20 cycles | CA on the outer ring |
-| V4 | Line stretch as the shock absorber (2 to 4 lb mono, 3 lb in use, owner 2026-10-04; elastic dropped 2026-09-26): estimated 4.1 N peak on 3 lb for the 13 g spider if the motor loses grip; 3 lb snaps at about 13 N. Not tested; a motor-fault drop is never forced on purpose | step 7 | if a knot ever parts, put 150 mm of 2 mm elastic back at the barrel |
+| V4 | Line stretch as the shock absorber (bonded nylon thread, size 69, about 22 percent stretch, owner 2026-10-04; elastic dropped 2026-09-26): estimated 11 N peak for the 30 g spider if the motor loses grip; the thread breaks near 49 N, so it is no longer a fuse below the anchors. Not tested; a motor-fault drop is never forced on purpose | step 7 | if a knot ever parts, put 150 mm of 2 mm elastic back at the barrel |
 | V5 | Motor skipping at the bead stop is short and harmless | step 9 | lower `rpm`, trim overshoot in `config.h`. With the limit switch on, the motor stops at the switch and should not skip at all |
 | V6 | Finger lifetime in PLA | step 14 | PETG finger |
 | V7 | LD2410C range and through-wall behavior in this house (fallback sensor only since Rev C.1) | step 12 with `sensor 2410` | tune gates; AM312 fallback |
@@ -40,7 +40,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V20 | Finger height on the real spline (was a second V18, renumbered 2026-09-27): plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
 | V19 | Reinforced fairlead body strength and the flat switch face on a real print; switch mounts with no washers | assembly steps 15 to 15d | 6 walls on that part |
 | V21 | Spool stack on the owner's build (2026-10-01): the HF0612 slips a bit, only under more load than the spider's weight (the bearing turns in the printed hole, owner confirmed; he keeps this stack). The slip means the step count drifts, so the limit switch is what homes the spool on every rewind: it must be wired, reading right and turned on (`limit 1`, off by default) before the device is armed; and the finger caught the r 32 shield once the stack was shimmed along the rod; the owner cut about 5 mm off the finger's face, so tooth engagement is less than designed | look edge-on at the lock angle; watch for the spool creeping round the bearing | `docs/handoff_spool_rev_c4.md` |
-| V22 | Line comes off the far (606ZZ) side of `spool_onepiece` and winds onto the rod and spacer (owner 2026-10-04). In the model: the far wall is 2 mm tall and a 45 degree ramp; the line's feed point (z 45) lands on that ramp, 0.5 mm past the barrel, after the 2.5 mm shim move for the shorter finger hub; 3 lb line and a 13 g spider leave the wraps loose. Stopgap: old `spool_shield` disc on the far side and the spool 2 mm toward the 606ZZ | bench: ten drops and rewinds with no wrap off the barrel | `docs/handoff_spool_rev_c4.md` |
+| V22 | Line came off the far (606ZZ) side of the Rev C.3 `spool_onepiece` and wound onto the rod and spacer (owner 2026-10-04): its far wall was 2 mm tall and a 45 degree ramp, and the line's feed point (z 45) landed on that ramp. **Answered on paper by Rev C.4** (doc 01): barrel centred on z 45, flat `spool_cap` 7 mm above the barrel, bonded nylon thread instead of 3 lb mono, spider brought to about 30 g; optional PTFE guide tube (doc 09). The stopgap (old `spool_shield` disc, spool 2 mm toward the 606ZZ) is superseded. Model checks pass; **not printed, not benched** | bench: ten drops and rewinds with the real spider, no wrap off the barrel; slow-motion video of one drop | held levers: deep-groove spool, slack take-up arm (`docs/handoff_spool_rev_c4.md`) |
 
 ## Closed
 

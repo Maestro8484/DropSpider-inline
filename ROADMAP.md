@@ -6,7 +6,7 @@ Every piece of work still to do, in order. One line each; the handoff holds the 
 |---|---|---|---|---|
 | 1 | Firmware: line between the spool and the flap is about 72 mm in the inverted install (fairlead v2) (firmware assumes 40); factory drop distance must fit the shorter line | team | next | `docs/handoff_task1_firmware.md` step 1 |
 | 2 | Bench tests T1 to T8 of the Rev C.1 motor-led drop, with the mechanism assembled | team with the owner | next, needs the mechanism built | `docs/handoff_task1_firmware.md` |
-| 3 | Spool Rev C.4: the line must stay on the spool (it came off the one-piece's 2 mm far wall): barrel centred on the line, 7 mm far cap; keeps the one-piece's bearing seat and teeth | team with the owner | next; stopgap first (old shield disc on the far side) | `docs/handoff_spool_rev_c4.md` |
+| 3 | Spool Rev C.4 on the bench: print `spool_onepiece` and `spool_cap`, one 2 mm shim out, bonded nylon thread, 30 g spider, optional PTFE tube trial; ten drops and rewinds with no wrap off the barrel, then close V22 | owner with the team | next; designed and model-checked, not printed | `docs/handoff_spool_rev_c4.md` |
 | 3b | Build the inverted install: print `fairlead_base` and `fairlead_flap_inv` (fairlead v2), `ld2450_fork_screw`; drill the five base holes; braces and their holes | owner | any time; bench first | build guide sections 06 and 11, doc 06, open item V18 |
 | 4 | LD2450 radar as the trigger, including the spider-in-view problem; tests S1 to S5 | team | waiting on T1 to T8 | `docs/handoff_sensor_bearings.md` |
 | 5 | Hang it on the porch, walk tests, arm | owner with the team | waiting on 2, 3 and 4 | `docs/07_commissioning.md`, build guide section 12 |

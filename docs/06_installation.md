@@ -20,7 +20,7 @@ Porch measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in bel
 | Bottom of the front beam | 2184 mm (86 in) |
 | Spider, retracted | bottom of spider about 2230 mm, hidden above the beam's bottom edge |
 | Spider at rest after the drop | 1550 mm (61 in): face height for teens and adults, above small children |
-| Lowest point if the motor loses grip and the line's stretch catches it | about 1450 mm (57 in) with no spare line; with the 1.5 m spare on the spool (doc 05 step 5) the 13 g foam spider reaches the floor |
+| Lowest point if the motor loses grip and the line's stretch catches it | about 1450 mm (57 in) with no spare line; with the 1.5 m spare on the spool (doc 05 step 5) the foam spider reaches the floor |
 
 Line length to set (barrel knot to bead) = (ceiling - 85 mm) - (target rest height + spider height + 30 mm for bead and swivel) + 45 mm.
 The 85 mm is where the bead sits against the flap at home; the 45 mm is line between the spool and the flap.
@@ -30,7 +30,7 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 - 4 screws: the 2 holes at the servo end and the 2 pad holes at x = -56 (the middle pair).
 - Into a joist: #4 x 1 in pan-head wood screws.
-- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With 2 to 4 lb mono and the 13 g spider the peak pull is about 3 to 5 N and can never pass about 18 N, where 4 lb line snaps. Never hang it on braid without an elastic snubber.
+- Into drywall only: #4 screws in ribbed plastic anchors, or small toggle anchors. With the bonded nylon thread and the 30 g spider the peak pull if the motor loses grip is about 11 N (estimate, doc 01); the thread itself breaks near 49 N, so it is no longer a fuse that snaps before the anchors (the old 4 lb mono snapped at about 18 N). Not checked against drywall anchors. Never hang it on braid without an elastic snubber.
 - The ceiling face must be flat against the base; nothing may stick out of the ceiling side (this is why the fairlead's two screws are countersunk flush).
 
 ## Alternative: turned over on the beam's inside face (inverted install)
@@ -85,7 +85,7 @@ Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf.
 
 ## Safety
 
-- Soft foam spider only (the owner's is about 13 g): 30 g maximum on 2 to 3 lb line, 60 g on 4 lb, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
+- Soft foam spider only (the owner's is about 13 g, brought to about 30 g with added weight): under 60 g until the bench says more, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
 - Keep the drop clear of stairs, and of the swing of the door itself.
-- 2 to 4 lb monofilament only (or put the elastic snubber back). Check the knots, the bead, the flap, and the line for nicks before each night.
+- Bonded nylon thread, size 69 (doc 01), or polyester thread; braid or fluorocarbon only with the elastic snubber back. Check the knots, the bead, the flap, and the line for nicks before each night.
 - `disarm` (or unplug) when small children are expected to run through.

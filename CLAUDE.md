@@ -41,7 +41,7 @@ cd cad; python generate.py      # parts + clash checks only
 - Servo on GPIO13, not GPIO14 (boot pulses would drop the spider).
 - Boot must never auto-rewind. Driver EN goes HIGH (off) first thing in `setup()`.
 - Armed idle = driver off and servo detached.
-- The line must stretch: 2 to 4 lb nylon monofilament, 3 lb in use (owner 2026-10-04, was 6 lb), whose stretch is the shock absorber (elastic snubber dropped 2026-09-26). The spider weighs about 13 g (owner); on 2 to 3 lb line keep it to 30 g, on 4 lb to 60 g. Never recommend braid or fluorocarbon without the 150 mm elastic snubber back at the barrel.
+- The line is nylon and must stretch: bonded nylon upholstery thread, size 69 (Tex 70), black, 0.29 mm, 11 lb, about 22 percent stretch (owner 2026-10-04). It replaces 3 lb nylon monofilament, whose coil memory sprang loose wraps off the barrel; a limp thread lies flat on the barrel slack or taut. Its stretch is the shock absorber (elastic snubber dropped 2026-09-26). The spider is brought to about 30 g (owner 2026-10-04, weight added to the 13 g spider, so the wraps lay at twice the tension); keep it under 60 g until the bench says more. Polyester thread is the fallback for a prop left outdoors for months (half the stretch). Never recommend braid or fluorocarbon without the 150 mm elastic snubber back at the barrel.
 - `cad/generate.py` is the source of truth for geometry. Edit it, never the STLs.
 - The assembly frame (y from the mount face, z from the motor plate) is used in every doc. Keep it.
 

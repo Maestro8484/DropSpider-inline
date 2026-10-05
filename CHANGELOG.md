@@ -4,7 +4,17 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ## 2026-10-04
 
+### Added
+- `spool_cap.stl` (Rev C.4): the spool's far wall as a flat disc, r 32, 2.0 thick, 7 mm above the barrel and vertical (the C.3 one-piece's far wall was 2 mm tall and a 45 degree ramp, and the line came off over it onto the rod and spacer, owner). Three lugs drop into the spoke windows and lock it to the body (1.5 degrees of play); spacer B clamps it; no screws, no glue. Prints outer face down, lugs up, no supports. REPO-ONLY.
+- `fairlead_base_ptfe.stl` and the PTFE guide tube option (owner's idea): a 4 mm OD PTFE tube up through the base hole cuts the line's free span from 36 mm to 25 mm and sets the feed point square on the barrel; tip 11 mm above the base's inner face, 2 mm outside the cap. Trial first by wedging the tube in the plain block's tapered mouth; the ptfe block (straight 4.3 bore, tube cut 41 mm) only if it walks. Doc 09, doc 05 steps 24a and 24b. Model checks pass; REPO-ONLY.
+
 ### Changed
+- `spool_onepiece.stl` to Rev C.4: separator 3.75 thick (was 1.5) so the 3.5 mm barrel runs z 43.25 to 46.75, centred on the line's feed point (z 45) with 1.75 to spare each side; the body ends flat at the barrel's far edge, 14.25 long (was 14.5 with the ramp and rim); line hole now at z 45.0. Bearing seat, shoulder, lip and teeth as C.3. Body plus cap 16.25, z 32.5 to 48.75. All model checks pass (finger clear slid 5 mm either way, finger seats 7.00 to 11.75 degrees, 2 mm swept clearance, stub clear, no supports). Not printed or benched. Doc 01, doc 05 section B, build guide.
+- Stack for Rev C.4 on the owner's build: one `shim_2mm` out on the 606ZZ side against the C.3 stack (spacer B fills 51.25, was 53.0; 0.25 play); the 2026-10-04 stopgap (old `spool_shield` disc plus a 2 mm shift shim) comes out. Doc 05 step 9, build guide.
+- Spool assembly order: the line is anchored through the printed hole with the filament stub BEFORE the cap goes on, because the cap closes the windows' far ends. Doc 05 section B.
+- Line: bonded nylon upholstery thread, size 69 (Tex 70), black, 0.29 mm, 11 lb, about 22 percent stretch (owner; WAWAK spec), replacing 3 lb nylon monofilament, whose coil memory sprang loose wraps off the barrel. 2.2 m is 14 wraps, 1.2 layers on the barrel. Estimated peak if the motor loses grip, 30 g spider, full 0.7 m fall: near 11 N against a 49 N break; the thread is no longer a fuse below the anchors. CLAUDE.md, BOM, docs 01, 05, 06, 08 (V4), the firmware and sensor handoffs, build guide.
+- Spider brought to about 30 g (owner: weight added inside the 13 g spider, so the wraps lie at about twice the tension); keep under 60 g until the bench says more. The 30 g and 60 g line-strength limits are gone. Docs 01, 05, 06, build guide.
+- `cad/README.md`: spool lesson, files table and a checks row for the cap.
 - Spare line: wind about 1.5 m under the working line (two drops' worth, owner), `line` set to the working length only. Doc 05 step 5, doc 06 heights.
 - Line: 2 to 4 lb nylon monofilament, 3 lb in use (owner; was 6 lb, which he never had). Spider about 13 g (owner). Worst case if the motor loses grip, 13 g spider, full 0.7 m fall (estimate): 3 lb peaks near 4.1 N against a 13 N break. Spider limit now 30 g on 2 to 3 lb line, 60 g on 4 lb. CLAUDE.md, BOM, docs 01, 05, 06, 08, handoffs and build guide updated.
 

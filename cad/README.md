@@ -25,10 +25,10 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 
 | File | Holds |
 |---|---|
-| `generate.py` | Every part except the fairlead unit: bracket, spool body, ratchet disk, finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
+| `generate.py` | Every part except the fairlead unit: bracket, spool (Rev C.4 `spool_onepiece` and its flat far wall `spool_cap`; the older body, ratchet disk and shield), finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
 | `sensor_mount.py` | LD2450 radar mount: the fork's ears and the cradle and `ld2450_fork_screw`, the bolted fork (2x M3, no glue), the only radar fork, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
-| `inverted.py` | Inverted install (doc 06 alternative, approved 2026-09-27): the device turned over on two steel corner braces. `bracket_inverted()` (the 3 drilled holes), `fairlead_base()` (doc 09's unit as a block under the base, exported as `fairlead_base.stl`), the radar turned over under the servo end, brace stand-ins, a board box, `assembly_inverted()`, `porch()` and `view_inv()` (pictures with the floor down). Run it on its own for its report: watertight, face flat, clash (braces and board box included), radar view, line path, spool clearance, flap stops and roller push, screw heads, loads, heights |
+| `inverted.py` | Inverted install (doc 06 alternative, approved 2026-09-27): the device turned over on two steel corner braces. `bracket_inverted()` (the 3 drilled holes), `fairlead_base()` (doc 09's unit as a block under the base, exported as `fairlead_base.stl`; `fairlead_base(ptfe=True)` is `fairlead_base_ptfe.stl`, the same block with a straight bore for the optional PTFE guide tube), the radar turned over under the servo end, brace stand-ins, a board box, `assembly_inverted()`, `porch()` and `view_inv()` (pictures with the floor down). Run it on its own for its report: watertight, face flat, clash (braces and board box included), radar view, line path, spool clearance, flap stops and roller push, screw heads, loads, heights |
 | `retired/` | Obsolete parts and their code: `line_guide`, the glued `ld2450_fork`, the wall-install drafts (`wall_hinge.py` with hinge_plate, hinge_clip, tie_bar, strut; `wall_mount.py`, the braced shelf). Kept for reference, not run, not printed |
 | `render.py` | All 3D pictures. One function per picture |
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
@@ -54,6 +54,7 @@ Units: millimeters.
 | No clashes between moving and fixed parts | generate.py | no `CLASH` lines |
 | Finger tip reaches into the tooth root | generate.py | `engaged: True` |
 | Finger seats in a tooth gap (rotates the ratchet through one tooth pitch in 0.25 degree steps) | generate.py | `True (window 6.75 to 11.75 deg)` for the Rev C.1 finger |
+| Rev C.4 spool cap and barrel | generate.py | cap lugs drop into the spoke windows (0.00 overlap) and lock the cap at 1.5 degrees; the line's feed point (z 45) lies on the barrel with 1.75 mm to spare each side |
 | Flap hard stop and switch travel | `python fairlead.py` | hard stop about 14.75 deg; roller push at least 3.4 mm |
 | Line path open through the fairlead bore and the flap slot | `python fairlead.py` | `line path clear ... True` twice (a flipped bore once printed solid) |
 
@@ -70,7 +71,7 @@ Units: millimeters.
 
 - **Print orientation lives in code.** Parts that must print a certain way have a `*_print()` function that turns them before export. Never ask the owner to rotate in the slicer.
 - **Recesses face up.** A recess on the bed side leaves a ceiling with nothing under it; Bambu Studio reports "floating regions" or "isolated object". The finger v1 failed this way.
-- **No overhangs on the spool.** The spool is two parts (body and ratchet disk) so both print flat with zero supports and no scars in the line channel. The spool hub must end flush with its flange; a stub under the flange forced supports once.
+- **No overhangs on the spool, and no ramp for a wall.** The spool is the one-piece body (teeth, separator, barrel; prints ratchet face down) plus a flat cap that is the far wall (prints outer face down, lugs up), so both print with zero supports and no screws. A far wall printed as part of the body can only be a 45 degree ramp, and the line walked up and off the Rev C.3 one's 2 mm ramp (owner 2026-10-04); a separate flat cap gives a vertical wall 7 mm tall. Keep the barrel centred on the line's feed point (z 45). The spool hub must end flush with its face; a stub under a flange forced supports once.
 - **Thin features fail in PLA.** Keep printed walls at 1.2 mm or more near loads. Finger v1 had 0.9 mm walls and a half-width tip; the current finger is 7 mm wide with a 7 mm plate.
 - **Tip shapes must match the teeth.** An unbeveled 7 mm finger could not seat in any tooth gap. The 20 degree bevel on the ramp side fixed it. Re-run the seating check after any finger or tooth change.
 - **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead's two M3 screws are countersunk flush (owner: no glue).
