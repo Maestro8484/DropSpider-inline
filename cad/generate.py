@@ -167,11 +167,13 @@ HF0612_LEN = 11.89     # owner measured 2026-10-02 (9.99 across)
 OP_SEAT_L = 12.0       # shoulder to the far face: 0.1 longer than the bearing, which the cap then covers
 # No snap lip (owner 2026-10-05: the C.3 lip printed too tight, he carved it out with a deburring tool; "the entire
 # bushing should just be the narrower smaller diameter"). The hole is one plain diameter, OP_BORE, from the shoulder
-# right through the far face, with a 0.4 lead-in chamfer; the screwed-on cap (hole 7.0) keeps the bearing in.
+# right through the far face, with a 0.4 lead-in chamfer. The cap's centre hole clears spacer B, which passes through it
+# and bears on the bearing's far end (owner 2026-10-05: the rod spacers touch the spool only at the bearing, never the
+# cap's plastic; he opened his printed cap's hole to 10 mm). The press fit and spacer B keep the bearing in.
 OP_BARREL_Z0 = OP_TEETH_T + OP_SEP_T
 OP_L = OP_BARREL_Z0 + OP_BARREL_W     # 14.25: the body ends at the barrel's far edge (C.3 was 14.5 with the ramp and rim)
 CAP_R, CAP_T = 32.0, 2.0              # far wall: flat disc, 7 above the barrel (the Rev C.2 flange's r 32), on the body's far face
-CAP_HOLE_D = 7.0                      # clears the 6 rod; spacer B's 9.6 end bears on the cap round it (ring r 3.5 to 4.8)
+CAP_HOLE_D = 11.0                     # clears spacer B's 9.6 end by 0.7 a side (prints about 0.55): spacer B passes through and bears on the bearing, not the cap
 CAP_LUG_H = 1.5                       # three lugs, 1.5 tall (owner 2026-10-05: no higher than needed), on the cap's line-side face drop into the spoke windows (owner 2026-10-05: keep them, they
 CAP_LUG_R0, CAP_LUG_R1 = 11.0, 19.0   # align the cap and hold the anchored string in its window); clear of the hub (r 9) and the stub at the skin
 CAP_LUG_CLR = 0.4                     # drawn gap, lug side to spoke side (windows print 0.1 to 0.2 small a side, so about 0.2 real)
@@ -234,8 +236,8 @@ def cap_lug_polys():
 def spool_cap():
     """Rev C.4 far wall, in the body's frame: a flat disc r 32, CAP_T thick, its line-side face at z OP_L (on the body's
     far face), three lugs reaching down into the spoke windows to z OP_L - CAP_LUG_H (they align the cap and hold the
-    anchored string in its window), centre hole 7.0 (the rod) and three 3.4 screw holes on the bolt circle, all chamfered
-    both faces. 3x M3x8 through it into the body's spokes clamp the seam shut; spacer B's end bears on the outer face."""
+    anchored string in its window), centre hole 11.0 (spacer B passes through to the bearing) and three 3.4 screw holes on the bolt circle, all chamfered
+    both faces. 3x M3x8 through it into the body's spokes clamp the seam shut; spacer B passes through its centre hole."""
     disc = cyl(CAP_R, CAP_T, OP_L, sections=192)
     lugs = [extrude_polygon(p, CAP_LUG_H + 0.01).apply_translation([0, 0, OP_L - CAP_LUG_H]) for p in cap_lug_polys()]
     m = U(disc, *lugs)
@@ -449,7 +451,7 @@ def assembly():
     return A
 
 def onepiece_checks(A):
-    """Rev C.4 one-piece spool and its cap in place of the three-part stack, with spacer A 2.5 and spacer B 51.25."""
+    """Rev C.4 one-piece spool and its cap in place of the three-part stack, with spacer A 2.5 and spacer B from the bearing's far end to z 100."""
     print("--- one-piece spool (spool_onepiece) and cap (spool_cap), Rev C.4 ---")
     P = spool_onepiece(); C = spool_cap()
     sp = P.copy(); sp.apply_translation([0, AXIS_Y, OP_Z0])
@@ -462,11 +464,17 @@ def onepiece_checks(A):
     near["spacer_A"] = spacer_a_nose(OP_Z0 - 30); near["spacer_A"].apply_translation([0, AXIS_Y, 30])
     face = I(near["spacer_A"].copy().apply_translation([0, 0, 0.05]), sp).volume / 0.05
     print(f"spacer A's 8 mm nose on the spool's motor face: {face:.1f} mm2 of contact (nose r {SPACER_B_NOSE}, hole r {OP_SHOULDER_R} + 0.2 chamfer)")
-    near["spacer_B"] = D(cyl(SPACER_B_R, 100 - OP_Z0 - L, OP_Z0 + L, 0, AXIS_Y), cyl(3.25, 60, OP_Z0 + L - 1, 0, AXIS_Y))
-    faceB = I(near["spacer_B"].copy().apply_translation([0, 0, -0.05]), cp).volume / 0.05
-    print(f"spacer B's 9.6 end on the cap's outer face: {faceB:.1f} mm2 of contact (ring r {CAP_HOLE_D / 2} + chamfer to {SPACER_B_R})")
-    print(f"body z {OP_Z0:.2f} to {OP_Z0 + OP_L:.2f} ({OP_L:.2f}), cap to {OP_Z0 + L:.2f} ({L:.2f} in all); spacer A {OP_Z0 - 30:.2f}, spacer B {100 - OP_Z0 - L:.2f} "
-          f"(C.3 one-piece was {OP_Z0 + 14.5 - OP_Z0:.1f} long, spacer B 53.0: {53.0 - (100 - OP_Z0 - L):.2f} less shim on the 606ZZ side)")
+    bz_end = hz + HF0612_LEN                                  # the bearing's far end: spacer B bears here, through the cap's hole
+    near["spacer_B"] = D(cyl(SPACER_B_R, 100 - bz_end, bz_end, 0, AXIS_Y), cyl(3.25, 60, bz_end - 1, 0, AXIS_Y))
+    sbB = near["spacer_B"].copy().apply_translation([0, 0, -0.05])
+    faceB = I(sbB, near["hf0612"]).volume / 0.05
+    plastic = I(sbB, both).volume
+    wob = 0.25                                                # spacer B's 6.5 bore on the 6 rod: it can sit 0.25 off centre
+    print(f"spacer B's 9.6 end through the cap's {CAP_HOLE_D} hole onto the bearing's far end: {faceB:.1f} mm2 on the bearing, {plastic:.2f} mm3 on the spool's plastic "
+          f"(pass 0); radial gap to the cap hole {CAP_HOLE_D / 2 - SPACER_B_R:.2f} drawn, {CAP_HOLE_D / 2 - SPACER_B_R - wob:.2f} with the spacer pushed {wob} off centre; "
+          f"to the body's bore {OP_BORE / 2 - SPACER_B_R:.2f}")
+    print(f"body z {OP_Z0:.2f} to {OP_Z0 + OP_L:.2f} ({OP_L:.2f}), cap to {OP_Z0 + L:.2f} ({L:.2f} in all); spacer A {OP_Z0 - 30:.2f}, spacer B {100 - bz_end:.2f} "
+          f"from the bearing's end at z {bz_end:.2f} (the C.3 stack fills 53.0: {100 - bz_end - 53.0:.2f} of play with it unchanged, pass under 0.5)")
     bz0, bz1 = OP_Z0 + OP_BARREL_Z0, OP_Z0 + OP_L
     import inverted as V
     print(f"barrel flat z {bz0:.2f} to {bz1:.2f}, line feed point z {V.LINE_Z:.1f}: {V.LINE_Z - bz0:.2f} from the separator, {bz1 - V.LINE_Z:.2f} from the cap; "
@@ -515,7 +523,7 @@ def onepiece_checks(A):
     n, c, ar = P.face_normals, P.triangles_center, P.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
     print(f"body print orientation (ratchet face down): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5)")
-    print(f"bearing hole: one plain {OP_BORE} diameter from the shoulder (z {OP_Z0 + hz - OP_Z0:.2f}) through the far face, no lip; the bearing's far end sits {OP_L - OP_SEAT_L + OP_SEAT_L - HF0612_LEN - (OP_L - OP_SEAT_L):.2f} below the face, under the cap's 7.0 hole, so the cap keeps it in")
+    print(f"bearing hole: one plain {OP_BORE} diameter from the shoulder (z {OP_Z0 + hz - OP_Z0:.2f}) through the far face, no lip; the bearing's far end sits {OP_SEAT_L - HF0612_LEN:.2f} below the face; the press fit and spacer B keep it in")
     Cp = spool_cap_print(); n, c, ar = Cp.face_normals, Cp.triangles_center, Cp.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
     print(f"cap print orientation (outer face down, lugs up): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5); "
