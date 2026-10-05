@@ -8,7 +8,7 @@ There is no CAD program. Every printed part is Python code. Run the code and it 
 
 ```powershell
 pip install trimesh manifold3d shapely numpy matplotlib      # once
-.\tools\regen_cad.ps1                                          # rebuild everything
+.\tools\regen_cad.ps1                                          # the FULL rebuild, owner only; a session exports one part (below)
 ```
 
 `tools\regen_cad.ps1` runs three scripts in order:
@@ -61,11 +61,13 @@ Units: millimeters.
 ## Changing a part: the routine
 
 1. Edit the part's function in `generate.py` or `fairlead.py`. Keep dimensions as named constants at the top where they already are.
-2. Run the checks (`python fairlead.py`, `python inverted.py`, `python sensor_mount.py`, as the part needs; they only print) and read the report. Any `CLASH`, `watertight=False`, or lost clearance means stop. Export only the changed part's STL (`G.PARTS["name"]()`), not every STL (owner 2026-09-27: update only the parts that need it).
-3. Re-render a picture only if the owner asks for it.
-4. Update the doc that describes the part (01 for the spool, finger and bracket, 09 for the fairlead).
-5. Tell the owner which STL changed and whether an already-printed part is now out of date.
-6. Geometry changes need the owner's approval (CLAUDE.md hard constraints).
+2. Run the checks (`python generate.py`, `python fairlead.py`, `python inverted.py`, `python sensor_mount.py`, as the part needs; they only print, none of them writes an STL) and read the report. Any `CLASH`, `watertight=False`, or lost clearance means stop.
+3. Export only the changed part: `python generate.py --export spool_cap` (several names allowed). **Never `--export-all` and never `regen_cad.ps1` from a session** (owner 2026-09-27, hardened 2026-10-04 after a session's check run rewrote every STL's date and overwrote the owner's own `fairlead_flap_inv.stl`). The export skips a part whose geometry matches the STL on disk, so a file's date changes only when the part changed; the owner reads those dates in File Explorer to know what to print.
+4. Re-render a picture only if the owner asks for it.
+5. Update the doc that describes the part (01 for the spool, finger and bracket, 09 for the fairlead).
+6. Tell the owner which STL changed and whether an already-printed part is now out of date.
+7. Geometry changes need the owner's approval (CLAUDE.md hard constraints).
+8. Some STLs are the owner's own files, not the code's output (`fairlead_flap_inv.stl` is his Fusion redesign, kept as the print file; the code builds it to within 3.5 mm3). A session never overwrites one of those; if the code's version is wanted, the owner says so.
 
 ## Lessons already learned (do not repeat these)
 

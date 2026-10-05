@@ -529,10 +529,35 @@ def onepiece_checks(A):
     touch = I(sp, cp.copy().apply_translation([0, 0, -0.05])).volume / 0.05
     print(f"cap's line-side face sits on the body's far face: {touch:.0f} mm2 of contact (the window ends are closed by the cap, so the stub cannot leave the window)")
 
+def same_geometry(m, path, tol=1e-4):
+    """True if the STL on disk already holds this part: same volume, area, extents and centre of mass (triangulation may differ)."""
+    if not os.path.exists(path): return False
+    try: o = trimesh.load(path, force="mesh")
+    except Exception: return False
+    close = lambda a, b: np.allclose(a, b, rtol=tol, atol=1e-3)
+    return close(o.volume, m.volume) and close(o.area, m.area) and close(o.extents, m.extents) and close(o.center_mass, m.center_mass)
+
+def export_part(name, m):
+    """Write cad/stl/<name>.stl only if the part's geometry changed. Returns what happened, for the report."""
+    path = os.path.join(OUT, name + ".stl")
+    if same_geometry(m, path): return "same geometry as the STL on disk, not rewritten"
+    m.export(path); return "WRITTEN"
+
 if __name__ == "__main__":
+    # Owner's rule (2026-09-27, hardened 2026-10-04): never rewrite every STL. Running this script builds every part in
+    # memory and runs the checks; it writes an STL only for the parts named with --export, and only if the geometry
+    # changed. --export-all is the full rebuild and belongs to tools\regen_cad.ps1, run by the owner.
+    import argparse
+    ap = argparse.ArgumentParser(description="Build every part, run the checks; write STLs only for the parts named.")
+    ap.add_argument("--export", nargs="*", default=[], metavar="PART", help="names from the PARTS table to write to cad/stl (only if changed)")
+    ap.add_argument("--export-all", action="store_true", help="the full rebuild (regen_cad.ps1); still skips unchanged parts")
+    args = ap.parse_args()
+    unknown = [n for n in args.export if n not in PARTS]
+    if unknown: raise SystemExit(f"no such part: {unknown}. Parts: {', '.join(PARTS)}")
     for name, fn in PARTS.items():
-        m = fn(); m.export(os.path.join(OUT, name + ".stl"))
-        print(f"{name:15s} watertight={m.is_watertight} size={np.round(m.extents, 1).tolist()} vol={m.volume / 1000:.1f}cm3")
+        m = fn()
+        status = export_part(name, m) if (args.export_all or name in args.export) else "not exported"
+        print(f"{name:15s} watertight={m.is_watertight} size={np.round(m.extents, 1).tolist()} vol={m.volume / 1000:.1f}cm3  {status}")
     A = assembly()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
     pairs = [(m, f) for m in ("spool_ratchet", "spool_body", "finger")
