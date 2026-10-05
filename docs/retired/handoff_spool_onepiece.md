@@ -1,5 +1,7 @@
 # Handoff: one-piece spool and ratchet (Rev C.3), print and fit
 
+**Retired 2026-10-04, superseded by `docs/handoff_spool_rev_c4.md`:** the one-piece was printed and the line came off its 2 mm far wall.
+
 The part is designed and exported (`cad/stl/spool_onepiece.stl`, plus `spool_onepiece_ribs.stl` with a crush-rib bearing hole); what is left is printing it, fitting it on the bench, and retiring the three-part stack. The design and its z table are in `docs/01_mechanical_design.md` under "Rev C.3 one-piece spool"; the code is `spool_onepiece()` in `cad/generate.py`. For a session working with the owner (Joe).
 
 ## Ground truth first
