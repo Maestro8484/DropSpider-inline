@@ -1,5 +1,7 @@
 # Handoff: spool Rev C.4 on the bench, the line must stay on the spool
 
+**Retired 2026-10-07, done:** Rev C.4 spool, bonded nylon thread and 30 g spider passed ten page drops with no line off the barrel; V22 closed in `docs/08_open_items.md`. Record: `CHANGELOG.md` 2026-10-07, `docs/commissioning_log.md`.
+
 Print, fit and bench-test the Rev C.4 spool (`spool_onepiece` plus `spool_cap`, 3x M3x8), the bonded nylon thread and the 30 g spider, then close open item V22. For the owner (Joe) at the bench, with a session to log results and update docs.
 
 ## Ground truth first
