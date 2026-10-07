@@ -2,6 +2,11 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-07
+
+### Changed
+- Doc 02: the expansion board has no regulator; its V row is the driver's logic supply and must be fed from the ESP32's 3V3 pin. Found with a meter at the device: the row read 2.7 V by leakage through the signal wires and 1.8 mV with them off, against the chip's 3.0 V minimum. The audit carries it as the measured cause behind the runaway's up-down asymmetry. Doc 02 also records the switch mapping (switch 1 is the module's RX pin, switch 3 is MS1 and stays OFF). Wire NOT yet fitted; nothing tested under it.
+
 ## 2026-10-06
 
 ### Fixed

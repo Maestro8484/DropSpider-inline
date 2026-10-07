@@ -13,7 +13,17 @@ git log -1 --oneline -- docs/audit_spider_runaway.md   # when this file was last
 
 Board read 2026-10-06 over the network (`/api/status`): state ready, driver on, servo unpowered at 30 (finger out), position -83, no fault, drops 9. Settings as the handoff says: line 2200, rpm 240, setrel 30, setlock 85, dropacc 120000, dropdec 60000, droprpm 500, relms 250. Last log lines: `rel` (unload cut by the switch after 117 of 133 steps), then `jog -200` ran all 200 steps and ended "finger out, motor stays on".
 
-## Verdict
+## Found at the device, 2026-10-07: the driver's logic supply was never connected
+
+**The expansion board has no regulator. Its V row is the driver chip's logic supply (VIO), and the build left it empty.** Measured by the owner with a meter, 12 V on, driver off: V row 2.7 V with the three ESP32 signal wires on, 1.8 mV with them off. The chip needs 3.0 to 5.25 V there (datasheet rev 1.08, operating range). 2.7 V is 3.3 V less one diode drop: the chip's logic was fed only through the clamp diodes of its own STEP, DIR and EN inputs, by whichever of them the ESP32 happened to hold high.
+
+That is the asymmetry the verdict below reasoned toward, now with a wire behind it. The firmware holds DIR high for the whole of a wind up (`setDirectionPin(PIN_DIR, S.rewindDir == 1)`, line 191, positive steps = DIR high = up), so the rail stays fed and the motor holds. On a down move DIR is low and EN is low, so only the STEP pulses feed the rail; at a standstill after a down move nothing does. The chip's logic browns out, the outputs drop, the motor goes free. That is the owner's "nearly free" hand test after `jog -200` and his "resists" test after a wind, and it is why every runaway followed a down move and no wind ever slipped.
+
+Fix: one jumper from the ESP32's 3V3 pin to any V pin (owner's hands, no purchase). 3.3 V is inside the chip's range, every ESP32 signal becomes a clean high (threshold 0.7 times 3.3 V = 2.3 V), and switch 1 ON then puts a clean 3.3 V on the RX pin, so fix 3 below comes with it. Not 5 V: the threshold would be 3.5 V, above what the ESP32 gives. Status: wire NOT yet fitted; re-measure V and RX after it.
+
+The findings below were written the day before, without this measurement. They stand as written, with their weight changed: finding 1 (the dead-stop state) and finding 3 (the standstill current cut) described a driver that was being starved of logic power the whole time; the firmware fix and `dropacc` 80000 remain right on their own terms. Doc 02 lines 33 and 49 told the build to leave V empty and claimed an onboard regulator; both corrected 2026-10-07.
+
+## Verdict (desk audit, 2026-10-06, before the measurement above)
 
 **The slip is at the motor, not in the coupler, the one-way bearing or the finger. The motor is left weak against being pushed backward, and once a stepper has been pushed past one pole it gives almost no braking at all, so the spider runs the whole line with the rotor grinding past its poles.** Three things in the driver setup and the firmware make the motor weak exactly on the down side, and every runaway in the log follows the same trigger: a dead stop at the limit switch while the driver is in its quiet mode, after which the driver is never switched off and on again before the next down move.
 
@@ -148,4 +158,13 @@ Codex (codex-cli 0.153.4, read-only, blind to the section above) was given the s
 - Motor: Tindie listing of 11HS12-0674S. Inductance unverified.
 - Catalog quotes: NSK B230 to B233, Nadella drawn cup roller clutches, pulled as text.
 - Torque and jolt figures: arithmetic from those numbers, stated in the table.
-- Not verified: which form finding 1 takes on this board (bad current state or tripped off); what DIP 3 connects on this expansion board; the motor's inductance; the V1.3 module's resistor layout.
+- Not verified: which form finding 1 takes on this board (bad current state or tripped off); the motor's inductance; the V1.3 module's resistor layout.
+
+## How this was checked, 2026-10-07, at the device
+
+- Owner's meter, 12 V on, driver off, black lead on a G pin of the signal columns: RX pin 0 V with switch 3 either way; RX pin 2.7 V with switch 1 ON; V pin 2.7 V; V pin 1.8 mV with the three ESP32 wires pulled off the S pins. Pot 0.935 V.
+- Owner's photo of the expansion board: switch labels MS3, MS2, MS1 under switches 1, 2, 3; module row EN, MS1, MS2, RX, TX, CLK, STEP, DIR.
+- TMC2209 datasheet rev 1.08 (DigiKey mirror, pulled as text): VIO operating range 3.00 to 5.25 V; input high level 0.7 times VIO.
+- Expansion board listing (sigmanortec, robu): parts named are a terminal, a capacitor, a DIP switch, a socket and headers; "requires 5 volts DC logic supply"; no regulator.
+- FastAccelStepper.h line 295: `setDirectionPin(dirPin, dirHighCountsUp = true)`.
+- Not verified: the V row read under the driver on and a down move (predicted below 2.7 V); the wire's effect, until it is fitted and measured.

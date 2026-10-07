@@ -30,7 +30,7 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 - DIP switches 1, 2, 3 all **OFF**. On a TMC2209 that is 1/8 microstep (each STEP pulse moves 1/8 of a full step) and leaves the UART pin (the driver's serial setup line, unused here) alone. The board's switch numbers run backwards from the module's pins (owner's photo 2026-10-07): switch 1 sits under the module's RX pin (the A4988 MS3 position), switch 2 under MS2, switch 3 under MS1. Switch 1 ON ties RX to 5 V, which turns off the driver's standstill current cut (the runaway audit's fix 3). Switch 3 ON changes the microstep count and must stay OFF.
 - Current: turn the driver's pot until the voltage from the pot's metal top to GND reads **0.85 V** (= 0.6 A, 90 percent of the motor's 0.67 A). Do this with 12 V on and the **motor unplugged**. Factory default is about 1.2 V, too high for this motor.
 - STEP/DIR/EN only. UART is not wired; the expansion board does not bring that pin out.
-- The expansion board's DIR, STEP and EN columns each have three pins, S, V, G. The ESP32 wire goes on **S** (signal). One wire from an ESP32 GND to any **G** (the G pins are all joined). Leave every **V** empty.
+- The expansion board's DIR, STEP and EN columns each have three pins, S, V, G. The ESP32 wire goes on **S** (signal). One wire from an ESP32 GND to any **G** (the G pins are all joined). **One wire from the ESP32's 3V3 pin to any V** (the V pins are the driver's logic supply input; corrected 2026-10-07, see below). Until that day the build left every V empty, and the driver's logic ran on leakage through its own signal pins.
 
 ## Power
 
@@ -46,7 +46,7 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 
 ## Logic-level check (V1, required before first motor run)
 
-The expansion board powers the driver's logic side from its own 5 V regulator, and the ESP32 drives STEP/DIR/EN at 3.3 V. Most TMC2209 boards accept that, but it is not guaranteed.
+**Corrected 2026-10-07, measured at the device:** the expansion board has no regulator. Its V row is the driver's logic supply input (the module's VIO), and with nothing on it the row read 2.7 V with the ESP32 wires on and 1.8 mV with them off: the chip's logic was fed only through the clamp diodes of its own STEP, DIR and EN pins. The TMC2209 needs 3.0 to 5.25 V there (datasheet rev 1.08). It is fed from the ESP32's 3V3 pin, not from 5 V: at 3.3 V the chip's high threshold is 2.3 V and every 3.3 V signal from the ESP32 is a clean high; at 5 V the threshold would be 3.5 V and the ESP32 could not reach it without the buffer below. Earlier text here said the board had its own 5 V regulator; it does not.
 
 Test: with the motor connected, run `jog 1600` from the console. The motor must make exactly one smooth turn. Then `jog -1600`, one turn back.
 
