@@ -4,6 +4,9 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ## 2026-10-07
 
+### Fixed
+- Spider runaway on every downward move: closed. At the device the driver chip's logic supply turned out to be unconnected since the first build (the expansion board's V row, read 2.7 V by leakage through the signal wires, 1.8 mV with them off, against the chip's 3.0 V minimum); it is now fed from the ESP32's 3V3 pin. With that wire, the lock-after-every-move firmware of 2026-10-06, the standstill current cut switched off (switch 1 ON), Vref 0.935 V and `dropacc` 80000: one `jog -1600` came down one turn and held on the finger, and ten page drops each fell, held, wound back to the switch and locked, owner watching ("it all looks good"). Line length set to 1333 mm after the owner shortened the line. `docs/handoff_spider_runaway.md` retired. Which of the five changes carries how much weight was not separated. spreadCycle (20K at R7) left for later by the owner's word.
+
 ### Changed
 - Doc 02: the expansion board has no regulator; its V row is the driver's logic supply and must be fed from the ESP32's 3V3 pin. Found with a meter at the device: the row read 2.7 V by leakage through the signal wires and 1.8 mV with them off, against the chip's 3.0 V minimum. The audit carries it as the measured cause behind the runaway's up-down asymmetry. Doc 02 also records the switch mapping (switch 1 is the module's RX pin, switch 3 is MS1 and stays OFF). Wire NOT yet fitted; nothing tested under it.
 

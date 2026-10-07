@@ -1,5 +1,7 @@
 # Handoff: the spider runs away on any downward move
 
+**Retired 2026-10-07, done:** the driver chip's logic supply was found unconnected and wired (ESP32 3V3 to the expansion board's V row), the firmware locks after every move with a driver reset after a dead stop, and ten page drops passed with the owner watching. Record: `CHANGELOG.md` 2026-10-07, `docs/audit_spider_runaway.md`, `docs/commissioning_log.md` rows of 2026-10-07.
+
 Find and fix why the spool runs ahead of the motor whenever the motor turns down, so the spider falls the whole line. For a session working with Joe (the owner) at the device, the board on the network.
 
 ## Ground truth first
