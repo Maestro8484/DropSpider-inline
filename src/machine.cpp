@@ -54,6 +54,7 @@ static void IRAM_ATTR limIsr() {
 
 // After the switch stops a wind, or a rewind stalls: back down 1/8 turn, then hold.
 static bool backoffForCycle = false;
+static bool backoffLock = false;       // a rewind's back-off goes straight on to the lock
 static const char *backoffDone = "";
 static bool backoffFault = false;            // this back-off follows a stalled rewind
 // A wind that ran its whole count with the switch fitted and never closing has
@@ -353,8 +354,9 @@ static bool finishRewind() {
   return stalled;
 }
 
-static void startBackoff(const char *done, bool afterStall = false) {
+static void startBackoff(const char *done, bool afterStall = false, bool lockAfter = false) {
   backoffForCycle = cycle;
+  backoffLock = lockAfter;
   backoffDone = done;
   backoffFault = afterStall;
   if (!startMove(-BACKOFF_STEPS, BACKOFF_RPM)) logf("[limit] back-off would not start");
@@ -583,11 +585,12 @@ static void step() {
 
     case ST_REWIND:
       if (stepper->isRunning()) break;
-      // Stalled against the top, or the spool never followed: ease off 1/8 turn and
-      // hold with the motor ON and the finger out. Owner rule 2026-10-06: the motor
-      // never loses power before the finger is holding, or the spider falls.
-      if (finishRewind()) { startBackoff("", true); break; }
-      if (cutByLimit) { startBackoff("rewind (finger out, eased off the switch, motor stays on until lock)"); break; }
+      // Stalled against the top, or stopped by the switch: ease off 1/8 turn, then lock
+      // straight away. Owner rule 2026-10-06: the motor never loses power before the
+      // finger is holding. And the spider never hangs on the motor alone: on 2026-10-06
+      // it slid about 0.6 m down with the driver on, no command, after minutes of holding.
+      if (finishRewind()) { startBackoff("", true, true); break; }
+      if (cutByLimit) { startBackoff("", false, true); break; }
       if (cycle) startLock();
       else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
       break;
@@ -597,12 +600,9 @@ static void step() {
       logf("[limit] eased off %d mm%s", (int)((moveStartPos - stepper->getCurrentPosition()) * mmPerStep()),
            limLast ? ": switch STILL closed, check the flap" : ", no strain on the line");
       if (backoffFault) {
-        servoOff();
-        cycle = false; faultNow = false;
-        logf("[fault] stopped: motor ON holding the spider, finger out. Send lock to seat it, then clear.");
-        logf("[done] rewind (stopped on a fault, motor holding)");
-        enter(ST_FAULT);
-      } else if (backoffForCycle) startLock();
+        logf("[fault] full rewind without the switch: locking, then stopped. Send clear when it is fixed.");
+        startLock();                              // faultNow stays set: the lock ends in ST_FAULT
+      } else if (backoffForCycle || backoffLock) startLock();
       else { servoOff(); benchDone(backoffDone); }
       break;
 

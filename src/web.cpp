@@ -122,7 +122,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="g">
   <button onclick="c('rewind')">Rewind</button><button onclick="c('lock')">Lock</button><button onclick="c('rel')">Release</button>
  </div>
- <div class="sub">+ is the rewind direction. The motor stays powered after a jog, rewind or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
+ <div class="sub">+ is the rewind direction. A rewind locks by itself once it reaches the switch. The motor stays powered after a jog or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
 </div>
 
 <div class="card">

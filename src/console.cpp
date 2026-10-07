@@ -80,7 +80,7 @@ static const char *const HELP[] = {
   "  drop            full cycle now (unload + finger out, powered drop, settle, rewind, lock)",
   "  rel             unload + finger out only; motor stays on holding the spider",
   "  lock            finger in, seat move onto a tooth, then driver off",
-  "  rewind          rewind only (finger out first; driver stays on until 'lock'); stops at the limit switch",
+  "  rewind          rewind (finger out first); at the limit switch it eases off 1/8 turn and locks",
   "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; finger out first; driver stays on",
   "  stop            halt everything now, leave the motor as it is",
   "  off             driver off and servo off",
