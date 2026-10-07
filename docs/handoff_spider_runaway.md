@@ -18,6 +18,8 @@ git log -1 --oneline -- docs/handoff_spider_runaway.md   # when this file was la
 3. Check the settings it reports: `line` 2200, `rpm` 240, `setrel` 30, `setlock` 85. They were set on purpose on 2026-10-06; do not change them without a reason.
 4. Open the summary page Joe reads: https://claude.ai/artifact/MMGPq3icuhv68BugqDNhHS ("DropSpider · Spider Runaway").
 
+5. **The coupler's set screws were found a little loose and tightened by Joe on 2026-10-06, after every measurement in this file.** Ask him whether he has run a downward move since and what it did. Until then the coupler slipping on the motor shaft or the rod stays a live cause in the audit, alongside the motor's timing and the finger and ratchet.
+
 ## Read first
 
 1. `CLAUDE.md`: the hard constraints, every direction seen from behind the motor, the motor never turns with the finger in, release winds up 1/12 turn first.
