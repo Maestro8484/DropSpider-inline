@@ -2,7 +2,7 @@
 
 From the mechanical owner to the software/electrical team, written 2026-09-24. Future work only; what is already done is in `CHANGELOG.md`.
 
-**Before you start:** T1 to T8 in `M1_fix_handoff.md` must pass. Check: `docs/commissioning_log.md` has a PASS row for each.
+**Before you start:** T1 to T8 in `M1_fix_handoff.md` must pass. Check: `docs/commissioning_log.md` has a PASS row for each. Also check the radar's wiring before trusting any reading: on 2026-10-07 the owner found it not answering, metered 5 V on the sensor, swapped TX and RX, then swapped them back to the plan below (TX to GPIO16, RX to GPIO17). Whether it answers on the plan wiring is not yet known; the first test is `status` with the radar powered, looking for its frames in the board log.
 
 ## 1. Sensor: switch the trigger to the HLK-LD2450
 
