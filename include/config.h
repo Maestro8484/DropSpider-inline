@@ -44,6 +44,7 @@
 // and the eyelet, and the line carries only the spider.
 #define BACKOFF_STEPS       (STEPS_PER_TURN / 8)           // about 20 mm of line
 #define BACKOFF_RPM         30
+#define DRIVER_SETTLE_MS    200    // standstill after the driver is switched on, before the first step (stealthChop tuning needs 130 ms)
 #define DROP_KNOT_MARGIN_MM 30     // a drop never comes closer than this to the barrel knot
 // The drop's gentler stop is switched in this far ahead of the exact point, so a
 // late look by the machine task can never make the motor overshoot and reverse.

@@ -140,7 +140,14 @@ long rewindSteps() {
 
 static float mmPerStep() { return PI * BARREL_DIA_MM / STEPS_PER_TURN; }
 
-static void driverOn()  { digitalWrite(PIN_EN, LOW); driverIsOn = true; delay(5); }
+// Coming from off, hold still DRIVER_SETTLE_MS before the first step: the TMC2209's
+// stealthChop tunes itself at standstill (PWM_OFS_AUTO, at least 130 ms at run
+// current, datasheet). Starting 5 ms after enable gave an electronic chirp on the
+// release and an untuned first move (owner 2026-10-06).
+static void driverOn()  {
+  if (driverIsOn) return;
+  digitalWrite(PIN_EN, LOW); driverIsOn = true; delay(DRIVER_SETTLE_MS);
+}
 static void driverOff() { digitalWrite(PIN_EN, HIGH); driverIsOn = false; }
 
 static void servoWrite(int deg) {
