@@ -572,7 +572,10 @@ static void step() {
       break;
 
     case ST_RELEASE:
-      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      // Never start the drop before the finger has finished its swing: relms (250)
+      // was shorter than the finger's travel time (SERVO_MOVE_MS), and with setrel 30
+      // the swing is 55 degrees (2026-10-06).
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
       noteUnload();
       startDrop();
       break;
@@ -663,7 +666,7 @@ static void step() {
       break;
 
     case ST_BENCH_FREE:
-      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
       noteUnload();
       benchMove(pendAct, pendArg);
       break;
