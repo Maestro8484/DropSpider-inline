@@ -22,5 +22,6 @@ struct RadarStats {
 
 void radarBegin();      // call once from setup()
 void radarPoll();       // call from loop(): reads whatever the UART holds
+int radarProbe();       // find which free pin carries the radar signal and listen there; -1 if none (blocks 0.4 s)
 RadarStats radarStats();
 String radarJson();     // {"talking":..,"age":..,"fps":..,"frames":..,"bad":..,"bytes":..,"t":[[x,y,speed,gate] or null, x3 slots]}

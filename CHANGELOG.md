@@ -7,7 +7,10 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ### Fixed
 - Limit switch: two `rewind`s wound the spider up and on against the top, the switch never read, and the motor held it there powered. The switch now also has an interrupt, so one closure of any length stops the wind within 2 ms; after a stop the motor backs off until the switch opens (at most 6.5 mm) and holds without strain; a rewind that runs its full count with the switch fitted and never closed lets the spider down onto the finger, turns the motor off and stops on the fault at once (was three strikes, motor left holding). Each closure is logged and counted (`status`, the page). Doc 04. Flashed over the network, DEPLOYED; switch response with the spider NOT yet seen.
 
+- Limit switch, inverted install: the bead flicks the flap as it passes and the flap falls back behind it, so the switch only blips (the interrupt catches it). A second `rewind` or up-`jog` right after the switch stopped one is now refused: twice it started above the flap and wound against the top. A full-count rewind with no switch now ends motor off and finger out, no automatic lock, so a seat move can never drive the motor into the finger and the SG90. DEPLOYED.
+
 ### Added
+- `radar probe` and a probe by itself 3 s after power-up when RX2 hears nothing: reads the free pins for the LD2450's signal and listens on whichever carries it (swapped wires handled). First run on the board: no signal on any free pin. Not yet seen finding a live signal.
 - Radar card on the web page: live top-down map of the LD2450's targets with trails, door window and would-fire preview, a ripple per frame, and a 60 s timeline of people, trigger line, limit switch and motor. `radar` console command, `/api/radar`. Parser written to Hi-Link's manual (`src/radar.cpp`). Watch only: the drop is still fired by GPIO33. Drawn correctly against made-up walkers on the PC; the board has heard 0 bytes from the radar so far. Doc 04.
 
 ## 2026-10-05

@@ -346,8 +346,8 @@ static bool finishRewind() {
        (int)(ran * mmPerStep()), cutByLimit ? ", stopped by the limit switch" : "", (unsigned long)closes);
   bool stalled = S.limitFitted && !alreadyHome && !cutByLimit && !ignoreLimit;
   if (stalled) {
-    strike("full rewind ran without the limit switch closing: spider let down onto the finger, stopped. "
-           "Lift the flap by hand and watch the switch reading");
+    strike("full rewind ran without the limit switch closing: either the bead was already above the flap, "
+           "or the spool did not follow the motor (one-way bearing slipping or in backwards)");
     faultNow = true;
   }
   return stalled;
@@ -378,6 +378,15 @@ static Action pendAct;
 static long pendArg;
 
 static void benchMove(Action a, long arg) {
+  // Inverted install (2026-10-06): the bead flicks the flap as it passes and the
+  // flap drops back behind it, so a second wind from the top never sees the switch
+  // and pulls against the top for the whole count. Refuse it.
+  if (upByLimit && (a == ACT_REWIND || arg > 0)) {
+    logf("refused: the limit switch stopped the last wind and nothing has moved since, so the spider is already at the top. "
+         "Send lock, or jog down first");
+    enter(benchReturn);
+    return;
+  }
   if (a == ACT_JOG) {
     driverOn();
     homeLost();
@@ -574,7 +583,18 @@ static void step() {
 
     case ST_REWIND:
       if (stepper->isRunning()) break;
-      if (finishRewind()) { startLock(); break; }      // stalled: finger in, seat, motor off, fault
+      if (finishRewind()) {
+        // Stalled against the top, or the spool never followed. No lock: a seat move
+        // with the one-way bearing slipping or in backwards drives the motor into the
+        // finger and the SG90. Motor off, finger left out: the spider lets itself
+        // down on the motor's drag, nothing strained.
+        driverOff(); servoOff();
+        cycle = false; faultNow = false;
+        logf("[fault] stopped: motor off, finger out, the spider lets itself down. Send clear when it is fixed.");
+        logf("[done] rewind (stopped on a fault)");
+        enter(ST_FAULT);
+        break;
+      }
       if (cutByLimit) { startBackoff("rewind (finger out, eased off the switch, motor stays on until lock)"); break; }
       if (cycle) startLock();
       else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
