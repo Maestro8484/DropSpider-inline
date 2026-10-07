@@ -21,6 +21,8 @@ static uint8_t buf[30];
 static int have = 0;
 
 static RadarTarget tgt[3];
+static uint8_t raw[96];                 // the last bytes heard, newest last, for 'radar raw'
+static uint32_t rawN = 0;               // bytes ever written into raw
 static uint32_t lastGood = 0, frames = 0, bad = 0, bytes = 0;
 static uint32_t fpsFrom = 0, fpsCount = 0;
 static float fps = 0;
@@ -198,6 +200,57 @@ void radarWake() {
   have = 0;
 }
 
+// Show the last bytes heard on RX2, oldest first, with the frame headers named.
+void radarRaw() {
+  uint32_t n = rawN < sizeof raw ? rawN : sizeof raw;
+  if (!n) { logf("[radar] raw: nothing heard yet"); return; }
+  uint8_t out[sizeof raw];
+  for (uint32_t i = 0; i < n; i++) out[i] = raw[(rawN - n + i) % sizeof raw];
+  logf("[radar] raw: last %lu of %lu bytes heard (FD FC FB FA = command reply, AA FF 03 00 = position frame):", (unsigned long)n, (unsigned long)rawN);
+  for (uint32_t i = 0; i < n; i += 24) logf("  %s", hex(out + i, (n - i) < 24 ? (n - i) : 24).c_str());
+}
+
+// A firmware update can leave the module at another speed (reported for V2.14 and
+// later). Try enable configuration at each speed the module knows; the one that
+// answers is its speed. If it is not 256000, set 256000 (A1, index 7) and restart.
+static const uint32_t BAUDS[] = {256000, 115200, 230400, 460800, 57600, 38400, 19200, 9600};
+void radarBaud() {
+  static const uint8_t one[2] = {0x01, 0x00};
+  static const uint8_t idx256k[2] = {0x07, 0x00};
+  uint8_t r[64];
+  uint32_t found = 0;
+  for (uint32_t b : BAUDS) {
+    Serial2.end();
+    Serial2.begin(b, SERIAL_8N1, rxPin, txPin);
+    delay(20);
+    while (Serial2.available()) Serial2.read();
+    sendCmd(0xFF, one, 2);
+    int n = gather(150, r, sizeof r);
+    bool ack = false;
+    for (int i = 0; i + 3 < n && i + 3 < (int)sizeof r; i++) if (r[i] == 0xFD && r[i + 1] == 0xFC && r[i + 2] == 0xFB && r[i + 3] == 0xFA) { ack = true; break; }
+    logf("[radar] %lu baud: %d bytes back%s", (unsigned long)b, n, ack ? "  <- it answers here" : "");
+    if (ack) { found = b; break; }
+  }
+  if (!found) {
+    logf("[radar] no speed answers: the module is not listening (mid-update, rebooting, held by the phone, or off)");
+    listen(rxPin, txPin);
+    return;
+  }
+  if (found == RADAR_BAUD) {
+    sendCmd(0xFE, nullptr, 0);
+    gather(150, r, sizeof r);
+    logf("[radar] speed is already %lu; nothing changed", (unsigned long)found);
+    listen(rxPin, txPin);
+    return;
+  }
+  ask("set speed 256000", 0xA1, idx256k, 2);
+  ask("restart", 0xA3, nullptr, 0);
+  listen(rxPin, txPin);                               // back to 256000
+  int n = gather(3000, r, sizeof r);
+  logf("[radar] after the speed change: %d bytes in 3 s at 256000%s", n, hasFrame(r, n < (int)sizeof r ? n : sizeof r) ? ", target frames are flowing" : ", no target frames yet");
+  have = 0;
+}
+
 // Factory reset (A2) then restart: every setting the module keeps (tracking mode, area
 // boxes, baud rate, Bluetooth) goes back to how it shipped. Nothing of ours is stored in it.
 void radarReset() {
@@ -221,6 +274,7 @@ void radarPoll() {
   while (Serial2.available()) {
     uint8_t c = Serial2.read();
     bytes++;
+    raw[rawN++ % sizeof raw] = c;
     if (have < 4) {                       // still looking for AA FF 03 00
       if (c == HEAD[have]) buf[have++] = c;
       else if (c == HEAD[0]) { buf[0] = c; have = 1; }

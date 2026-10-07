@@ -25,5 +25,7 @@ void radarPoll();       // call from loop(): reads whatever the UART holds
 int radarProbe();       // find which free pin carries the radar signal and listen there; -1 if none (blocks 0.4 s)
 void radarWake();       // ask a silent radar to speak: version, state, end configuration, restart (blocks up to 4 s)
 void radarReset();      // factory reset the module and restart it (blocks about 6 s)
+void radarRaw();        // print the last 96 bytes heard on RX2
+void radarBaud();       // find which speed the module answers at and set it back to 256000 (blocks up to 5 s)
 RadarStats radarStats();
 String radarJson();     // {"talking":..,"age":..,"fps":..,"frames":..,"bad":..,"bytes":..,"t":[[x,y,speed,gate] or null, x3 slots]}

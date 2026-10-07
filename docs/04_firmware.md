@@ -151,6 +151,8 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `radar probe` | watch every free pin for 0.4 s and say which one carries the radar's signal; listen there if it is not RX2 |
 | `radar wake` | for a radar that is powered but silent (its TX wire sits at a steady 3 V): ask its firmware version, tracking mode and area setting over TX2 (GPIO17), end its configuration mode, and restart it if it still sends no target frames. Each step logs what came back. Refused while a move is running |
 | `radar reset` | put the radar's own stored settings (tracking mode, area boxes, baud rate, Bluetooth) back to factory and restart it; then listens 5 s for target frames. The firmware stores nothing in the radar, so nothing of ours is lost. Refused while a move is running |
+| `radar raw` | the last 96 bytes heard on RX2 as hex, oldest first: FD FC FB FA starts a command reply, AA FF 03 00 a position frame |
+| `radar baud` | try enable configuration at each speed the module knows (256000 first, then 115200, 230400, 460800, 57600, 38400, 19200, 9600); if it answers at another speed, set it back to 256000 and restart it. For a module whose firmware update moved its speed |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.

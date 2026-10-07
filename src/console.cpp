@@ -93,6 +93,8 @@ static const char *const HELP[] = {
   "  wifi            show network state | radar   what the LD2450 sees now (watch only) | radar probe   find its wire",
   "  radar wake      a silent radar: ask its version and state, end its configuration mode, restart it",
   "  radar reset     put the radar's own settings back to factory and restart it",
+  "  radar raw       the last 96 bytes heard from the radar, as hex",
+  "  radar baud      find the speed the radar answers at; set it back to 256000 if it moved",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
@@ -152,9 +154,11 @@ void consoleRun(const String &raw, String *capture) {
   }
   else if (cmd == "wifi")     logf("%s", webWhereAmI().c_str());
   else if (cmd == "radar")    {
-    if ((argS == "wake" || argS == "reset") && machineStatus().busy) logf("refused: a move is running");
+    if ((argS == "wake" || argS == "reset" || argS == "baud") && machineStatus().busy) logf("refused: a move is running");
+    else if (argS == "baud") radarBaud();
     else if (argS == "wake") radarWake();
     else if (argS == "reset") radarReset();
+    else if (argS == "raw") radarRaw();
     else if (argS == "probe") radarProbe();
     printRadar();
   }
