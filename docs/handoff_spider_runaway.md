@@ -35,11 +35,14 @@ git log -1 --oneline -- docs/handoff_spider_runaway.md   # when this file was la
 
 ## The work, in order
 
-1. **Settle where it slips, with Joe watching:** lock first. Marker line across the motor shaft and the coupler, another across the coupler and the rod, tape on the spool's edge, phone on slow motion. Send `jog -200`. Read: motor shaft spins many turns with both lines whole = the motor skips (A); a line splits = the coupler set screw (B); motor and coupler nearly still while the spool spins = the one-way bearing (C). Log the result.
-2. **If A (Joe's view):** check the TMC2209 against its datasheet and the BTT V1.3 board: stealthChop (the quiet mode) against a gravity load, the standstill current cut, whether spreadCycle can be chosen in standalone mode on this board (a pin or jumper), and what Vref gives in amps. Propose the hardware change as one numbered decision. In firmware, stop asking the motor to hold the spider alone: the finger goes in before any downward move ends.
-3. **If B:** set screw onto a filed flat, blue threadlocker; re-run the test.
-4. **If C:** the spool comes off; the bearing cup glued or the bore changed (`OP_BORE` in `cad/generate.py`, export `spool_onepiece` only); Joe decides.
-5. Log every run, one row each, in `docs/commissioning_log.md`.
+Order set by Joe (2026-10-06): audits first, the tape and watching last.
+
+1. **Full audit by this session (Fable), no motion:** the code, the motion and the problem together. Read every path that moves the motor or the servo in `src/machine.cpp` (driver on and off, `startMove` speeds and ramps, `haltMotor` at the switch, the back-off, the lock and seat, release, jogs, the drop and its stop), `include/config.h`, and the board's log. Check the TMC2209 V1.3 in standalone mode against its datasheet and the BTT board docs: stealthChop (the quiet mode) under a gravity load, the standstill current cut, whether spreadCycle can be chosen on this board, what Vref 0.825 V gives in amps against the motor's rating. Explain every 2026-10-06 measurement above with one cause, or say which it cannot explain. Write the findings as a file, `docs/audit_spider_runaway.md`, ranked, each with the line or datasheet page behind it.
+2. **Cold audit by Codex:** run the `codex-auditor` agent (or `/mad`) on the same question and the same files, blind to step 1's conclusions. Verify each Codex finding in the code before it counts; keep its severity and say it came from Codex. Add a section to the audit file: where Codex agrees, where it differs, what survived checking.
+3. **Report to Joe:** the ranked cause and the fix, as one flat numbered list, the question in bold on each item. Any firmware fix is built and flashed only after his yes; lock before any flash.
+4. **Then the tape and watching, only if the audits leave it open,** with Joe at the device: lock first; marker line across the motor shaft and the coupler, another across the coupler and the rod, tape on the spool's edge, phone on slow motion; send `jog -200`. Motor shaft spins many turns with both lines whole = the motor skips; a line splits = the coupler set screw; motor and coupler nearly still while the spool spins = the one-way bearing.
+5. **Fix by cause:** motor or driver = the driver change and firmware so the finger goes in before any downward move ends; coupler = set screw onto a filed flat, blue threadlocker; one-way bearing = spool off, cup glued or `OP_BORE` changed in `cad/generate.py` (export `spool_onepiece` only), Joe decides.
+6. Log every run, one row each, in `docs/commissioning_log.md`.
 
 ## Tests
 
