@@ -669,10 +669,12 @@ static void step() {
       break;
 
     case ST_BENCH_REL:
-      if (inState() < (uint32_t)S.releaseMs || stepper->isRunning()) break;
+      // The servo stays powered: it was detached after relms (250 ms), shorter than
+      // the finger's own travel time (SERVO_MOVE_MS), so the finger could stop part
+      // way out, near the teeth (2026-10-06). Lock, a jog, a rewind or off end it.
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
       noteUnload();
-      servoOff();
-      benchDone("rel: finger out, motor on and holding the spider (jog to lower it, off lets it slide down)");
+      benchDone("rel: finger out and held by the servo, motor on and holding the spider (jog to lower it, off lets it slide down)");
       break;
 
     case ST_BENCH_SERVO:
