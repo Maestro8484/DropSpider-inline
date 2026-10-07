@@ -10,3 +10,6 @@ secrets.ini
 # Python scratch
 __pycache__/
 *.pyc
+
+# Codex review bundle written by the /mad auditor; a copy of files already in the repo
+.mad/
