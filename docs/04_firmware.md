@@ -53,7 +53,8 @@ The web page is the console on your phone or PC. Every button sends a console co
 
 | Card | What is on it |
 |---|---|
-| Status | state, chips (armed, spider home, radar, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind |
+| Status | state, chips (armed, spider home, trigger line on GPIO33, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind, limit switch (open or closed, and closures counted since power-up) |
+| Radar | live top-down map from the LD2450: a dot and a 4 s trail per person, distance, speed worked out from the trail beside the sensor's own speed reading (test S2), the 1 m door window (red when the task 4 rule would fire: inside it, coming closer over 0.3 m/s, arriving within 0.75 s), a ripple per frame received, a 60 s timeline (people in view, nearest person, trigger line, limit switch, motor). Show 3 m or 6 m, flip left and right, freeze. Watch only: it does not fire the drop |
 | Run | Drop it now, Arm or Disarm, Stop, Motor and servo off, Clear fault |
 | Bench: finger servo | live angle, nudge 1 or 5 degrees, go to lock or release angle, store the current angle as lock or release |
 | Bench: motor | jog one turn or 1/8 turn each way, Rewind, Lock, Release |
@@ -97,10 +98,11 @@ Drop steps = dropmm / 0.098 mm + the steps the unload actually wound up. `dropmm
 A 3-pin endstop at the eyelet, pressed by the stop bead when the spider arrives home. Wiring in `02_electrical.md`.
 
 - Off until you turn it on (`limit 1`), so an unwired or backwards switch cannot stop a rewind early. Check it reads right first: the page shows "reads pressed" or "reads open"; press the lever by hand and watch. If backwards: `liminv 1`.
-- When on, it is a hard cut-off: any motor move in the rewind direction stops within a few milliseconds of the switch closing, in every state. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
+- When on, it is a hard cut-off: any motor move in the rewind direction stops within 2 ms of the switch closing, in every state. An interrupt latches the first closure of any length, so a flap shaken by a stalled motor still stops it (2026-10-06: two rewinds wound on against the top with the switch never seen).
+- After the switch stops a rewind or a jog, the motor backs down slowly (at most 6.5 mm) until the switch has read open for 20 ms, then holds: the bead rests off the flap, the line carries only the spider. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
 - Faults it catches, each a strike (three in a row and it stops arming until `clear` or a BOOT press):
   - trips in under a quarter of the expected rewind: line snagged or broke;
-  - full rewind runs and it never trips: bead missed it, or it is unplugged;
+  - full rewind runs and it never trips: bead missed it, or it is unplugged. The spider is then pulled hard against the top, so this one does not wait for three: the finger goes in, the seat move lets the spool down onto it, the motor goes off, and it stops on the fault until `clear`. Same for a switch still pressed after a drop;
   - still pressed right after a drop: wiring or `liminv` wrong. That rewind then runs on the step count alone.
 - Each cycle's rewind that ends on the switch reports how far the spider dropped, to check against `dropmm`.
 - Lost steps on the stop: if that rewind runs more than 20 mm past the drop (allowing one unload for the seat), the log says `lost steps?`. It means the spool got ahead of the motor at the stop and the line's stretch caught the spider. Not a fault on its own; lower `dropdec` or `droprpm` if it repeats.
@@ -144,6 +146,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
 | `limit <0/1>`, `liminv <0/1>` | limit switch fitted; switch reads backwards |
 | `wifi` | where the board is on the network |
+| `radar` | what the LD2450 sees now: frames a second, bad frames, each person's x, y and speed. "no frames yet" with 0 bytes means nothing is arriving on RX2 (GPIO16) |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.

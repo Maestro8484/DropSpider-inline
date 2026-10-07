@@ -17,6 +17,7 @@ struct MachineStatus {
   bool     sensor;          // radar OUT right now
   bool     limitRaw;        // limit switch reads pressed right now (after the invert setting)
   bool     limitFitted;
+  uint32_t limitCloses;     // switch closures seen since power-up (interrupt count, bounce included)
   bool     driverOn;
   bool     servoAttached;
   int      servoDeg;        // last angle commanded

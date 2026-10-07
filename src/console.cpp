@@ -2,6 +2,7 @@
 #include "config.h"
 #include "settings.h"
 #include "machine.h"
+#include "radar.h"
 #include <stdarg.h>
 
 // ---------------------------------------------------------------- log
@@ -58,9 +59,10 @@ String logJsonSince(uint32_t since, uint32_t &next) {
 
 static void printStatus() {
   MachineStatus m = machineStatus();
-  logf("state=%s armed=%d sensor=%d limit=%s home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
+  logf("state=%s armed=%d sensor=%d limit=%s (closed %lu times since power-up) home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
        m.state, m.armed, m.sensor,
        m.limitFitted ? (m.limitRaw ? "pressed" : "open") : (m.limitRaw ? "not-fitted(pressed)" : "not-fitted(open)"),
+       (unsigned long)m.limitCloses,
        m.home ? "yes" : "unknown",
        m.driverOn ? "on" : "off", m.servoAttached ? "on" : "off", m.servoDeg,
        m.rewindSteps, m.lastRewindSteps, m.lastRewindByLimit ? "(limit)" : "",
@@ -88,10 +90,20 @@ static const char *const HELP[] = {
   "  dropmm <mm>     how far the spider drops (100 to line - 70)",
   "  droprpm <n>     drop top speed, 100 to 900 | relms <ms> finger travel before the drop, 100 to 600",
   "  dropacc <n> | dropdec <n>   drop start and stop rates, microsteps/s^2 (100000 is about 1 g)",
-  "  wifi            show network state",
+  "  wifi            show network state | radar   what the LD2450 sees now (watch only, does not fire)",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
+
+static void printRadar() {
+  RadarStats r = radarStats();
+  if (!r.frames) { logf("radar: no frames yet (%lu bytes heard on RX2): check the LD2450's 5 V and its TX wire to RX2 (GPIO16)", (unsigned long)r.bytes); return; }
+  logf("radar: %s, %.1f frames/s, last %lu ms ago | frames %lu, bad %lu | %d in view",
+       r.talking ? "talking" : "SILENT", r.fps, (unsigned long)r.ageMs, (unsigned long)r.frames, (unsigned long)r.bad, r.count);
+  for (int i = 0; i < 3; i++)
+    if (r.talking && r.t[i].present())
+      logf("  target %d: x %d mm, y %d mm, speed %d cm/s", i + 1, r.t[i].x, r.t[i].y, r.t[i].speed);
+}
 
 static void printHelp() {
   for (const char *l : HELP) logf("%s", l);
@@ -137,6 +149,7 @@ void consoleRun(const String &raw, String *capture) {
     else motion(cmd == "jog" ? ACT_JOG : ACT_SERVO, arg, src);
   }
   else if (cmd == "wifi")     logf("%s", webWhereAmI().c_str());
+  else if (cmd == "radar")    printRadar();
   else if (settingsIsName(cmd)) {
     MachineStatus m = machineStatus();
     String why;

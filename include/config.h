@@ -19,8 +19,8 @@
 #define PIN_SERVO       13   // -> SG90 orange. Not GPIO14: 14 pulses at boot and would twitch the finger.
 #define PIN_SENSOR      33   // <- LD2410C OUT (HIGH = presence). Or AM312 PIR OUT.
 #define PIN_LIMIT       32   // <- limit switch (3-pin endstop) at the eyelet: pressed = spider home
-#define PIN_RADAR_RX    16   // <- LD2410C TX (reserved, not used by this firmware)
-#define PIN_RADAR_TX    17   // -> LD2410C RX (reserved, not used by this firmware)
+#define PIN_RADAR_RX    16   // <- LD2450 TX (RX2): read for the web page's radar view, does not fire the drop yet
+#define PIN_RADAR_TX    17   // -> LD2450 RX (TX2): nothing is sent to it
 #define PIN_BUTTON      0    // on-board BOOT button: manual test drop (active LOW)
 #define PIN_LED         2    // on-board blue LED
 
@@ -39,6 +39,12 @@
 #define UNLOAD_RPM          120
 #define SEAT_STEPS          (STEPS_PER_TURN * 12 / 120)    // 1/12 turn x 1.2: lets the spool down onto a tooth
 #define SEAT_RPM            30
+// After the limit switch stops a wind, the motor backs down slowly until the switch
+// has read open this long, at most BACKOFF_MAX_STEPS, then holds: the bead rests
+// off the flap instead of pressed into it.
+#define BACKOFF_MAX_STEPS   (STEPS_PER_TURN / 24)          // about 6.5 mm of line
+#define BACKOFF_RPM         30
+#define BACKOFF_OPEN_MS     20
 #define DROP_KNOT_MARGIN_MM 30     // a drop never comes closer than this to the barrel knot
 // The drop's gentler stop is switched in this far ahead of the exact point, so a
 // late look by the machine task can never make the motor overshoot and reverse.
@@ -83,6 +89,8 @@
 #endif
 
 #define CONSOLE_BAUD        115200
+#define RADAR_BAUD          256000   // LD2450, fixed by Hi-Link
+#define RADAR_SILENT_MS     1000     // no good frame this long = radar silent
 
 // ---------- DEFAULTS (runtime tunable, saved in flash) ----------
 #define DEF_SERVO_LOCK      90     // finger level, in the teeth, resting on the ledge

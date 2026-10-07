@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "machine.h"
 #include "console.h"
+#include "radar.h"
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
@@ -52,6 +53,8 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  .cl{display:flex;gap:8px} .cl input{flex:1;font-family:ui-monospace,Consolas,monospace}
  .big{font-size:22px;font-weight:700;text-align:center;margin:6px 0}
  a{color:#a995ff}
+ canvas{display:block;width:100%;background:#0b0a0e;border:1px solid var(--line);border-radius:8px}
+ .key{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
 </style></head><body>
 <h1>DropSpider</h1>
 <div class="sub" id="where">&nbsp;</div>
@@ -63,7 +66,24 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="row"><span>Last fired by</span><b id="trig">-</b></div>
  <div class="row"><span>Last rewind</span><b id="rw">-</b></div>
  <div class="row"><span>Last drop, measured by the rewind</span><b id="meas">-</b></div>
+ <div class="row"><span>Limit switch</span><b id="lsw">-</b></div>
  <div class="row"><span>Running for</span><b id="up">-</b></div>
+</div>
+
+<div class="card">
+ <h2>Radar</h2>
+ <div id="rchips"></div>
+ <canvas id="scope"></canvas>
+ <div class="g" style="margin-top:8px">
+  <button id="rzoom" onclick="rzoomT()">Show 3 m</button>
+  <button onclick="rflipT()">Flip left and right</button>
+  <button id="rpause" onclick="rpauseT()">Freeze</button>
+ </div>
+ <div id="rtab"></div>
+ <h2 style="margin-top:14px">Last 60 seconds</h2>
+ <canvas id="tl"></canvas>
+ <div class="sub" id="rhealth" style="margin-top:8px"></div>
+ <div class="sub">Watch only: the drop is still fired by the trigger line on GPIO33, not by this radar (roadmap task 4). Seen from the sensor looking out. Each ripple is one frame the sensor sent, about 10 a second; no ripples means it has gone quiet. The shaded strip is the door window, 1 m wide; it turns red when someone inside it is coming closer fast enough to arrive within 0.75 s, the rule task 4 will use. Distances run along the radar's tilted view, not the floor.</div>
 </div>
 
 <div class="card">
@@ -164,11 +184,12 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  document.getElementById('rw').textContent=s.lastRewind?(s.lastRewind+' steps of '+s.rewindSteps+(s.lastRewindLimit?', stopped by the switch':'')):'none yet';
  document.getElementById('meas').textContent=s.measuredDrop?('about '+s.measuredDrop+' mm (set '+s.settings.dropmm+')'):'not yet';
  document.getElementById('up').textContent=ms(s.uptime);
+ document.getElementById('lsw').textContent=(s.limit?'closed':'open')+', closed '+s.limitCloses+' times since power-up';
  document.getElementById('sdeg').textContent=s.servoDeg+'°'+(s.servoOn?' holding':' (servo off)');
  document.getElementById('armb').textContent=armed?'Disarm':'Arm';
  let h=armed?chip('armed','ok'):chip('not armed','wa');
  h+=s.limitFitted?(s.limit?chip('spider home (switch pressed)','ok'):s.home?chip('spider home (seated on the finger)','ok'):chip('switch open, spider not home','wa')):chip('limit switch off in settings'+(s.limit?', reads pressed':', reads open'),'wa');
- h+=s.sensor?chip('radar: someone there','wa'):chip('radar: clear','ok');
+ h+=s.sensor?chip('trigger line (GPIO33): someone there','wa'):chip('trigger line (GPIO33): clear','ok');
  if(s.driverOn)h+=chip('motor powered','wa');
  if(s.fault)h+=chip(s.fault+(s.faultRun>1?' ('+s.faultRun+' in a row)':''),'no');
  document.getElementById('chips').innerHTML=h;
@@ -177,6 +198,96 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  if(!built)build(s.settings);else for(const[k]of SETS){const f=document.getElementById('f_'+k);if(f&&document.activeElement!==f)f.value=s.settings[k]}
 }).catch(()=>{})}
 tick();setInterval(tick,800);
+
+// ---- radar view: /api/radar about 8 times a second, drawn every animation frame
+const RC=['#4ac47a','#e8b44a','#a995ff'];
+let rz=6,rfrozen=false,rbusy=false,rlast=null,lastFrames=-1,lastCloses=-1;
+let rflip=false;try{rflip=localStorage.getItem('rflip')==='1'}catch(e){}
+const trails=[[],[],[]];let ripples=[],hist=[];
+function rzoomT(){rz=rz===6?3:6;document.getElementById('rzoom').textContent=rz===6?'Show 3 m':'Show 6 m'}
+function rflipT(){rflip=!rflip;try{localStorage.setItem('rflip',rflip?'1':'0')}catch(e){}}
+function rpauseT(){rfrozen=!rfrozen;document.getElementById('rpause').textContent=rfrozen?'Live':'Freeze'}
+function fit(cv,ratio){const d=devicePixelRatio||1,w=cv.clientWidth,h=Math.round(w*ratio);
+ if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);cv.style.height=h+'px'}
+ const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);return[x,w,h]}
+// speed worked out from the dot's own trail over the last 0.7 s, in m/s: + = coming closer
+function closing(tr){if(!tr.length)return null;const p1=tr[tr.length-1];let p0=null;
+ for(const q of tr){if(p1.t-q.t<=700){p0=q;break}}
+ if(!p0||p1.t-p0.t<250)return null;const dt=(p1.t-p0.t)/1000;
+ return{dr:(Math.hypot(p0.x,p0.y)-Math.hypot(p1.x,p1.y))/1000/dt,dy:(p0.y-p1.y)/1000/dt}}
+function wouldFire(now){return trails.some(tr=>{if(!tr.length)return false;const p=tr[tr.length-1];if(now-p.t>400)return false;
+ const c=closing(tr);return c&&Math.abs(p.x)<500&&c.dy>0.3&&p.y/1000/c.dy<0.75})}
+function rpoll(){if(document.hidden||rbusy||rfrozen)return;rbusy=true;
+ fetch('/api/radar').then(r=>r.json()).then(d=>{const now=performance.now();rlast=d;
+  if(lastFrames>=0&&d.r.frames>lastFrames){const nf=Math.min(d.r.frames-lastFrames,4);for(let i=0;i<nf;i++)ripples.push(now-i*100)}
+  lastFrames=d.r.frames;
+  d.r.t.forEach((p,i)=>{const tr=trails[i];if(!p){tr.length=0;return}const q=tr[tr.length-1];
+   if(q&&Math.hypot(q.x-p[0],q.y-p[1])>1500)tr.length=0;   // a new person took this slot
+   tr.push({t:now,x:p[0],y:p[1],v:p[2]});while(tr.length&&now-tr[0].t>4000)tr.shift()});
+  let near=null,n=0;d.r.t.forEach(p=>{if(p){n++;const r=Math.hypot(p[0],p[1])/1000;if(near===null||r<near)near=r}});
+  const flick=lastCloses>=0&&d.closes>lastCloses;lastCloses=d.closes;
+  hist.push({t:now,n,near,out:d.out,lim:d.lim||flick,busy:d.busy,talk:d.r.talking});
+  while(hist.length&&now-hist[0].t>60000)hist.shift();
+  rtable(d,now)}).catch(()=>{}).finally(()=>{rbusy=false})}
+function rtable(d,now){const r=d.r;let h='';
+ r.t.forEach((p,i)=>{if(!p)return;const c=closing(trails[i]);
+  h+='<div class="row"><span><span class="key" style="background:'+RC[i]+'"></span>Person '+(i+1)+'</span><b>'+(Math.hypot(p[0],p[1])/1000).toFixed(2)+' m away'
+  +(c?(c.dr>0.1?', coming closer '+c.dr.toFixed(1)+' m/s':c.dr<-0.1?', moving away '+(-c.dr).toFixed(1)+' m/s':', standing'):'')+'</b></div>'
+  +'<div class="row"><span>&nbsp;&nbsp;across '+(p[0]/1000).toFixed(2)+' m, out '+(p[1]/1000).toFixed(2)+' m</span><span>sensor says '+p[2]+' cm/s</span></div>'});
+ document.getElementById('rtab').innerHTML=h||(r.talking?'<div class="row"><span>Nobody in view</span><b>-</b></div>':'');
+ const n=r.t.filter(Boolean).length,f=wouldFire(now);
+ let c=r.talking?chip('radar talking, '+r.fps.toFixed(1)+' frames/s','ok'):chip(r.frames?'radar silent '+ms(r.age):'no radar frames yet','no');
+ if(r.talking)c+=n?chip(n+(n>1?' people':' person')+' in view','wa'):chip('nobody in view','ok');
+ if(f)c+=chip('would fire now (preview)','no');
+ document.getElementById('rchips').innerHTML=c;
+ document.getElementById('rhealth').textContent=!r.bytes?'Nothing heard on RX2 (GPIO16) since power-up: check the LD2450 has 5 V and its TX wire goes to RX2.'
+  :!r.frames?r.bytes+' bytes heard on RX2 but no LD2450 frames: wrong sensor on that pin, or a loose wire.'
+  :'Frames '+r.frames+', bad '+r.bad+', bytes '+r.bytes+'. "Sensor says" is the radar\'s own speed reading; check its sign against the trail (test S2).'}
+function rdraw(){requestAnimationFrame(rdraw);if(document.hidden)return;
+ const cv=document.getElementById('scope');if(!cv.clientWidth)return;const[x,w,h]=fit(cv,.6);const now=performance.now();
+ const cx=w/2,by=h-12,R=Math.min(h-24,(w/2-34)/Math.sin(Math.PI/3)),k=R/(rz*1000),sx=rflip?-1:1;
+ const P=(mx,my)=>[cx+sx*mx*k,by-my*k],a0=-Math.PI*5/6,a1=-Math.PI/6;
+ x.clearRect(0,0,w,h);
+ const fan=()=>{x.beginPath();x.moveTo(cx,by);x.arc(cx,by,R,a0,a1);x.closePath()};
+ fan();x.fillStyle='rgba(122,92,255,.07)';x.fill();
+ x.save();fan();x.clip();
+ const fire=wouldFire(now),[d0]=P(-500,0),[d1]=P(500,0);
+ x.fillStyle=fire?'rgba(226,96,79,.30)':'rgba(232,180,74,.08)';x.fillRect(Math.min(d0,d1),0,Math.abs(d1-d0),by);
+ x.setLineDash([4,4]);x.strokeStyle=fire?'#e2604f':'rgba(232,180,74,.45)';x.beginPath();x.moveTo(d0,by);x.lineTo(d0,0);x.moveTo(d1,by);x.lineTo(d1,0);x.stroke();x.setLineDash([]);
+ ripples=ripples.filter(t=>now-t<900);
+ for(const t of ripples){const f=(now-t)/900;x.strokeStyle='rgba(169,149,255,'+(.4*(1-f)).toFixed(3)+')';x.beginPath();x.arc(cx,by,Math.max(1,f*R),a0,a1);x.stroke()}
+ x.restore();
+ x.strokeStyle='#332e3d';x.font='11px system-ui';x.fillStyle='#9a93a8';
+ for(let m=1;m<=rz;m++){x.beginPath();x.arc(cx,by,m*1000*k,a0,a1);x.stroke();x.fillText(m+' m',cx+Math.cos(a1)*m*1000*k+4,by+Math.sin(a1)*m*1000*k+4)}
+ x.beginPath();x.moveTo(cx,by);x.lineTo(cx+Math.cos(a0)*R,by+Math.sin(a0)*R);x.moveTo(cx,by);x.lineTo(cx+Math.cos(a1)*R,by+Math.sin(a1)*R);x.stroke();
+ x.fillText('door window',Math.max(d0,d1)+4,14);
+ trails.forEach((tr,i)=>{if(!tr.length)return;const c=RC[i];x.strokeStyle=c;x.lineWidth=2;
+  for(let j=1;j<tr.length;j++){const[ax,ay]=P(tr[j-1].x,tr[j-1].y),[bx,bb]=P(tr[j].x,tr[j].y);
+   x.globalAlpha=Math.max(0,1-(now-tr[j].t)/4000)*.8;x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,bb);x.stroke()}
+  x.globalAlpha=1;x.lineWidth=1;const p=tr[tr.length-1];if(now-p.t>1500)return;const[px,py]=P(p.x,p.y);
+  x.fillStyle=c;x.beginPath();x.arc(px,py,7,0,Math.PI*2);x.fill();
+  x.strokeStyle=c;x.globalAlpha=.5;x.beginPath();x.arc(px,py,10+3*Math.sin(now/180),0,Math.PI*2);x.stroke();x.globalAlpha=1;
+  const cl=closing(tr);x.fillStyle='#ece9f2';x.font='600 12px system-ui';
+  x.fillText((i+1)+'  '+(Math.hypot(p.x,p.y)/1000).toFixed(1)+' m'+(cl?(cl.dr>0.1?', closer':cl.dr<-0.1?', away':''):''),px+14,py-8)});
+ x.fillStyle='#7a5cff';x.fillRect(cx-16,by,32,7);
+ if(!rlast||!rlast.r.talking){x.fillStyle='rgba(11,10,14,.72)';x.fillRect(0,0,w,h);x.fillStyle='#e2604f';x.font='600 15px system-ui';x.textAlign='center';
+  x.fillText(!rlast?'waiting for the board':rlast.r.frames?'radar silent':'no radar frames yet',cx,h/2);x.textAlign='left'}
+ if(rfrozen){x.fillStyle='#e8b44a';x.font='600 12px system-ui';x.fillText('FROZEN',8,16)}
+ rtl(now)}
+function rtl(now){const cv=document.getElementById('tl');if(!cv.clientWidth)return;const[x,w,h]=fit(cv,.38);x.clearRect(0,0,w,h);
+ const L=Math.min(150,w*.34),lanes=['people in view','nearest person','trigger line (GPIO33)','limit switch','motor or finger working'],lh=(h-16)/lanes.length;
+ const T=t=>L+(w-L-4)*(1-(now-t)/60000);x.font='11px system-ui';
+ lanes.forEach((l,i)=>{x.fillStyle='#9a93a8';x.fillText(l,4,i*lh+lh/2+4);x.strokeStyle='#332e3d';x.beginPath();x.moveTo(L,(i+1)*lh);x.lineTo(w,(i+1)*lh);x.stroke()});
+ for(let s=0;s<=60;s+=15){const tx=T(now-s*1000);x.fillStyle='#9a93a8';x.fillText(s?'-'+s+' s':'now',Math.max(L,tx-(s?14:24)),h-3)}
+ const Y=v=>lh+3+(lh-6)*Math.min(v,6)/6;
+ for(let j=1;j<hist.length;j++){const a=hist[j-1],b=hist[j],x0=T(a.t),x1=T(b.t),ww=Math.max(1,x1-x0);
+  if(!a.talk){x.fillStyle='rgba(226,96,79,.18)';x.fillRect(x0,3,ww,lh-6)}
+  if(a.n){x.fillStyle='#4ac47a';const hh=(lh-6)*a.n/3;x.fillRect(x0,lh-3-hh,ww,hh)}
+  if(a.out){x.fillStyle='#e8b44a';x.fillRect(x0,2*lh+3,ww,lh-6)}
+  if(a.lim){x.fillStyle='#e2604f';x.fillRect(x0,3*lh+3,ww,lh-6)}
+  if(a.busy){x.fillStyle='#7a5cff';x.fillRect(x0,4*lh+3,ww,lh-6)}
+  if(a.near!==null&&b.near!==null){x.strokeStyle='#a995ff';x.lineWidth=2;x.beginPath();x.moveTo(x0,Y(a.near));x.lineTo(x1,Y(b.near));x.stroke();x.lineWidth=1}}}
+setInterval(rpoll,120);requestAnimationFrame(rdraw);
 </script></body></html>)HTML";
 
 static const char UPDATE_PAGE[] PROGMEM = R"HTML(<!doctype html><html><head><meta charset="utf-8">
@@ -212,6 +323,7 @@ static void sendStatus() {
   j += ",\"armed\":" + String(m.armed);
   j += ",\"sensor\":" + String(m.sensor);
   j += ",\"limit\":" + String(m.limitRaw);
+  j += ",\"limitCloses\":" + String(m.limitCloses);
   j += ",\"limitFitted\":" + String(m.limitFitted);
   j += ",\"driverOn\":" + String(m.driverOn);
   j += ",\"servoOn\":" + String(m.servoAttached);
@@ -275,6 +387,12 @@ void webBegin() {
 
   server.on("/", HTTP_GET, []() { server.send_P(200, "text/html", PAGE); });
   server.on("/api/status", HTTP_GET, sendStatus);
+  server.on("/api/radar", HTTP_GET, []() {             // small and fast: the page asks about 8 times a second
+    MachineStatus m = machineStatus();
+    String j = "{\"r\":" + radarJson() + ",\"out\":" + String(m.sensor) + ",\"lim\":" + String(m.limitRaw) +
+               ",\"closes\":" + String(m.limitCloses) + ",\"busy\":" + String(m.busy) + "}";
+    server.send(200, "application/json", j);
+  });
 
   server.on("/api/cmd", HTTP_POST, []() {
     String out;

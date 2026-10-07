@@ -4,6 +4,7 @@
 #include "console.h"
 #include <ESP32Servo.h>
 #include <FastAccelStepper.h>
+#include <soc/gpio_reg.h>
 
 // FastAccelStepper makes the step pulses in the ESP32's own pulse hardware, so a
 // rewind runs smoothly while WiFi, the web page and the console carry on. The
@@ -17,6 +18,7 @@ enum St {
   ST_BOOT, ST_IDLE, ST_LOCKOUT, ST_WAIT_CLEAR, ST_FAULT,          // at rest
   ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND,                      // cycle
   ST_LOCK_IN, ST_LOCK_SEAT, ST_LOCK_HOLD,                         // cycle or bench
+  ST_BACKOFF,                                                     // after the switch stopped a wind
   ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO, ST_BENCH_FREE             // bench only
 };
 
@@ -35,6 +37,27 @@ static bool movingUp = false;           // current move is in the rewind directi
 static long moveStartPos = 0;
 static bool cutByLimit = false;
 static bool ignoreLimit = false;        // this rewind runs on the step count alone
+
+// The switch is also watched by an interrupt, so one closure of any length stops
+// the wind on the next tick (2 ms): a stalled motor shakes the flap, and a switch
+// that chatters may never read closed for the debounce time. Stopping is always
+// safe; winding on against the top is not.
+static_assert(PIN_LIMIT >= 32 && PIN_LIMIT <= 39, "limIsr reads the GPIO32-39 input register");
+static volatile bool limHit = false;          // closed at least once since the move started
+static volatile uint32_t limCloses = 0;       // closures seen since power-up, bounce included
+static uint32_t limClosesAtStart = 0;
+static void IRAM_ATTR limIsr() {
+  bool low = !(REG_READ(GPIO_IN1_REG) & BIT(PIN_LIMIT - 32));
+  if (low != (S.limitInverted != 0)) { limHit = true; limCloses++; }
+}
+
+// After the switch stops a wind: back down until it opens, then hold (no strain).
+static bool backoffForCycle = false;
+static const char *backoffDone = "";
+static uint32_t openSince = 0;
+// A wind that ran its whole count with the switch fitted and never closing has
+// pulled the spider hard against the top: let it down onto the finger and stop.
+static bool faultNow = false;
 
 static long lastRewind = 0;
 static bool lastRewindLimit = false;
@@ -87,6 +110,7 @@ static const char *stateName(St s) {
     case ST_LOCK_IN:     return "finger going in";
     case ST_LOCK_SEAT:   return "spool settling onto the finger";
     case ST_LOCK_HOLD:   return "finger holding, motor off";
+    case ST_BACKOFF:     return "easing off the limit switch";
     case ST_JOG:         return "jogging the motor";
     case ST_BENCH_REL:   return "finger out (bench)";
     case ST_BENCH_SERVO: return "moving the finger (bench)";
@@ -146,6 +170,8 @@ static bool startMove(long n, int rpm) {
   stepper->setAcceleration((int32_t)((uint64_t)hz * hz / (2 * RAMP_STEPS)));
   movingUp = n > 0;
   cutByLimit = false;
+  limHit = false;
+  limClosesAtStart = limCloses;
   moveStartPos = stepper->getCurrentPosition();
   return stepper->move(n) == MOVE_OK;
 }
@@ -181,7 +207,10 @@ static void readInputs() {
   bool l = digitalRead(PIN_LIMIT) == LOW;               // pulled up; pressed pulls LOW
   if (S.limitInverted) l = !l;
   if (l != limLast) { limLast = l; limAt = now; }
-  if (now - limAt >= LIMIT_DEBOUNCE_MS) limStable = l;
+  if (now - limAt >= LIMIT_DEBOUNCE_MS && limStable != l) {
+    limStable = l;
+    logf("[limit] switch %s", l ? "closed" : "open");
+  }
 }
 
 static bool buttonEdge() {
@@ -264,6 +293,7 @@ static void startRewind() {
       // length with the switch ignored; the bead stop ends it.
       strike("limit switch still pressed after a drop: check its wiring and the liminv setting");
       ignoreLimit = true;
+      faultNow = true;
     } else {
       logf("[rewind] limit switch already pressed, spider is home, nothing to wind");
       moveStartPos = stepper->getCurrentPosition();
@@ -282,8 +312,11 @@ static void startRewind() {
   enter(ST_REWIND);
 }
 
-static void finishRewind() {
+// Returns true when the wind ran its whole count with the switch fitted and never
+// closing: the spider is then pulled hard against the top.
+static bool finishRewind() {
   long ran = stepper->getCurrentPosition() - moveStartPos;
+  uint32_t closes = limCloses - limClosesAtStart;
   bool alreadyHome = !cutByLimit && ran == 0 && limitHome();
   if (!alreadyHome) {
     lastRewind = ran;
@@ -305,12 +338,25 @@ static void finishRewind() {
                (int)(extra * mmPerStep()));
         faultRun = 0; fault = "";
       }
-    } else if (cycle && !ignoreLimit) {
-      strike("full rewind ran without the limit switch tripping");
     }
   }
-  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s", ran, ran / (float)STEPS_PER_TURN, (int)(ran * mmPerStep()),
-       cutByLimit ? ", stopped by the limit switch" : "");
+  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s, switch closed %lu times", ran, ran / (float)STEPS_PER_TURN,
+       (int)(ran * mmPerStep()), cutByLimit ? ", stopped by the limit switch" : "", (unsigned long)closes);
+  bool stalled = S.limitFitted && !alreadyHome && !cutByLimit && !ignoreLimit;
+  if (stalled) {
+    strike("full rewind ran without the limit switch closing: spider let down onto the finger, stopped. "
+           "Lift the flap by hand and watch the switch reading");
+    faultNow = true;
+  }
+  return stalled;
+}
+
+static void startBackoff(const char *done) {
+  backoffForCycle = cycle;
+  backoffDone = done;
+  openSince = 0;
+  if (!startMove(-BACKOFF_MAX_STEPS, BACKOFF_RPM)) logf("[limit] back-off would not start");
+  enter(ST_BACKOFF);
 }
 
 // Finger in while the motor holds, then the motor lets the spool down onto a
@@ -396,6 +442,7 @@ static void handleReq(const Req &r) {
     bool wasCycle = cycle;
     if (isBusy()) homeLost();                 // stopped part way: nobody knows where the spider is
     cycle = false;
+    faultNow = false;
     if (r.a == ACT_OFF) { driverOff(); servoOff(); }
     disarmForBench();
     logf("[done] %s%s", r.a == ACT_OFF ? "off: motor and servo off" : "stop: everything halted, motor left as it was",
@@ -443,7 +490,7 @@ static void step() {
 
   // HARD CUT-OFF: winding in and the limit switch is pressed, stop now, whatever
   // state this is. The bead stop at the eyelet is still the mechanical backstop.
-  if (movingUp && !ignoreLimit && stepper->isRunning() && limitHome()) {
+  if (movingUp && !ignoreLimit && S.limitFitted && stepper->isRunning() && (limHit || limLast)) {
     haltMotor();
     cutByLimit = true;
   }
@@ -525,9 +572,23 @@ static void step() {
 
     case ST_REWIND:
       if (stepper->isRunning()) break;
-      finishRewind();
+      if (finishRewind()) { startLock(); break; }      // stalled: finger in, seat, motor off, fault
+      if (cutByLimit) { startBackoff("rewind (finger out, eased off the switch, motor stays on until lock)"); break; }
       if (cycle) startLock();
       else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
+      break;
+
+    case ST_BACKOFF:
+      if (stepper->isRunning()) {
+        if (limLast) { openSince = 0; break; }
+        if (!openSince) openSince = now ? now : 1;
+        if (now - openSince >= BACKOFF_OPEN_MS) haltMotor();
+        break;
+      }
+      logf("[limit] eased off %d mm%s", (int)((moveStartPos - stepper->getCurrentPosition()) * mmPerStep()),
+           limLast ? ": switch STILL closed, check the flap" : ", switch open, no strain on the line");
+      if (backoffForCycle) startLock();
+      else { servoOff(); benchDone(backoffDone); }
       break;
 
     case ST_LOCK_IN:
@@ -549,7 +610,12 @@ static void step() {
       setHome(upByLimit);
       logf("[lock] seated. Limit switch %s%s", !S.limitFitted ? "not fitted" : limitHome() ? "pressed" : "open",
            upByLimit ? "; spider home" : "; home not known (last rewind was not stopped by the switch)");
-      if (cycle) {
+      if (faultNow) {
+        faultNow = false; cycle = false;
+        logf("[fault] stopped: %s. Send clear when it is fixed.", fault);
+        logf("[done] lock (stopped on a fault)");
+        enter(ST_FAULT);
+      } else if (cycle) {
         cycle = false;
         if (faultRun >= FAULT_STRIKES) {
           logf("[cycle] done, %d faults in a row: stopped. Send clear, or press BOOT.", faultRun);
@@ -569,6 +635,7 @@ static void step() {
       if (stepper->isRunning()) break;
       logf("[jog] ran %ld steps%s", stepper->getCurrentPosition() - moveStartPos,
            cutByLimit ? ", stopped by the limit switch" : "");
+      if (cutByLimit) { startBackoff("jog (stopped by the switch, eased off, motor stays on)"); break; }
       servoOff();
       benchDone("jog (finger out, motor stays on)");
       break;
@@ -613,6 +680,7 @@ void machineBegin() {
   pinMode(PIN_SENSOR, INPUT_PULLDOWN);
   pinMode(PIN_BUTTON, INPUT_PULLUP);
   pinMode(PIN_LIMIT, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_LIMIT), limIsr, CHANGE);
   pinMode(PIN_LED, OUTPUT);
 
   engine.init();
@@ -654,6 +722,7 @@ MachineStatus machineStatus() {
   m.armed = S.armed;
   m.sensor = sensorNow;
   m.limitRaw = limStable;
+  m.limitCloses = limCloses;
   m.limitFitted = S.limitFitted;
   m.home = limitHome() || homeFlag;
   m.driverOn = driverIsOn;

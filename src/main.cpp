@@ -9,6 +9,7 @@
 //   src/machine.cpp    the cycle, stepper, servo, sensor, button, limit switch
 //   src/console.cpp    text commands (USB serial and the web page share them)
 //   src/web.cpp        WiFi, the web page, network firmware updates
+//   src/radar.cpp      LD2450 radar frames for the web page's radar view (watch only)
 //   src/settings.cpp   tunables saved in flash
 
 #include <Arduino.h>
@@ -17,12 +18,14 @@
 #include "machine.h"
 #include "console.h"
 #include "web.h"
+#include "radar.h"
 
 void setup() {
   pinMode(PIN_EN, OUTPUT); digitalWrite(PIN_EN, HIGH);   // coils off first thing
   Serial.begin(CONSOLE_BAUD);
   settingsBegin();
   machineBegin();            // own task from here on; never rewinds at boot
+  radarBegin();              // LD2450 on UART2, watch only
   logf("\nDropSpider Mechanism A Rev C.1 ready. Type help.");
   webBegin();                // may take up to 15 s to join WiFi; the machine is already live
   logf("%s", webWhereAmI().c_str());
@@ -31,6 +34,7 @@ void setup() {
 
 void loop() {
   consolePollSerial();
+  radarPoll();
   webLoop();
   delay(2);
 }

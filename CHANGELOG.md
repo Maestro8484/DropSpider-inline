@@ -2,6 +2,14 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-06
+
+### Fixed
+- Limit switch: two `rewind`s wound the spider up and on against the top, the switch never read, and the motor held it there powered. The switch now also has an interrupt, so one closure of any length stops the wind within 2 ms; after a stop the motor backs off until the switch opens (at most 6.5 mm) and holds without strain; a rewind that runs its full count with the switch fitted and never closed lets the spider down onto the finger, turns the motor off and stops on the fault at once (was three strikes, motor left holding). Each closure is logged and counted (`status`, the page). Doc 04. Flashed over the network, DEPLOYED; switch response with the spider NOT yet seen.
+
+### Added
+- Radar card on the web page: live top-down map of the LD2450's targets with trails, door window and would-fire preview, a ripple per frame, and a 60 s timeline of people, trigger line, limit switch and motor. `radar` console command, `/api/radar`. Parser written to Hi-Link's manual (`src/radar.cpp`). Watch only: the drop is still fired by GPIO33. Drawn correctly against made-up walkers on the PC; the board has heard 0 bytes from the radar so far. Doc 04.
+
 ## 2026-10-05
 
 ### Changed
