@@ -44,7 +44,8 @@ static bool ignoreLimit = false;        // this rewind runs on the step count al
 // safe; winding on against the top is not.
 static_assert(PIN_LIMIT >= 32 && PIN_LIMIT <= 39, "limIsr reads the GPIO32-39 input register");
 static volatile bool limHit = false;          // closed at least once since the move started
-static volatile uint32_t limCloses = 0;       // closures seen since power-up, bounce included
+static volatile uint32_t limCloses = 0;       // closed edges seen by the interrupt, bounce included
+static uint32_t limPresses = 0;               // steady closures since power-up (what the page shows)
 static uint32_t limClosesAtStart = 0;
 static void IRAM_ATTR limIsr() {
   bool low = !(REG_READ(GPIO_IN1_REG) & BIT(PIN_LIMIT - 32));
@@ -209,6 +210,7 @@ static void readInputs() {
   if (l != limLast) { limLast = l; limAt = now; }
   if (now - limAt >= LIMIT_DEBOUNCE_MS && limStable != l) {
     limStable = l;
+    if (l) limPresses++;
     logf("[limit] switch %s", l ? "closed" : "open");
   }
 }
@@ -340,7 +342,7 @@ static bool finishRewind() {
       }
     }
   }
-  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s, switch closed %lu times", ran, ran / (float)STEPS_PER_TURN,
+  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s, switch edges seen %lu", ran, ran / (float)STEPS_PER_TURN,
        (int)(ran * mmPerStep()), cutByLimit ? ", stopped by the limit switch" : "", (unsigned long)closes);
   bool stalled = S.limitFitted && !alreadyHome && !cutByLimit && !ignoreLimit;
   if (stalled) {
@@ -722,7 +724,7 @@ MachineStatus machineStatus() {
   m.armed = S.armed;
   m.sensor = sensorNow;
   m.limitRaw = limStable;
-  m.limitCloses = limCloses;
+  m.limitCloses = limPresses;
   m.limitFitted = S.limitFitted;
   m.home = limitHome() || homeFlag;
   m.driverOn = driverIsOn;
