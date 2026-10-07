@@ -4,6 +4,10 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ## 2026-10-07
 
+### Added
+
+- `radar wake` and `radar reset` console commands (`src/radar.cpp`): the first talks to the LD2450 over TX2 (version, tracking mode, area setting, end configuration, restart), the second puts its stored settings back to factory and restarts it. Written for a radar that is powered and silent; each step logs the reply bytes. Command frames from Hi-Link's operation manual and ESPHome's ld2450 component (protocol facts only, no code copied).
+
 ### Fixed
 - Spider runaway on every downward move: closed. At the device the driver chip's logic supply turned out to be unconnected since the first build (the expansion board's V row, read 2.7 V by leakage through the signal wires, 1.8 mV with them off, against the chip's 3.0 V minimum); it is now fed from the ESP32's 3V3 pin. With that wire, the lock-after-every-move firmware of 2026-10-06, the standstill current cut switched off (switch 1 ON), Vref 0.935 V and `dropacc` 80000: one `jog -1600` came down one turn and held on the finger, and ten page drops each fell, held, wound back to the switch and locked, owner watching ("it all looks good"). Line length set to 1333 mm after the owner shortened the line. `docs/handoff_spider_runaway.md` retired. Which of the five changes carries how much weight was not separated. spreadCycle (20K at R7) left for later by the owner's word.
 - V22 closed: the line stayed on the Rev C.4 spool through the same ten drops (owner: "no line came off"). `docs/handoff_spool_rev_c4.md` retired, roadmap line 3 removed.

@@ -103,6 +103,120 @@ int radarProbe() {
   return found;
 }
 
+// Talk to the radar over its RX wire (ESP32 TX2). Command frames, from Hi-Link's
+// serial protocol as ESPHome's ld2450 component sends them (read 2026-10-07):
+//   FD FC FB FA | len lo, len hi | cmd, 00 | value bytes | 04 03 02 01
+// A command only works inside configuration mode (cmd FF, value 01 00), and in that
+// mode the radar stops its 10 Hz target frames until end configuration (FE) or a
+// restart (A3). The reply to any command is a frame with the same header, cmd | 0x100
+// and a status word of 00 00 for ok. Version reply: 6 bytes from offset 12.
+static void sendCmd(uint8_t cmd, const uint8_t *val, int n) {
+  uint8_t head[8] = {0xFD, 0xFC, 0xFB, 0xFA, (uint8_t)(2 + n), 0x00, cmd, 0x00};
+  static const uint8_t foot[4] = {0x04, 0x03, 0x02, 0x01};
+  Serial2.write(head, 8);
+  if (n) Serial2.write(val, n);
+  Serial2.write(foot, 4);
+  Serial2.flush();
+}
+
+// Read everything the radar sends in the next ms; keep the first cap bytes; return the count.
+static int gather(uint32_t ms, uint8_t *out, int cap) {
+  int n = 0;
+  uint32_t t0 = millis();
+  while (millis() - t0 < ms) {
+    while (Serial2.available()) { uint8_t c = Serial2.read(); if (n < cap) out[n] = c; n++; }
+    delay(1);
+  }
+  return n;
+}
+
+static String hex(const uint8_t *p, int n) {
+  String s;
+  char b[4];
+  for (int i = 0; i < n; i++) { snprintf(b, sizeof b, "%02X ", p[i]); s += b; }
+  return s;
+}
+
+static bool hasFrame(const uint8_t *r, int n) {
+  for (int i = 0; i + 3 < n; i++) if (r[i] == 0xAA && r[i + 1] == 0xFF && r[i + 2] == 0x03 && r[i + 3] == 0x00) return true;
+  return false;
+}
+
+// Send one command inside configuration mode (already entered) and log its reply as hex.
+static void ask(const char *what, uint8_t cmd, const uint8_t *val, int n) {
+  uint8_t r[64];
+  sendCmd(cmd, val, n);
+  int got = gather(150, r, sizeof r);
+  logf("[radar] %s: %d bytes back%s%s", what, got, got ? ": " : "", got ? hex(r, got < 40 ? got : 40).c_str() : "");
+}
+
+// The line idles high but never changes: the radar is powered and silent. Ask it to
+// speak: version (proves the green wire and its serial port both work), then end
+// configuration mode, then a restart if it still sends no target frames.
+void radarWake() {
+  static const uint8_t one[2] = {0x01, 0x00};
+  uint8_t r[64];
+  int n;
+  logf("[radar] wake: sending on GPIO%d (TX2), listening on GPIO%d", txPin, rxPin);
+  while (Serial2.available()) Serial2.read();
+
+  sendCmd(0xFF, one, 2);                              // enable configuration
+  n = gather(150, r, sizeof r);
+  logf("[radar] enable configuration: %d bytes back%s%s", n, n ? ": " : "", n ? hex(r, n < 24 ? n : 24).c_str() : "");
+  if (!n) {
+    logf("[radar] no reply at all: the green wire (RX on the radar, TX2 on the ESP32) is open, or the radar's serial port is dead. Its Bluetooth being alive says the chip runs");
+    return;
+  }
+
+  sendCmd(0xA0, nullptr, 0);                          // read firmware version
+  n = gather(150, r, sizeof r);
+  int at = -1;
+  for (int i = 0; i + 17 < n; i++)
+    if (r[i] == 0xFD && r[i + 1] == 0xFC && r[i + 2] == 0xFB && r[i + 3] == 0xFA && r[i + 6] == 0xA0 && r[i + 7] == 0x01) { at = i; break; }
+  if (at >= 0) {
+    const uint8_t *v = r + at + 12;
+    logf("[radar] firmware V%u.%02X.%02X%02X%02X%02X (ESPHome wants V2.02.23090617 or later)", v[1], v[0], v[5], v[4], v[3], v[2]);
+  } else logf("[radar] version: %d bytes back%s%s", n, n ? ": " : "", n ? hex(r, n < 24 ? n : 24).c_str() : "");
+
+  // State that could silence it: tracking mode (reply ... 01 00 = single, 02 00 = multi) and
+  // the area setting (reply: 2-byte type, 0 = off, 1 = detect only inside, 2 = ignore inside, then 3 boxes).
+  ask("tracking mode", 0x91, nullptr, 0);
+  ask("area setting", 0xC1, nullptr, 0);
+
+  sendCmd(0xFE, nullptr, 0);                          // end configuration
+  n = gather(600, r, sizeof r);
+  bool frames = hasFrame(r, n < (int)sizeof r ? n : sizeof r);
+  logf("[radar] end configuration: %d bytes in 0.6 s%s", n, frames ? ", target frames are flowing" : ", still no target frames");
+  if (!frames) {
+    sendCmd(0xFF, one, 2);
+    gather(100, r, sizeof r);
+    sendCmd(0xA3, nullptr, 0);                        // restart the module
+    n = gather(3000, r, sizeof r);
+    frames = hasFrame(r, n < (int)sizeof r ? n : sizeof r);
+    logf("[radar] restart: %d bytes in 3 s%s", n, frames ? ", target frames are flowing" : ", still no target frames: it answers commands but will not report; 'radar reset' puts its settings back to factory");
+  }
+  have = 0;
+}
+
+// Factory reset (A2) then restart: every setting the module keeps (tracking mode, area
+// boxes, baud rate, Bluetooth) goes back to how it shipped. Nothing of ours is stored in it.
+void radarReset() {
+  static const uint8_t one[2] = {0x01, 0x00};
+  uint8_t r[64];
+  int n;
+  logf("[radar] reset: factory settings, then restart");
+  while (Serial2.available()) Serial2.read();
+  sendCmd(0xFF, one, 2);
+  n = gather(150, r, sizeof r);
+  if (!n) { logf("[radar] no reply to enable configuration: nothing reached it (see 'radar wake')"); return; }
+  ask("factory reset", 0xA2, nullptr, 0);
+  ask("restart", 0xA3, nullptr, 0);
+  n = gather(5000, r, sizeof r);
+  bool frames = hasFrame(r, n < (int)sizeof r ? n : sizeof r);
+  logf("[radar] after the reset: %d bytes in 5 s%s", n, frames ? ", target frames are flowing" : ", still no target frames");
+  have = 0;
+}
+
 void radarPoll() {
   while (Serial2.available()) {
     uint8_t c = Serial2.read();

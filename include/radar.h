@@ -23,5 +23,7 @@ struct RadarStats {
 void radarBegin();      // call once from setup()
 void radarPoll();       // call from loop(): reads whatever the UART holds
 int radarProbe();       // find which free pin carries the radar signal and listen there; -1 if none (blocks 0.4 s)
+void radarWake();       // ask a silent radar to speak: version, state, end configuration, restart (blocks up to 4 s)
+void radarReset();      // factory reset the module and restart it (blocks about 6 s)
 RadarStats radarStats();
 String radarJson();     // {"talking":..,"age":..,"fps":..,"frames":..,"bad":..,"bytes":..,"t":[[x,y,speed,gate] or null, x3 slots]}

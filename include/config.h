@@ -20,7 +20,7 @@
 #define PIN_SENSOR      33   // <- LD2410C OUT (HIGH = presence). Or AM312 PIR OUT.
 #define PIN_LIMIT       32   // <- limit switch (3-pin endstop) at the eyelet: pressed = spider home
 #define PIN_RADAR_RX    16   // <- LD2450 TX (RX2): read for the web page's radar view, does not fire the drop yet
-#define PIN_RADAR_TX    17   // -> LD2450 RX (TX2): nothing is sent to it
+#define PIN_RADAR_TX    17   // -> LD2450 RX (TX2): only 'radar wake' sends on it
 #define PIN_BUTTON      0    // on-board BOOT button: manual test drop (active LOW)
 #define PIN_LED         2    // on-board blue LED
 

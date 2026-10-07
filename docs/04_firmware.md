@@ -148,6 +148,9 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `limit <0/1>`, `liminv <0/1>` | limit switch fitted; switch reads backwards |
 | `wifi` | where the board is on the network |
 | `radar` | what the LD2450 sees now: frames a second, bad frames, each person's x, y and speed. "no frames yet" with 0 bytes means nothing is arriving on RX2 (GPIO16) |
+| `radar probe` | watch every free pin for 0.4 s and say which one carries the radar's signal; listen there if it is not RX2 |
+| `radar wake` | for a radar that is powered but silent (its TX wire sits at a steady 3 V): ask its firmware version, tracking mode and area setting over TX2 (GPIO17), end its configuration mode, and restart it if it still sends no target frames. Each step logs what came back. Refused while a move is running |
+| `radar reset` | put the radar's own stored settings (tracking mode, area boxes, baud rate, Bluetooth) back to factory and restart it; then listens 5 s for target frames. The firmware stores nothing in the radar, so nothing of ours is lost. Refused while a move is running |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.

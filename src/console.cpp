@@ -91,6 +91,8 @@ static const char *const HELP[] = {
   "  droprpm <n>     drop top speed, 100 to 900 | relms <ms> finger travel before the drop, 100 to 600",
   "  dropacc <n> | dropdec <n>   drop start and stop rates, microsteps/s^2 (100000 is about 1 g)",
   "  wifi            show network state | radar   what the LD2450 sees now (watch only) | radar probe   find its wire",
+  "  radar wake      a silent radar: ask its version and state, end its configuration mode, restart it",
+  "  radar reset     put the radar's own settings back to factory and restart it",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
@@ -149,7 +151,13 @@ void consoleRun(const String &raw, String *capture) {
     else motion(cmd == "jog" ? ACT_JOG : ACT_SERVO, arg, src);
   }
   else if (cmd == "wifi")     logf("%s", webWhereAmI().c_str());
-  else if (cmd == "radar")    { if (argS == "probe") radarProbe(); printRadar(); }
+  else if (cmd == "radar")    {
+    if ((argS == "wake" || argS == "reset") && machineStatus().busy) logf("refused: a move is running");
+    else if (argS == "wake") radarWake();
+    else if (argS == "reset") radarReset();
+    else if (argS == "probe") radarProbe();
+    printRadar();
+  }
   else if (settingsIsName(cmd)) {
     MachineStatus m = machineStatus();
     String why;
