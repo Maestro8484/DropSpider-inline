@@ -113,7 +113,7 @@ What the catalogs say about the cup, for the record: drawn cup clutches "perform
 
 ## Tests that prove it, in order
 
-- Before anything: the owner turns the spool counterclockwise by hand now, driver on as the board reports. If the motor resists as it did this morning, the hold is there and finding 1's milder form (bad current state) is the one in play; if it turns nearly free, the driver has tripped off and finding 1's worse form is confirmed. One line back.
+- Before anything: the owner turns the spool counterclockwise by hand now, driver on as the board reports. If the motor resists as it did this morning, the hold is there and finding 1's milder form (bad current state) is the one in play; if it turns nearly free, the driver has tripped off and finding 1's worse form is confirmed. **Answered by Joe the same evening: nearly free.** The driver chip had switched the motor off on its own fault flag with the firmware still reporting it on. Fix 1 (with the driver reset) and fix 2 were built, flashed and set that evening; fixes 3 and 4 are his hands; fix 5 is "later" by his word.
 - With the device locked: hang the spider on the finger alone (driver and servo off, as a lock leaves it) for ten minutes and read the line's height before and after. The finger at setlock 85 holding a static load is Codex's bench check and the proof that fix 1 has something to lean on.
 - After fix 1: `jog -1600` moves the spider down about 157 mm and the finger holds it there. Logged.
 - A switch-stopped rewind, then a second rewind, runs 20 to 35 mm. Logged.

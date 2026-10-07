@@ -35,6 +35,10 @@ git log -1 --oneline -- docs/handoff_spider_runaway.md   # when this file was la
 - Joe's tape on the coupler: at the switch the coupler went back about 1/2 turn while the spider fell about 0.3 m (about 2 spool turns). An eyeball count during a fast spin.
 - The one-way bearing cannot be reached without taking the spool off. Joe will not do that on a guess.
 
+## State on 2026-10-06, late evening (read the staleness check above)
+
+Steps 1 to 3 below are done: `docs/audit_spider_runaway.md` holds both audits. The cause is the motor letting go after a dead stop at the switch (driver chip left in a bad state, never reset); Joe's hand test confirmed the worse form (motor nearly free with the driver reported on). The firmware fix of step 5 (motor or driver case) is built and flashed: every move ends in a lock, the driver is reset with the finger in after a dead stop, `dropacc` 80000 saved. Nothing has moved under it yet. Still owed from Joe's hands: DIP 3 ON after a meter reads about 5 V on the driver's UART_RX pin with it on; pot to 0.95 V. Then the tests below, starting with one rewind to the switch and its lock. spreadCycle (a 20K at R7 on the module) is "later" by Joe's word.
+
 ## The work, in order
 
 Order set by Joe (2026-10-06): audits first, the tape and watching last.

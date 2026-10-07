@@ -18,7 +18,6 @@ enum St {
   ST_BOOT, ST_IDLE, ST_LOCKOUT, ST_WAIT_CLEAR, ST_FAULT,          // at rest
   ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND,                      // cycle
   ST_LOCK_IN, ST_LOCK_SEAT, ST_LOCK_HOLD,                         // cycle or bench
-  ST_BACKOFF,                                                     // after the switch stopped a wind
   ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO, ST_BENCH_FREE             // bench only
 };
 
@@ -31,7 +30,13 @@ static bool cycle = false;              // true while running a full drop cycle
 static St   benchReturn = ST_WAIT_CLEAR;
 
 static bool driverIsOn = false;
+// A dead stop (the switch cut-off) in stealthChop can leave the TMC2209 in a current
+// state "from which it cannot recover" or with its outputs switched off on a short
+// flag (datasheet rev 1.05 p42); only EN high and low again clears it. Owner found
+// the motor nearly free with the driver "on" after such a stop (2026-10-06).
+static bool driverSuspect = false;
 static int  servoDeg = DEF_SERVO_LOCK;
+static bool fingerHeldOut = false;      // servo attached and holding the finger at the release angle
 static int  appliedDir = -1;
 static bool movingUp = false;           // current move is in the rewind direction
 static long moveStartPos = 0;
@@ -52,11 +57,12 @@ static void IRAM_ATTR limIsr() {
   if (low != (S.limitInverted != 0)) { limHit = true; limCloses++; }
 }
 
-// After the switch stops a wind, or a rewind stalls: back down 1/8 turn, then hold.
-static bool backoffForCycle = false;
-static bool backoffLock = false;       // a rewind's back-off goes straight on to the lock
-static const char *backoffDone = "";
-static bool backoffFault = false;            // this back-off follows a stalled rewind
+// Every motor move ends in a lock (finger in, spool let down onto a tooth, driver
+// off), so the spider never hangs on the motor alone (owner 2026-10-06: it ran the
+// whole line every time it did). After the switch stops a wind, or a rewind stalls,
+// the seat move is the 1/8 turn back-off, so the bead rests clear of the flap.
+static long lockSeatSteps = SEAT_STEPS;
+static const char *lockDoneMsg = "lock: finger in, seated, motor off";
 // A wind that ran its whole count with the switch fitted and never closing has
 // pulled the spider hard against the top: let it down onto the finger and stop.
 static bool faultNow = false;
@@ -112,7 +118,6 @@ static const char *stateName(St s) {
     case ST_LOCK_IN:     return "finger going in";
     case ST_LOCK_SEAT:   return "spool settling onto the finger";
     case ST_LOCK_HOLD:   return "finger holding, motor off";
-    case ST_BACKOFF:     return "easing off the limit switch";
     case ST_JOG:         return "jogging the motor";
     case ST_BENCH_REL:   return "finger out (bench)";
     case ST_BENCH_SERVO: return "moving the finger (bench)";
@@ -140,23 +145,41 @@ long rewindSteps() {
 
 static float mmPerStep() { return PI * BARREL_DIA_MM / STEPS_PER_TURN; }
 
-// Coming from off, hold still DRIVER_SETTLE_MS before the first step: the TMC2209's
-// stealthChop tunes itself at standstill (PWM_OFS_AUTO, at least 130 ms at run
-// current, datasheet). Starting 5 ms after enable gave an electronic chirp on the
-// release and an untuned first move (owner 2026-10-06).
+static void applyDir();
+
+// Coming from off: enable, one microstep up and back, then hold still DRIVER_SETTLE_MS.
+// The TMC2209's stealthChop tunes itself at standstill (AT#1, at least 130 ms,
+// datasheet p35) and needs the run current for it; with the standstill current cut
+// on (PDN_UART low on this board) only a step pulse brings the run current back, so
+// the settle without the nudge tuned at half current. Starting 5 ms after enable
+// gave an electronic chirp on the release and an untuned first move (owner 2026-10-06).
 static void driverOn()  {
   if (driverIsOn) return;
-  digitalWrite(PIN_EN, LOW); driverIsOn = true; delay(DRIVER_SETTLE_MS);
+  digitalWrite(PIN_EN, LOW); driverIsOn = true; driverSuspect = false;
+  delay(5);
+  applyDir();
+  stepper->setSpeedInHz(400); stepper->setAcceleration(4000);
+  stepper->move(1);  while (stepper->isRunning()) delay(1);
+  stepper->move(-1); while (stepper->isRunning()) delay(1);
+  delay(DRIVER_SETTLE_MS);
 }
 static void driverOff() { digitalWrite(PIN_EN, HIGH); driverIsOn = false; }
+
+// EN high clears the driver's error state and its stuck regulation; the coils are
+// unpowered for 20 ms, then driverOn's nudge and settle. Call it with the finger in,
+// or at the top of the line where nothing can fall far.
+static void driverReset() {
+  driverOff(); delay(20); driverOn();
+}
 
 static void servoWrite(int deg) {
   deg = constrain(deg, 0, 180);
   if (!pawl.attached()) pawl.attach(PIN_SERVO, 500, 2400);
   pawl.write(deg);
   servoDeg = deg;
+  fingerHeldOut = (deg == S.servoRel);
 }
-static void servoOff() { if (pawl.attached()) pawl.detach(); }
+static void servoOff() { if (pawl.attached()) pawl.detach(); fingerHeldOut = false; }
 
 static bool limitHome() { return S.limitFitted && limStable; }
 
@@ -243,11 +266,14 @@ static void startRelease() {
   if (!startMove(UNLOAD_STEPS, UNLOAD_RPM)) logf("[release] unload move would not start");
 }
 
-// Called once the unload has finished: how far it really went.
+// Called once the unload has finished: how far it really went. A switch cut is a
+// dead stop, so the driver is reset here, at the top, before anything moves down.
 static void noteUnload() {
   unloadRan = stepper->getCurrentPosition() - moveStartPos;
-  if (cutByLimit)
-    logf("[release] unload cut short by the limit switch after %ld of %d steps", unloadRan, UNLOAD_STEPS);
+  if (cutByLimit) {
+    logf("[release] unload cut short by the limit switch after %ld of %d steps; driver reset", unloadRan, UNLOAD_STEPS);
+    driverReset();
+  }
 }
 
 // The drop in microsteps: the set drop plus whatever the unload wound up, never
@@ -344,8 +370,8 @@ static bool finishRewind() {
         measuredDrop = (int)(ran * mmPerStep());
         long extra = ran - expected - UNLOAD_STEPS;
         if (extra * mmPerStep() > LOST_STEPS_WARN_MM)
-          logf("[drop] lost steps? rewind ran %d mm more than the drop: the spool got ahead of the motor on the stop",
-               (int)(extra * mmPerStep()));
+          logf("[drop] rewind ran %d mm more than the motor was told to drop: the spool ran past the motor somewhere "
+               "(counts are what the motor was told, not what turned)", (int)(extra * mmPerStep()));
         faultRun = 0; fault = "";
       }
     }
@@ -361,20 +387,15 @@ static bool finishRewind() {
   return stalled;
 }
 
-static void startBackoff(const char *done, bool afterStall = false, bool lockAfter = false) {
-  backoffForCycle = cycle;
-  backoffLock = lockAfter;
-  backoffDone = done;
-  backoffFault = afterStall;
-  if (!startMove(-BACKOFF_STEPS, BACKOFF_RPM)) logf("[limit] back-off would not start");
-  enter(ST_BACKOFF);
-}
-
-// Finger in while the motor holds, then the motor lets the spool down onto a
-// tooth (the seat move). Once a tooth lands the clutch slips and the motor runs
-// on alone. Driver off after that, servo off after LOCK_SEAT_MS.
-static void startLock() {
-  driverOn();                                 // already on after a rewind; holds the spool
+// Finger in while the motor holds, then (after a dead stop) the driver is reset
+// with the finger in, then the motor lets the spool down onto a tooth (the seat
+// move, 1.2/12 turn; the 1/8 turn back-off after the switch). Once a tooth lands
+// the clutch slips and the motor runs on alone. Driver off after that, servo off
+// after LOCK_SEAT_MS.
+static void startLock(const char *done = "lock: finger in, seated, motor off", long seat = SEAT_STEPS) {
+  lockDoneMsg = done;
+  lockSeatSteps = seat;
+  driverOn();                                 // already on after a move; holds the spool
   servoWrite(S.servoLock);
   enter(ST_LOCK_IN);
 }
@@ -409,7 +430,7 @@ static void benchMove(Action a, long arg) {
 
 static void benchMoveFingerOut(Action a, long arg) {
   disarmForBench(); cycle = false;
-  if (servoDeg == S.servoRel) { benchMove(a, arg); return; }
+  if (fingerHeldOut) { benchMove(a, arg); return; }  // held by a powered servo, not just the last angle sent
   logf("[bench] finger out first (the motor never turns with the finger in)");
   pendAct = a; pendArg = arg;
   startRelease();
@@ -513,6 +534,7 @@ static void step() {
   if (movingUp && !ignoreLimit && S.limitFitted && stepper->isRunning() && (limHit || limLast)) {
     haltMotor();
     cutByLimit = true;
+    driverSuspect = true;                   // a dead stop: reset the driver before trusting it again
   }
 
   // Drop: switch to the gentler stopping rate just before the stop must begin.
@@ -595,31 +617,25 @@ static void step() {
 
     case ST_REWIND:
       if (stepper->isRunning()) break;
-      // Stalled against the top, or stopped by the switch: ease off 1/8 turn, then lock
-      // straight away. Owner rule 2026-10-06: the motor never loses power before the
-      // finger is holding. And the spider never hangs on the motor alone: on 2026-10-06
-      // it slid about 0.6 m down with the driver on, no command, after minutes of holding.
-      if (finishRewind()) { startBackoff("", true, true); break; }
-      if (cutByLimit) { startBackoff("", false, true); break; }
-      if (cycle) startLock();
-      else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
-      break;
-
-    case ST_BACKOFF:
-      if (stepper->isRunning()) break;
-      logf("[limit] eased off %d mm%s", (int)((moveStartPos - stepper->getCurrentPosition()) * mmPerStep()),
-           limLast ? ": switch STILL closed, check the flap" : ", no strain on the line");
-      if (backoffFault) {
+      // Stalled against the top, or stopped by the switch: finger in now, driver reset
+      // with the finger in, then the 1/8 turn back-off lets the spool down onto a tooth
+      // and the bead clear of the flap. Owner rule 2026-10-06: the motor never loses
+      // power before the finger is holding, and the spider never hangs on the motor
+      // alone (it ran the whole line every time it did).
+      if (finishRewind()) {
         logf("[fault] full rewind without the switch: locking, then stopped. Send clear when it is fixed.");
-        startLock();                              // faultNow stays set: the lock ends in ST_FAULT
-      } else if (backoffForCycle || backoffLock) startLock();
-      else { servoOff(); benchDone(backoffDone); }
+        startLock("lock (stopped on a fault)", BACKOFF_STEPS);   // faultNow stays set: the lock ends in ST_FAULT
+        break;
+      }
+      if (cutByLimit) { startLock(cycle ? "drop" : "rewind (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS); break; }
+      startLock(cycle ? "drop" : "rewind (finger in, seated, motor off)");
       break;
 
     case ST_LOCK_IN:
       if (inState() < SERVO_MOVE_MS) break;
+      if (driverSuspect) { logf("[lock] driver reset after the dead stop, finger in"); driverReset(); }
       ignoreLimit = false;
-      if (!startMove(-SEAT_STEPS, SEAT_RPM)) logf("[lock] seat move would not start");
+      if (!startMove(-lockSeatSteps, SEAT_RPM)) logf("[lock] seat move would not start");
       enter(ST_LOCK_SEAT);
       break;
 
@@ -633,7 +649,8 @@ static void step() {
       if (inState() < LOCK_SEAT_MS) break;
       servoOff();
       setHome(upByLimit);
-      logf("[lock] seated. Limit switch %s%s", !S.limitFitted ? "not fitted" : limitHome() ? "pressed" : "open",
+      logf("[lock] seated (let down %d mm). Limit switch %s%s", (int)(lockSeatSteps * mmPerStep()),
+           !S.limitFitted ? "not fitted" : limitHome() ? "pressed" : "open",
            upByLimit ? "; spider home" : "; home not known (last rewind was not stopped by the switch)");
       if (faultNow) {
         faultNow = false; cycle = false;
@@ -652,7 +669,7 @@ static void step() {
           enter(ST_LOCKOUT);
         }
       } else {
-        benchDone("lock: finger in, seated, motor off");
+        benchDone(lockDoneMsg);
       }
       break;
 
@@ -660,9 +677,8 @@ static void step() {
       if (stepper->isRunning()) break;
       logf("[jog] ran %ld steps%s", stepper->getCurrentPosition() - moveStartPos,
            cutByLimit ? ", stopped by the limit switch" : "");
-      if (cutByLimit) { startBackoff("jog (stopped by the switch, eased off, motor stays on)"); break; }
-      servoOff();
-      benchDone("jog (finger out, motor stays on)");
+      if (cutByLimit) { startLock("jog (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS); break; }
+      startLock("jog (finger in, seated, motor off)");
       break;
 
     case ST_BENCH_FREE:
