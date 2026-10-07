@@ -52,10 +52,10 @@ static void IRAM_ATTR limIsr() {
   if (low != (S.limitInverted != 0)) { limHit = true; limCloses++; }
 }
 
-// After the switch stops a wind: back down until it opens, then hold (no strain).
+// After the switch stops a wind, or a rewind stalls: back down 1/8 turn, then hold.
 static bool backoffForCycle = false;
 static const char *backoffDone = "";
-static uint32_t openSince = 0;
+static bool backoffFault = false;            // this back-off follows a stalled rewind
 // A wind that ran its whole count with the switch fitted and never closing has
 // pulled the spider hard against the top: let it down onto the finger and stop.
 static bool faultNow = false;
@@ -353,11 +353,11 @@ static bool finishRewind() {
   return stalled;
 }
 
-static void startBackoff(const char *done) {
+static void startBackoff(const char *done, bool afterStall = false) {
   backoffForCycle = cycle;
   backoffDone = done;
-  openSince = 0;
-  if (!startMove(-BACKOFF_MAX_STEPS, BACKOFF_RPM)) logf("[limit] back-off would not start");
+  backoffFault = afterStall;
+  if (!startMove(-BACKOFF_STEPS, BACKOFF_RPM)) logf("[limit] back-off would not start");
   enter(ST_BACKOFF);
 }
 
@@ -583,33 +583,26 @@ static void step() {
 
     case ST_REWIND:
       if (stepper->isRunning()) break;
-      if (finishRewind()) {
-        // Stalled against the top, or the spool never followed. No lock: a seat move
-        // with the one-way bearing slipping or in backwards drives the motor into the
-        // finger and the SG90. Motor off, finger left out: the spider lets itself
-        // down on the motor's drag, nothing strained.
-        driverOff(); servoOff();
-        cycle = false; faultNow = false;
-        logf("[fault] stopped: motor off, finger out, the spider lets itself down. Send clear when it is fixed.");
-        logf("[done] rewind (stopped on a fault)");
-        enter(ST_FAULT);
-        break;
-      }
+      // Stalled against the top, or the spool never followed: ease off 1/8 turn and
+      // hold with the motor ON and the finger out. Owner rule 2026-10-06: the motor
+      // never loses power before the finger is holding, or the spider falls.
+      if (finishRewind()) { startBackoff("", true); break; }
       if (cutByLimit) { startBackoff("rewind (finger out, eased off the switch, motor stays on until lock)"); break; }
       if (cycle) startLock();
       else { servoOff(); benchDone("rewind (finger out, motor stays on until lock)"); }
       break;
 
     case ST_BACKOFF:
-      if (stepper->isRunning()) {
-        if (limLast) { openSince = 0; break; }
-        if (!openSince) openSince = now ? now : 1;
-        if (now - openSince >= BACKOFF_OPEN_MS) haltMotor();
-        break;
-      }
+      if (stepper->isRunning()) break;
       logf("[limit] eased off %d mm%s", (int)((moveStartPos - stepper->getCurrentPosition()) * mmPerStep()),
-           limLast ? ": switch STILL closed, check the flap" : ", switch open, no strain on the line");
-      if (backoffForCycle) startLock();
+           limLast ? ": switch STILL closed, check the flap" : ", no strain on the line");
+      if (backoffFault) {
+        servoOff();
+        cycle = false; faultNow = false;
+        logf("[fault] stopped: motor ON holding the spider, finger out. Send lock to seat it, then clear.");
+        logf("[done] rewind (stopped on a fault, motor holding)");
+        enter(ST_FAULT);
+      } else if (backoffForCycle) startLock();
       else { servoOff(); benchDone(backoffDone); }
       break;
 

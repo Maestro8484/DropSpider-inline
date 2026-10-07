@@ -39,12 +39,11 @@
 #define UNLOAD_RPM          120
 #define SEAT_STEPS          (STEPS_PER_TURN * 12 / 120)    // 1/12 turn x 1.2: lets the spool down onto a tooth
 #define SEAT_RPM            30
-// After the limit switch stops a wind, the motor backs down slowly until the switch
-// has read open this long, at most BACKOFF_MAX_STEPS, then holds: the bead rests
-// off the flap instead of pressed into it.
-#define BACKOFF_MAX_STEPS   (STEPS_PER_TURN / 24)          // about 6.5 mm of line
+// After the limit switch stops a wind, or a rewind stalls, the motor backs down
+// 1/8 turn slowly and holds (owner 2026-10-06): the bead rests clear of the flap
+// and the eyelet, and the line carries only the spider.
+#define BACKOFF_STEPS       (STEPS_PER_TURN / 8)           // about 20 mm of line
 #define BACKOFF_RPM         30
-#define BACKOFF_OPEN_MS     20
 #define DROP_KNOT_MARGIN_MM 30     // a drop never comes closer than this to the barrel knot
 // The drop's gentler stop is switched in this far ahead of the exact point, so a
 // late look by the machine task can never make the motor overshoot and reverse.
