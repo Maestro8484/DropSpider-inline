@@ -1,33 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="30mm" height="45mm" viewBox="0 0 30 45">
+<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="45mm" viewBox="0 0 60 45">
   <!-- DropSpider: plate for the DFRobot C4002 radar on the existing radar fork (ld2450_fork_screw).
-       Units are millimeters, 1:1. Three layers to extrude in Fusion:
-         plate_2mm      the whole outline with its holes, 2 mm thick
-         tab_6mm        the knuckle over the pivot, 6 mm thick, centered on the plate (3 mm each side)
-         standoffs_3mm  two bosses on the OUTWARD face, 3 mm tall, so the header soldered on the chip side clears the plate
-       The board goes antenna side OUT (the face with the two gold squares and the pin names), chip side to the plate,
-       header at the bottom edge through the notch. Two M2 screws into the 1.7 mm pilot holes.
-       Pivot: M3 clearance 3.4 mm, 10.5 mm above the board's top edge, same as the LD2450 cradle, 12.8 mm knuckle. -->
+       Millimeters, 1:1. Two views, three bodies to extrude in Fusion:
+         FRONT VIEW (left), plate_2mm:     the plate outline, 2 mm thick; two 1.7 mm pilot holes for M2 screws into the board
+         FRONT VIEW (left), standoffs_3mm: two 5 mm bosses on the OUTWARD face, 3 mm tall, so the header on the chip side clears the plate
+         SIDE VIEW (right), knuckle_12p8mm: the knuckle seen along the bolt: an 8 mm round over the 3.4 mm M3 hole, 6 mm neck
+                                           down into the plate; extrude it 12.8 mm, 6.4 each side of the plate's center line,
+                                           so it sits between the fork's ears like the LD2450 cradle's knuckle.
+       The bolt runs ACROSS the plate (along its width), 10.5 mm above the board's top edge, in the plate's mid-plane.
+       Board: antenna side OUT (two gold squares, pin names), chip side to the plate, header through the bottom notch. -->
   <g id="plate_2mm" fill="none" stroke="#000" stroke-width="0.2">
-    <path d="M 8.60 6.00 A 6.00 6.00 0 0 1 21.40 6.00 L 21.40 16.50 L 26.00 16.50 L 26.00 42.50 L 20.00 42.50 L 20.00 39.00 L 9.00 39.00 L 9.00 42.50 L 4.00 42.50 L 4.00 16.50 L 8.60 16.50 Z"/>
-    <circle cx="15.00" cy="6.00" r="1.70" />
-    <circle cx="5.90" cy="40.60" r="0.85" />
-    <circle cx="24.10" cy="40.60" r="0.85" />
-  </g>
-  <g id="tab_6mm" fill="none" stroke="#0066cc" stroke-width="0.2">
-    <path d="M 8.60 6.00 A 6.00 6.00 0 0 1 21.40 6.00 L 21.40 16.50 L 8.60 16.50 Z"/>
-    <circle cx="15.00" cy="6.00" r="1.70" />
+    <path d="M 4.00 2.00 L 26.00 2.00 L 26.00 28.00 L 20.00 28.00 L 20.00 24.50 L 9.00 24.50 L 9.00 28.00 L 4.00 28.00 Z"/>
+    <circle cx="5.90" cy="26.10" r="0.85"/>
+    <circle cx="24.10" cy="26.10" r="0.85"/>
   </g>
   <g id="standoffs_3mm" fill="none" stroke="#cc3300" stroke-width="0.2">
-    <circle cx="5.90" cy="40.60" r="2.50" />
-    <circle cx="24.10" cy="40.60" r="2.50" />
-    <circle cx="5.90" cy="40.60" r="0.85" />
-    <circle cx="24.10" cy="40.60" r="0.85" />
+    <circle cx="5.90" cy="26.10" r="2.50"/>
+    <circle cx="24.10" cy="26.10" r="2.50"/>
   </g>
   <g id="board_outline_reference" fill="none" stroke="#999" stroke-width="0.15" stroke-dasharray="0.6 0.4">
-    <rect x="4.00" y="16.50" width="22.00" height="26.00"/>
-    <circle cx="5.90" cy="40.60" r="1.10" />
-    <circle cx="24.10" cy="40.60" r="1.10" />
-    <circle cx="9.42" cy="40.90" r="0.50" /><circle cx="11.96" cy="40.90" r="0.50" /><circle cx="14.50" cy="40.90" r="0.50" /><circle cx="17.04" cy="40.90" r="0.50" /><circle cx="19.58" cy="40.90" r="0.50" />
+    <rect x="4.00" y="2.00" width="22.00" height="26.00"/>
+    <circle cx="5.90" cy="26.10" r="1.10"/>
+    <circle cx="24.10" cy="26.10" r="1.10"/>
+    <circle cx="9.42" cy="26.40" r="0.50"/><circle cx="11.96" cy="26.40" r="0.50"/><circle cx="14.50" cy="26.40" r="0.50"/><circle cx="17.04" cy="26.40" r="0.50"/><circle cx="19.58" cy="26.40" r="0.50"/>
+    <line x1="8.60" y1="2.00" x2="8.60" y2="-1.00"/>
+    <line x1="21.40" y1="2.00" x2="21.40" y2="-1.00"/>
+  </g>
+  <g id="knuckle_12p8mm" fill="none" stroke="#0066cc" stroke-width="0.2">
+    <path d="M 42.00 8.65 A 4.00 4.00 0 1 1 48.00 8.65 L 48.00 17.50 L 42.00 17.50 Z"/>
+    <circle cx="45.00" cy="6.00" r="1.70"/>
+  </g>
+  <g id="side_view_reference" fill="none" stroke="#999" stroke-width="0.15" stroke-dasharray="0.6 0.4">
+    <rect x="44.00" y="16.50" width="2.00" height="26.00"/>
+    <rect x="46.00" y="38.10" width="3" height="5"/>
+    <rect x="49.00" y="16.50" width="1.6" height="26.00"/>
   </g>
 </svg>
