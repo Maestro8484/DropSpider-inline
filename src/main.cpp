@@ -1,6 +1,6 @@
 // DropSpider - Mechanism A (In-Line Single-Axle Clutch Spool) - Rev C.1 firmware
 // Board: 30-pin ESP32 DevKit V1 (38-pin NodeMCU-32S also works). Driver: TMC2209 in STEP/DIR/EN standalone mode on an A4988/DRV8825 expansion board.
-// Cycle: sensor edge, driver on, finger out while the spool unloads 1/12 turn, motor-led drop, settle,
+// Cycle: radar rule (or the OUT pin), driver on, finger out while the spool unloads 1/12 turn, motor-led drop, settle,
 //        rewind (stops at the limit switch), finger in, seat move, driver off, lockout, wait for the doorway to clear.
 // Holding at the top costs zero power: the finger and ratchet hold, driver and servo are both off.
 //
@@ -9,7 +9,7 @@
 //   src/machine.cpp    the cycle, stepper, servo, sensor, button, limit switch
 //   src/console.cpp    text commands (USB serial and the web page share them)
 //   src/web.cpp        WiFi, the web page, network firmware updates
-//   src/radar.cpp      LD2450 radar frames for the web page's radar view (watch only)
+//   src/radar.cpp      C4002 radar over UART2: the trigger rule, the web page's radar card, the 'radar' commands
 //   src/settings.cpp   tunables saved in flash
 
 #include <Arduino.h>
@@ -25,7 +25,7 @@ void setup() {
   Serial.begin(CONSOLE_BAUD);
   settingsBegin();
   machineBegin();            // own task from here on; never rewinds at boot
-  radarBegin();              // LD2450 on UART2, watch only
+  radarBegin();              // C4002 on UART2; asks it to report 1.5 s later
   logf("\nDropSpider Mechanism A Rev C.1 ready. Type help.");
   webBegin();                // may take up to 15 s to join WiFi; the machine is already live
   logf("%s", webWhereAmI().c_str());

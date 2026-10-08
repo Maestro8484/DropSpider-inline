@@ -17,10 +17,10 @@
 #define PIN_DIR         27   // -> expansion board DIR, S row
 #define PIN_EN          25   // -> expansion board EN, S row   (LOW = driver on, HIGH = coils off)
 #define PIN_SERVO       13   // -> SG90 orange. Not GPIO14: 14 pulses at boot and would twitch the finger.
-#define PIN_SENSOR      33   // <- LD2410C OUT (HIGH = presence). Or AM312 PIR OUT.
+#define PIN_SENSOR      33   // <- C4002 OUT (HIGH = someone there): the trigger when the serial link is silent, or with sensor 2410 (any active-high sensor: LD2410C, PIR, step mat)
 #define PIN_LIMIT       32   // <- limit switch (3-pin endstop) at the eyelet: pressed = spider home
-#define PIN_RADAR_RX    16   // <- LD2450 TX (RX2): read for the web page's radar view, does not fire the drop yet
-#define PIN_RADAR_TX    17   // -> LD2450 RX (TX2): only 'radar wake' sends on it
+#define PIN_RADAR_RX    16   // <- C4002 TX (RX2): its result frames, 10 a second
+#define PIN_RADAR_TX    17   // -> C4002 RX (TX2): report period at boot, and the 'radar' console commands
 #define PIN_BUTTON      0    // on-board BOOT button: manual test drop (active LOW)
 #define PIN_LED         2    // on-board blue LED
 
@@ -89,8 +89,10 @@
 #endif
 
 #define CONSOLE_BAUD        115200
-#define RADAR_BAUD          256000   // LD2450, fixed by Hi-Link
-#define RADAR_SILENT_MS     1000     // no good frame this long = radar silent
+#define RADAR_BAUD          115200   // C4002 as shipped (DFRobot library example); 'radar baud' finds it if it moved
+#define RADAR_SILENT_MS     1000     // no good frame this long = radar silent: the OUT pin carries the trigger
+#define RADAR_REPORT_TENTHS 1        // asked of the sensor at boot: a result every 0.1 s
+#define RADAR_CLEAR_CM      300      // everyone farther than this (or nobody) = the doorway is clear
 
 // ---------- DEFAULTS (runtime tunable, saved in flash) ----------
 #define DEF_SERVO_LOCK      90     // finger level, in the teeth, resting on the ledge
@@ -108,3 +110,6 @@
 #define DEF_DROP_ACC        120000 // microsteps/s^2 at the start of the drop. 100000 is about 1 g
 #define DEF_DROP_DEC        60000  // microsteps/s^2 for the stop, about 0.6 g. Keep low: motor torque
 #define DEF_RELEASE_MS      250    // finger travel time before the drop starts
+#define DEF_SENSOR          4002   // 4002 = C4002 over serial, OUT pin if it goes silent; 2410 = OUT pin on GPIO33 only
+#define DEF_APPROACH        30     // cm/s toward the sensor, slower than this does not fire
+#define DEF_LEAD_MS         750    // fire when distance / speed is under this (ms before the person arrives)

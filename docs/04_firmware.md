@@ -12,7 +12,7 @@ Standard PlatformIO layout at the repo root. Board in use: 30-pin ESP32 DevKit V
 | `secrets.ini` | network name, network password, update password. Not in git. Copy `secrets.ini.example` |
 | `include/config.h` | every pin and fixed number, and the factory defaults |
 | `src/main.cpp` | start-up order only |
-| `src/machine.cpp` | the cycle, stepper, finger servo, radar pin, BOOT button, limit switch |
+| `src/machine.cpp` | the cycle, stepper, finger servo, trigger (radar rule or the OUT pin), BOOT button, limit switch |
 | `src/console.cpp` | the text commands, shared by the USB console and the web page |
 | `src/web.cpp` | WiFi, the web page, network firmware updates |
 | `src/settings.cpp` | tunables saved in flash |
@@ -53,8 +53,8 @@ The web page is the console on your phone or PC. Every button sends a console co
 
 | Card | What is on it |
 |---|---|
-| Status | state, chips (armed, spider home, trigger line on GPIO33, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind, limit switch (open or closed, and closures counted since power-up) |
-| Radar | live top-down map from the LD2450: a dot and a 4 s trail per person, distance, speed worked out from the trail beside the sensor's own speed reading (test S2), the 1 m door window (red when the task 4 rule would fire: inside it, coming closer over 0.3 m/s, arriving within 0.75 s), a ripple per frame received, a 60 s timeline (people in view, nearest person, trigger line, limit switch, motor). Show 3 m or 6 m, flip left and right, freeze. Watch only: it does not fire the drop |
+| Status | state, chips (armed, spider home, trigger: radar rule or OUT pin on GPIO33, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind, limit switch (open or closed, and closures counted since power-up) |
+| Radar | the C4002's readings: a distance strip with the moving person (dot, 4 s trail, arrow for the direction) and the still person, the red zone where the trigger rule passes at the current speed, the 3 m clear line, the sensor's own detect range as dashed lines, a ripple per frame; rows for distance, speed, direction, time to arrive, confidence, rule state (one reading or two in a row), doorway clear, light, detect range, sensor software; a 60 s timeline (nearest person, rule would fire, OUT pin, limit switch, motor). Show 3 m or 6 m, freeze, read detect range |
 | Run | Drop it now, Arm or Disarm, Stop, Motor and servo off, Clear fault |
 | Bench: finger servo | live angle, nudge 1 or 5 degrees, go to lock or release angle, store the current angle as lock or release |
 | Bench: motor | jog one turn or 1/8 turn each way, Rewind, Lock, Release |
@@ -75,7 +75,7 @@ READY (armed) --radar or BOOT button-->
                     the drop + 0.75 turn overshoot and the bead stops on the eyelet)
   --> LOCK (finger in; seat move lets the spool down 1.2/12 turn at 30 rpm onto a tooth,
             the clutch slips once it lands; driver off; servo off 0.7 s later)
-  --> LOCKOUT 20 s --> WAIT FOR THE DOORWAY TO CLEAR (radar LOW for 2 s) --> READY
+  --> LOCKOUT 20 s --> WAIT FOR THE DOORWAY TO CLEAR (nobody within 3 m, or OUT pin LOW, for 2 s) --> READY
 ```
 
 - The driver is on from the release to the end of the lock. Never drop with the driver off: the unpowered motor drags too much for a clean fall.
@@ -142,18 +142,23 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `dropacc <n>` | drop start rate, microsteps/s^2, 20000 to 400000, default 120000 |
 | `dropdec <n>` | drop stop rate, 10000 to 200000, default 60000 (about 0.6 g). Keep low: the motor has to stop the spider |
 | `relms <ms>` | finger travel time before the drop starts, 100 to 600, default 250 |
+| `sensor <4002/2410>` | 4002 (default): the C4002 over serial fires the drop, its OUT pin on GPIO33 takes over if the serial link is silent for 1 s. 2410: the OUT pin only (any active-high sensor: LD2410C, PIR, step mat) |
+| `approach <cm/s>` | the moving person must be coming closer at least this fast, 10 to 150, default 30 |
+| `leadms <ms>` | fire when the person's distance divided by speed is under this, 200 to 2000, default 750 |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
 | `limit <0/1>`, `liminv <0/1>` | limit switch fitted; switch reads backwards |
 | `wifi` | where the board is on the network |
-| `radar` | what the LD2450 sees now: frames a second, bad frames, each person's x, y and speed. "no frames yet" with 0 bytes means nothing is arriving on RX2 (GPIO16) |
-| `radar probe` | watch every free pin for 0.4 s and say which one carries the radar's signal; listen there if it is not RX2 |
-| `radar wake` | for a radar that is powered but silent (its TX wire sits at a steady 3 V): ask its firmware version, tracking mode and area setting over TX2 (GPIO17), end its configuration mode, and restart it if it still sends no target frames. Each step logs what came back. Refused while a move is running |
-| `radar reset` | put the radar's own stored settings (tracking mode, area boxes, baud rate, Bluetooth) back to factory and restart it; then listens 5 s for target frames. The firmware stores nothing in the radar, so nothing of ours is lost. Refused while a move is running |
-| `radar raw` | the last 96 bytes heard on RX2 as hex, oldest first: FD FC FB FA starts a command reply, AA FF 03 00 a position frame |
-| `radar baud` | try enable configuration at each speed the module knows (256000 first, then 115200, 230400, 460800, 57600, 38400, 19200, 9600); if it answers at another speed, set it back to 256000 and restart it. For a module whose firmware update moved its speed |
-| `radar cmd <hex>` | one Hi-Link protocol command by hand, command byte then value bytes, inside enable and end configuration, each reply logged as hex. Bench experiments only. Known commands: 80 single target, 90 multi target, 91 ask the mode, A0 version, A1 speed (07 00 = 256000), A2 factory reset, A3 restart, A4 Bluetooth (00 00 off, 01 00 on), A5 ask the MAC, C1 ask the area setting |
+| `radar` | what the C4002 sees now: frames a second, bad frames, version, detect range, the moving person (distance, speed, direction, time to arrive), the still person, and whether the trigger rule passes. "no result frames yet" with 0 bytes means nothing is arriving on RX2 (GPIO16) |
+| `radar probe` | watch every free pin for 0.4 s and say which one carries the sensor's signal; listen there if it is not RX2 |
+| `radar version` | ask the sensor its software and hardware version |
+| `radar range [closest farthest]` | read the sensor's own detect range, or set it, in cm, 0 to 1100. Kept in the sensor. Set the closest value past the hanging spider so the sensor never reports it (test S2). Refused while a move is running |
+| `radar out [1/2/3]` | read or set what the OUT pin goes high on: 1 motion, 2 presence, 3 either. Kept in the sensor |
+| `radar reset` | the sensor's factory settings, then a restart; the firmware asks it to report again 1.5 s later. Refused while a move is running |
+| `radar raw` | the last 96 bytes heard on RX2 as hex, oldest first: FA F5 AA A5 starts a packet; its 8th byte 04 = a result, 02 or 03 = a reply |
+| `radar baud` | try a detect-range read at each speed the sensor knows (115200 first, then 57600, 230400, 460800, 500000, 921600, 1000000); if it answers at another speed, set it back to 115200 and restart it |
+| `radar cmd r|w <cmd> [hex]` | one DFRobot protocol command by hand, r = read request, w = write request, command byte then data bytes, the reply logged as hex. Bench experiments only. Known commands: 82 version (data 01 software, 00 hardware), 83 report period in tenths of a second, 86 detect range, A0 OUT pin rule, 21 speed, 00 restart, 02 then 80 factory reset |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
@@ -187,6 +192,6 @@ Speed ramps up over 600 steps and down at the end of a counted move. A stop by t
 ## Known limits
 
 - No stall detection: needs the driver's UART line, which the expansion board does not expose.
-- Radar UART pins (GPIO16, 17) are wired but unused. Future: read target distance directly instead of OUT.
+- The C4002 reports one moving and one still person, not several: two people walking in together read as one. Its result frame layout (20 data bytes with C padding) is taken from DFRobot's library, not a protocol sheet; the firmware also decodes an 18-byte form and logs which it sees. Not yet seen on a real sensor.
 - The update page and network upload use one shared password from `secrets.ini`. Fine on a home network; not for anything public.
 - Static IP address: not yet.

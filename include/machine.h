@@ -1,4 +1,4 @@
-// The machine: stepper, finger servo, radar OUT pin, BOOT button, limit switch,
+// The machine: stepper, finger servo, trigger sensor (radar serial or OUT pin), BOOT button, limit switch,
 // and the order everything happens in. Runs on a FreeRTOS task of its own, so the
 // serial console, the web page and network updates all stay live during a cycle.
 #pragma once
@@ -14,7 +14,8 @@ struct MachineStatus {
   const char *state;        // plain-English state name
   bool     busy;            // a cycle or a bench move is running
   bool     armed;
-  bool     sensor;          // radar OUT right now
+  bool     sensor;          // the trigger condition right now (radar rule passing, or the OUT pin high)
+  bool     viaRadar;        // the trigger is read from the radar's serial link (else the OUT pin on GPIO33)
   bool     limitRaw;        // limit switch reads pressed right now (after the invert setting)
   bool     limitFitted;
   uint32_t limitCloses;     // steady switch closures since power-up (bounce not counted)

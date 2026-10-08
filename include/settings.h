@@ -8,6 +8,7 @@ struct Settings {
   int servoLock, servoRel, lineMm, rpm, rewindDir, settleMs, rearmMs, armed;
   int limitFitted, limitInverted;
   int dropMm, dropRpm, dropAcc, dropDec, releaseMs;
+  int sensor, approach, leadMs;
 };
 
 // The live copy everything reads. Change it only through settingsSet().
@@ -18,7 +19,8 @@ void settingsSave();                   // write the live values to flash
 void settingsDefaults();               // factory values into the live copy (not saved)
 
 // Set one value by its console name (setlock, setrel, line, rpm, dir, settle,
-// rearm, limit, liminv, dropmm, droprpm, dropacc, dropdec, relms). The value must
+// rearm, limit, liminv, dropmm, droprpm, dropacc, dropdec, relms, sensor, approach,
+// leadms). The value must
 // be a whole number inside the allowed range, or nothing changes and false comes
 // back with the reason in why.
 bool settingsSet(const String &name, const String &value, String &why);

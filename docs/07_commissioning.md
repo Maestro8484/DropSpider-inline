@@ -21,7 +21,7 @@ Step numbers 1 to 14 are unchanged from Rev C so the open-items table still poin
 | 9 | Watch the end of `rewind` | With the switch on: the bead lifts the fairlead flap, the switch clicks, the motor stops at once, no buzz; console says "stopped by the limit switch". With the switch off: the flap bottoms on the fairlead, motor buzzes briefly (skipping), then stops |
 | 10 | `lock` | Finger goes in, motor eases the spool down onto a tooth, motor goes off, spider drops no more than about 13 mm and stays. The flap drops back and the switch reads open: correct by design (doc 09, V14) |
 | 11 | `line <measured mm>`, `save`, then `drop` five times | All five complete, no tangles, finger always relocks. With the switch on, "Line length measured by the switch" on the page is within about 40 mm of `line` |
-| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. LD2450 tests S1 to S5 in `handoff_sensor_bearings.md` |
+| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. C4002 tests S1 to S5 in `handoff_sensor_bearings.md` |
 | 13 | Stand still in front of it after a scare | No second scare until you leave and 20 s pass |
 | 14 | Hardware check after 20 cycles | Coupler set screws tight, no white stress marks on the finger or ledge, knot intact, flap swings freely on its pin, switch roller not bent, no groove worn in the fairlead bore |
 
@@ -41,7 +41,7 @@ Then mount per `06_installation.md` and repeat steps 11 to 13 in place, adjustin
 | Spider drops at power-up | finger not seating at boot, or servo on GPIO14 | check `setlock`; servo must be on GPIO13 |
 | Finger will not relock | lock angle short of the teeth | raise `setlock` a few degrees |
 | Line tangles on the spool | line exits the wrong side, or slack on rewind | re-wind per 05 step 16; reduce `rpm` |
-| Retriggers on people walking past or leaving | LD2450 window too wide, or running the LD2410C fallback | narrow `doorwidth`, raise `approach`; check `sensor 2450` |
+| Retriggers on people walking past or leaving | the radar's direction word is wrong for the mount, or the OUT pin fallback is carrying the trigger | check the direction word on the page while walking (S2); raise `approach`; `status` says radar or OUT pin; check `sensor 4002` and that the serial link is talking |
 | ESP32 resets when servo moves | 5 V dips | fit the 470 uF capacitor at the servo |
 | Rewind stops early, fault "tripped far too early" | line snagged, or switch noise from the motor wires | clear the snag; route the switch lead away from the motor wires |
 | Fault "ran without the limit switch tripping" | bead misses the flap, flap stuck, or switch unplugged | check the flap swings freely and the roller touches its tail (doc 09 step 4); check `status` shows the switch changing when the flap is lifted |

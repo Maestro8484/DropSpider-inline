@@ -17,10 +17,10 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 
 D27, D26, D25 sit side by side on the ESP32 header in the same order as the expansion board's DIR, STEP, EN columns, so one 3-wire ribbon goes across straight (changed 2026-10-01; before then STEP was GPIO25, DIR 26, EN 27).
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
-| GPIO33 | LD2410C OUT (fallback only) | in | HIGH = someone present. Firmware adds a pull-down. Used only with `sensor 2410` |
+| GPIO33 | C4002 OUT | in | HIGH = someone there. Firmware adds a pull-down. Carries the trigger if the serial link goes silent, or always with `sensor 2410` (any active-high sensor) |
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
-| GPIO16 (RX2) | LD2450 TX (yellow wire) | in | Primary trigger, UART2 at 256000 baud |
-| GPIO17 (TX2) | LD2450 RX (green wire) | out | Primary trigger |
+| GPIO16 (RX2) | C4002 TX (yellow wire) | in | Primary trigger, UART2 at 115200 baud |
+| GPIO17 (TX2) | C4002 RX (green wire) | out | Primary trigger: the firmware asks for a report every 0.1 s at boot |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
@@ -37,10 +37,11 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 | Rail | Source | Loads | Worst case |
 |---|---|---|---|
 | 12 V | 12 V 2 A wall adapter | driver/motor, buck input | about 0.6 A while rewinding (about 3 s per scare), about 0.05 A idle |
-| 5 V | MP1584EN mini buck, fixed 5 V (not adjustable). Meter its output on 12 V **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), LD2450 (about 0.1 A), LD2410C if fitted (0.08 A) | about 1 A peak; the MP1584EN is comfortable to about 1.5 A |
+| 5 V | MP1584EN mini buck, fixed 5 V (not adjustable). Meter its output on 12 V **before** connecting anything | ESP32 (0.25 A peak, WiFi on), SG90 (0.7 A stall peak), C4002 (not stated by DFRobot: meter it at first power-up) | about 1 A peak; the MP1584EN is comfortable to about 1.5 A |
 
 - 470 uF 16 V electrolytic across the servo's red and brown: **only if** the ESP32 restarts when the finger moves (the page's "Running for" clock resets). A micro servo moving for a fraction of a second on the buck's output does not normally need it. If fitted: at the servo end, stripe to GND.
 - Idle draw between scares is a few watts at most: driver disabled, servo detached, radar and ESP32 on.
+- The ESP32 browned out on PC USB and on a 2 A USB hub with the LD2450 attached (2026-10-07): bench the radar on the 12 V adapter through the buck, never on USB alone.
 - USB can stay connected to a PC for the console while 12 V is on.
 - Ceiling install: run 12 V up with a 5.5 x 2.1 mm DC extension cable. Keep the adapter at the outlet, never at the ceiling.
 
@@ -68,6 +69,8 @@ By design the switch reads **open** at rest after the lock seat (doc 09, V14): t
 
 ## Sensor wiring
 
-**LD2450 (primary):** 5 V, GND, TX to GPIO16, RX to GPIO17. The owner's cable (2026-10-01), colours at the sensor: **red 5 V, black GND, yellow TX (to GPIO16), green RX (to GPIO17)**. TX goes to RX and RX to TX: yellow is the sensor's transmit, so it lands on the ESP32's receive. 4-pin, 1.25 mm plug at the sensor. No OUT pin. See `03_sensor.md`.
+**C4002 (primary, ordered 2026-10-07):** five pins on a 2.54 mm header, VIN, GND, RX, TX, OUT. VIN to the 5 V rail (3.6 to 5.5 V), GND, sensor TX (yellow) to GPIO16, sensor RX (green) to GPIO17, OUT to GPIO33. TX goes to RX and RX to TX: yellow is the sensor's transmit, so it lands on the ESP32's receive. The firmware needs both serial wires: it asks the sensor to report over GPIO17 at boot, and the sensor reports only once asked. Antenna face (two gold squares, pin names) toward the walkway. Mount: `cad/c4002_plate.svg`.
 
-**LD2410C (fallback, optional):** 5 V, GND, OUT to GPIO33 (3.3 V output, goes straight in). Used only with `sensor 2410`.
+**OUT pin only (`sensor 2410`):** any sensor with an active-high output on GPIO33: the C4002's OUT, an LD2410C, a PIR, a step mat. 3.3 V or 5 V output both read; the pin has the firmware's pull-down.
+
+**LD2450 (parked 2026-10-07):** 5 V, GND, TX to GPIO16, RX to GPIO17; red 5 V, black GND, yellow TX, green RX on the owner's cable. Three modules answered every command and never reported a target. The current firmware no longer speaks its protocol.

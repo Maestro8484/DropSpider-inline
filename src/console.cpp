@@ -59,8 +59,8 @@ String logJsonSince(uint32_t since, uint32_t &next) {
 
 static void printStatus() {
   MachineStatus m = machineStatus();
-  logf("state=%s armed=%d sensor=%d limit=%s (closed %lu times since power-up) home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
-       m.state, m.armed, m.sensor,
+  logf("state=%s armed=%d sensor=%d(%s) limit=%s (closed %lu times since power-up) home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
+       m.state, m.armed, m.sensor, m.viaRadar ? "radar" : "OUT pin",
        m.limitFitted ? (m.limitRaw ? "pressed" : "open") : (m.limitRaw ? "not-fitted(pressed)" : "not-fitted(open)"),
        (unsigned long)m.limitCloses,
        m.home ? "yes" : "unknown",
@@ -90,24 +90,31 @@ static const char *const HELP[] = {
   "  dropmm <mm>     how far the spider drops (100 to line - 70)",
   "  droprpm <n>     drop top speed, 100 to 900 | relms <ms> finger travel before the drop, 100 to 600",
   "  dropacc <n> | dropdec <n>   drop start and stop rates, microsteps/s^2 (100000 is about 1 g)",
-  "  wifi            show network state | radar   what the LD2450 sees now (watch only) | radar probe   find its wire",
-  "  radar wake      a silent radar: ask its version and state, end its configuration mode, restart it",
-  "  radar reset     put the radar's own settings back to factory and restart it",
-  "  radar raw       the last 96 bytes heard from the radar, as hex",
-  "  radar baud      find the speed the radar answers at; set it back to 256000 if it moved",
-  "  radar cmd <hex> one protocol command by hand, e.g. radar cmd A4 0100 (Bluetooth on)",
+  "  wifi            show network state | radar   what the C4002 sees now and whether it would fire | radar probe   find its wire",
+  "  radar range [closest farthest]  the sensor's own detect range, cm (set closest past the hanging spider) | radar version",
+  "  radar out <1|2|3>  what its OUT pin goes high on: 1 motion, 2 presence, 3 either | radar reset   its factory settings",
+  "  radar raw       the last 96 bytes heard from the sensor, as hex | radar baud   find its speed; set it back to 115200 if it moved",
+  "  radar cmd r|w <cmd> [hex]  one protocol command by hand, e.g. radar cmd r 82 01 (software version)",
+  "  sensor 4002|2410  4002 = C4002 over serial, OUT pin if silent; 2410 = OUT pin on GPIO33 only | approach cm/s | leadms ms",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
 
 static void printRadar() {
   RadarStats r = radarStats();
-  if (!r.frames) { logf("radar: no frames yet (%lu bytes heard on RX2): check the LD2450's 5 V and its TX wire to RX2 (GPIO16)", (unsigned long)r.bytes); return; }
-  logf("radar: %s, %.1f frames/s, last %lu ms ago | frames %lu, bad %lu | %d in view",
-       r.talking ? "talking" : "SILENT", r.fps, (unsigned long)r.ageMs, (unsigned long)r.frames, (unsigned long)r.bad, r.count);
-  for (int i = 0; i < 3; i++)
-    if (r.talking && r.t[i].present())
-      logf("  target %d: x %d mm, y %d mm, speed %d cm/s", i + 1, r.t[i].x, r.t[i].y, r.t[i].speed);
+  if (!r.frames) { logf("radar: no result frames yet (%lu bytes heard on RX2): check the C4002's 5 V, its TX wire to RX2 (GPIO16) and its RX wire to TX2 (GPIO17)", (unsigned long)r.bytes); return; }
+  logf("radar: %s, %.1f frames/s, last %lu ms ago | frames %lu, bad %lu | version %s, detect range %u to %u cm",
+       r.talking ? "talking" : "SILENT", r.fps, (unsigned long)r.ageMs, (unsigned long)r.frames, (unsigned long)r.bad,
+       r.version.length() ? r.version.c_str() : "?", r.closest, r.farthest);
+  if (!r.talking) return;
+  const RadarReading &d = r.r;
+  if (d.state == 0) logf("  nobody in view");
+  if (d.state == 2) logf("  moving: %d cm away, %d cm/s, %s, energy %u%s", d.mdist, d.speed,
+                         d.dir == 2 ? "approaching" : d.dir == 0 ? "going away" : "no direction", d.menergy,
+                         d.etaMs ? (String(", arrives in ") + d.etaMs + " ms").c_str() : "");
+  if (d.state == 1 || (d.state == 2 && d.pdist > 0)) logf("  still: %d cm away, energy %u", d.pdist, d.penergy);
+  logf("  rule (approach %d cm/s, leadms %d): %s%s", S.approach, S.leadMs, d.fire ? "PASSES" : "does not pass",
+       r.fireRun >= 2 ? ", two in a row: WOULD FIRE" : "");
 }
 
 static void printHelp() {
@@ -155,14 +162,24 @@ void consoleRun(const String &raw, String *capture) {
   }
   else if (cmd == "wifi")     logf("%s", webWhereAmI().c_str());
   else if (cmd == "radar")    {
-    if ((argS == "wake" || argS == "reset" || argS == "baud") && machineStatus().busy) logf("refused: a move is running");
-    else if (argS == "baud") radarBaud();
-    else if (argS.startsWith("cmd")) { if (machineStatus().busy) logf("refused: a move is running"); else radarCmd(argS.substring(3)); }
-    else if (argS == "wake") radarWake();
-    else if (argS == "reset") radarReset();
-    else if (argS == "raw") radarRaw();
-    else if (argS == "probe") radarProbe();
-    printRadar();
+    String sub = argS, rest; int sp2 = argS.indexOf(' ');
+    if (sp2 >= 0) { sub = argS.substring(0, sp2); rest = argS.substring(sp2 + 1); rest.trim(); }
+    bool talks = sub == "reset" || sub == "baud" || sub == "cmd" || sub == "range" || sub == "out" || sub == "version";
+    if (talks && machineStatus().busy) logf("refused: a move is running");
+    else if (sub == "baud") radarBaud();
+    else if (sub == "cmd") radarCmd(rest);
+    else if (sub == "reset") radarReset();
+    else if (sub == "version") radarVersion();
+    else if (sub == "range") {
+      long a = -1, b = -1; int sp3 = rest.indexOf(' ');
+      if (rest.length() && !(sp3 > 0 && parseLong(rest.substring(0, sp3), a) && parseLong(rest.substring(sp3 + 1), b))) logf("radar range: closest then farthest in cm, e.g. radar range 60 600; alone = read it");
+      else radarRange((int)a, (int)b);
+    }
+    else if (sub == "out") { long m = 0; if (rest.length() && !parseLong(rest, m)) logf("radar out: 1 motion, 2 presence, 3 either; alone = read it"); else radarOut((int)m); }
+    else if (sub == "raw") radarRaw();
+    else if (sub == "probe") radarProbe();
+    else if (sub.length()) logf("radar: alone, or probe, raw, baud, version, range, out, reset, cmd");
+    if (!sub.length() || sub == "probe" || sub == "baud" || sub == "reset") printRadar();
   }
   else if (settingsIsName(cmd)) {
     MachineStatus m = machineStatus();

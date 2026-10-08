@@ -36,6 +36,9 @@ static const Row ROWS[] = {
   { "dropacc", "dropAcc",&S.dropAcc,       20000, 400000, DEF_DROP_ACC },
   { "dropdec", "dropDec",&S.dropDec,       10000, 200000, DEF_DROP_DEC },
   { "relms",   "relMs",  &S.releaseMs,     100,  600,    DEF_RELEASE_MS },
+  { "sensor",  "sensor", &S.sensor,        2410, 4002,   DEF_SENSOR },        // only 2410 or 4002
+  { "approach","apprch", &S.approach,      10,   150,    DEF_APPROACH },
+  { "leadms",  "leadMs", &S.leadMs,        200,  2000,   DEF_LEAD_MS },
 };
 static const size_t N = sizeof(ROWS) / sizeof(ROWS[0]);
 
@@ -84,6 +87,7 @@ bool settingsSet(const String &name, const String &value, String &why) {
       why = String("allowed ") + ROWS[i].lo + " to " + ROWS[i].hi;
       return false;
     }
+    if (name == "sensor" && v != 2410 && v != 4002) { why = "4002 (C4002 over serial) or 2410 (OUT pin only)"; return false; }
     // The drop and the line limit each other: the spider must stop short of the knot.
     if (name == "dropmm" && v > dropMmMax()) {
       why = String("allowed 100 to ") + dropMmMax() + " with line " + S.lineMm + " mm";

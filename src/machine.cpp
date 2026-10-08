@@ -2,6 +2,7 @@
 #include "config.h"
 #include "settings.h"
 #include "console.h"
+#include "radar.h"
 #include <ESP32Servo.h>
 #include <FastAccelStepper.h>
 #include <soc/gpio_reg.h>
@@ -90,7 +91,9 @@ static int faultRun = 0;
 static uint32_t drops = 0;
 
 // inputs
-static bool sensorNow = false, sensorLast = false;
+static bool sensorNow = false, sensorLast = false;   // the trigger condition
+static bool clearNow = true, clearLast = true;       // the doorway is empty (or everyone is far)
+static bool viaRadar = false;                        // trigger read from the radar's serial link, not the OUT pin
 static uint32_t highSince = 0, lowSince = 0;
 static bool btnStable = true, btnLast = true, btnWas = true;
 static uint32_t btnAt = 0;
@@ -227,10 +230,24 @@ static void disarmForBench() {
 static void readInputs() {
   uint32_t now = millis();
 
-  sensorNow = digitalRead(PIN_SENSOR) == HIGH;
+  // The trigger. sensor 4002: the radar's serial rule (two readings in a row of someone
+  // approaching fast enough to arrive within leadms); if the link goes silent for
+  // RADAR_SILENT_MS the sensor's OUT pin on GPIO33 carries it until frames return.
+  // sensor 2410: the OUT pin only. The doorway is clear when the radar sees nobody
+  // within RADAR_CLEAR_CM, or the pin reads low.
+  bool pin = digitalRead(PIN_SENSOR) == HIGH;
+  bool link = S.sensor == 4002 && radarTalking();
+  if (link != viaRadar) {
+    if (S.sensor == 4002 && now > 5000)
+      logf(link ? "[radar] frames back: the trigger is the radar's serial rule again"
+                : "[radar] FAULT: no result frame for %d ms. The trigger is the OUT pin on GPIO33 until frames return", RADAR_SILENT_MS);
+    viaRadar = link;
+  }
+  sensorNow = link ? radarFire() : pin;
+  clearNow = link ? radarClear() : !pin;
   if (sensorNow && !sensorLast) highSince = now;
-  if (!sensorNow && sensorLast) lowSince = now;
-  sensorLast = sensorNow;
+  if (clearNow && !clearLast) lowSince = now;
+  sensorLast = sensorNow; clearLast = clearNow;
 
   bool b = digitalRead(PIN_BUTTON) == HIGH;             // true = not pressed
   if (b != btnLast) { btnLast = b; btnAt = now; }
@@ -573,7 +590,7 @@ static void step() {
 
     case ST_IDLE:
       if (pressed) { startCycle(TRIG_BUTTON); break; }
-      if (S.armed && sensorNow && now - highSince >= TRIGGER_DEBOUNCE_MS) startCycle(TRIG_SENSOR);
+      if (S.armed && sensorNow && (viaRadar || now - highSince >= TRIGGER_DEBOUNCE_MS)) startCycle(TRIG_SENSOR);
       break;
 
     case ST_LOCKOUT:
@@ -583,7 +600,7 @@ static void step() {
 
     case ST_WAIT_CLEAR:  // someone still standing there: wait until the doorway is empty
       if (pressed) { startCycle(TRIG_BUTTON); break; }
-      if (!sensorNow && now - lowSince >= CLEAR_BEFORE_REARM) {
+      if (clearNow && now - lowSince >= CLEAR_BEFORE_REARM) {
         enter(ST_IDLE);
         logf(S.armed ? "[armed] doorway clear" : "[ready] doorway clear, not armed");
       }
@@ -764,6 +781,7 @@ MachineStatus machineStatus() {
   m.busy = isBusy();
   m.armed = S.armed;
   m.sensor = sensorNow;
+  m.viaRadar = viaRadar;
   m.limitRaw = limStable;
   m.limitCloses = limPresses;
   m.limitFitted = S.limitFitted;
