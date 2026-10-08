@@ -25,6 +25,14 @@ Work order for the software team: make the DFRobot C4001 radar (SEN0609 25 m or 
 - Commands are plain words ending in a newline, sent while the sensor is stopped: `sensorStop`, then the command, then `saveConfig`, then `sensorStart`. Speed mode is `setRunApp 1` (presence is `setRunApp 0`). Detect range is `setRange <min m> <max m>` (30 to 2000 cm; the example sets 11 to 1200), read back with `getRange`. Threshold `setThrFactor <n>`. OUT pin polarity `setGpioMode 1 <0 or 1>`, read with `getGpioMode 1`. Factory reset `resetCfg`, restart `resetSystem`. The library waits 50 to 800 ms between these; the firmware must not block the machine task while it does.
 - Pins: VCC 5 V, GND, TX, RX, OUT. Wiring is the C4002's: VCC to the 5 V rail, GND, sensor TX to GPIO16 (RX2), sensor RX to GPIO17 (TX2), OUT to GPIO33 (HIGH = presence, the no-firmware fallback). Meter its current at first power-up; the library and wiki do not state it.
 
+## Questions to answer before installation (owner 2026-10-08, answer each with its source, then do step 1)
+
+1. **Can the gold-plated radar face sit against the PLA bracket, with about 3 mm of PLA in front of it?** Check DFRobot's SEN0609/SEN0610 wiki for what it says about covers and mounting, and what is published on 24 GHz radar through PLA (radome thickness rules, maker reports). Answer: yes, no, or yes with a stated gap; and whether the face goes outward on the plate as the C4002's does.
+2. **The two DIP switches: UART or I2C?** The firmware speaks serial on GPIO16/17, so the expected answer is UART; confirm which switch and which position from the wiki's switch table or the board's silk screen, and say what the firmware would need if it were I2C instead (it is not built).
+3. **Address 0x2A or 0x2B?** The address switch matters only for I2C (library `DEVICE_ADDR_0 0x2A`, `DEVICE_ADDR_1 0x2B`). Confirm from the wiki whether it has any effect in UART mode; if none, leave it on 0x2A.
+
+Put the three answers in doc 02's sensor wiring section (one line each) and in the commissioning log's first C4001 row.
+
 ## The work, in order
 
 1. **Setting.** `sensor` accepts 4001; `src/settings.cpp` row range 2410 to 4002 and the refusal message name all three values. `DEF_SENSOR` in `include/config.h` becomes 4001 (the sensor on hand). Doc 04's settings row follows.
