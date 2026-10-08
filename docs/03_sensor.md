@@ -2,7 +2,7 @@
 
 Rev C.1. Decision date 2026-09-24. Details and sources in `handoff_sensor_bearings.md`.
 
-**Superseded 2026-10-07.** The LD2450 is parked (three modules never reported a target) and the DFRobot Fermion C4002 replaces it: one moving person's distance, speed and direction plus one still person's distance over serial, and an OUT pin for the no-firmware fallback. Facts, wiring and the firmware's trigger rule: `handoff_sensor_bearings.md` section 0, doc 02 sensor wiring, doc 04 settings `sensor`, `approach`, `leadms`. The table below is the 2026-09-24 comparison, kept for the record.
+**Superseded 2026-10-07, updated 2026-10-08.** The LD2450 is parked (three modules never reported a target; record in `retired/handoff_sensor_ld2450.md`). The trigger is now a DFRobot radar that reports one moving person's range and signed speed over serial and has a presence OUT pin for the no-firmware fallback: the C4001 (SEN0609/SEN0610) the owner has on hand first, as `sensor 4001`, then the Fermion C4002 (SEN0691, ordered 2026-10-07, `sensor 4002`, which also reports a still person). Facts, wiring and the firmware's trigger rule: `handoff_sensor_bearings.md`, doc 02 sensor wiring, doc 04 settings `sensor`, `approach`, `leadms`. The table below is the 2026-09-24 comparison, kept for the record.
 
 ## Choice: HLK-LD2450 (primary), HLK-LD2410C (fallback), both already owned
 

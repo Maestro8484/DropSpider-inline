@@ -32,7 +32,7 @@ Each doc has one job, marked in bold below where it matters: a **handoff** holds
 | `CHANGELOG.md` | **changelog:** finished work, newest first |
 | `docs/handoff_task1_firmware.md` | **handoff:** bench tests T1 to T8, and the spool-to-flap fix before them |
 | `docs/handoff_spool_rev_c4.md` | **handoff:** spool Rev C.4, the line must stay on the spool: barrel centred on the line, 7 mm far cap, one-piece bearing seat kept |
-| `docs/handoff_sensor_bearings.md` | **handoff:** the LD2450 radar as the trigger (the name is historical; bearing care is in doc 01) |
+| `docs/handoff_sensor_bearings.md` | **handoff:** the trigger sensor, the DFRobot C4001 on hand as `sensor 4001`, then the C4002 when it arrives (the name is historical; bearing care is in doc 01; the parked LD2450 design is in `docs/retired/handoff_sensor_ld2450.md`) |
 | `docs/M1_fix_handoff.md` | **reference:** the Rev C.1 clutch fix and motor-led drop, why it works, and the T1 to T8 test table (the name is historical) |
 | `cad/generate.py`, `cad/fairlead.py`, `cad/inverted.py` | source of truth for every printed part (`inverted.py`: the device turned over on the porch beam, doc 06) (`tools\regen_cad.ps1` rebuilds STLs and images) |
 | `cad/stl/` | print-ready files. `cad/retired/` holds obsolete parts and their code, `docs/retired/` obsolete docs and pictures: do not print or follow them |

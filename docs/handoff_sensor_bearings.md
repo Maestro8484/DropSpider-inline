@@ -1,86 +1,75 @@
-# Handoff: task 2, LD2450 radar as the trigger
+# Handoff: trigger sensor, the DFRobot C4001 on hand as `sensor 4001`, then the C4002 when it arrives
 
-From the mechanical owner to the software/electrical team, written 2026-09-24. Future work only; what is already done is in `CHANGELOG.md`.
+Work order for the software team: make the DFRobot C4001 radar (SEN0609 25 m or SEN0610 12 m, the owner has one) the trigger, bench it, and add the C4002 (SEN0691, ordered 2026-10-07) when it lands. The file name is historical; bearing care is in doc 01. The LD2450 design this file once held is retired: `docs/retired/handoff_sensor_ld2450.md`.
 
-**Before you start:** T1 to T8 in `M1_fix_handoff.md` must pass. Check: `docs/commissioning_log.md` has a PASS row for each. Also check the radar's wiring before trusting any reading: on 2026-10-07 the owner found it not answering, metered 5 V on the sensor, swapped TX and RX, then swapped them back to the plan below (TX to GPIO16, RX to GPIO17). **Parked 2026-10-07 by the owner.** Three LD2450 modules in a row behaved the same on this rig: 5 V at the pins, Bluetooth advertising, both wires carrying bytes each way, every protocol command acknowledged (`radar wake`, `radar reset`, `radar baud`, `radar cmd` in doc 04), factory reset and restart acknowledged, firmware 2.04.23101915 and then 2.14.25112412, and never one position frame, on the wire or in Hi-Link's app. The module's current was not measured; that is the one check left if anyone picks this up again. The owner's call is a line-of-sight trigger instead: PIR or step mat on GPIO33 (HIGH = someone there, already fires the drop, no firmware), or an HC-SR04 ultrasonic aimed a meter before the drop point (about 80 lines of firmware). Section 1 below stays as the LD2450 design for the record. The replacement, ordered 2026-10-07, is section 0.
+**Ground truth:** the repo on disk wins over this file. Staleness check: `git log -1 --oneline` against `git log -1 --oneline -- docs/handoff_sensor_bearings.md`; a different hash means commits landed after this was written, read `CHANGELOG.md` for them.
 
-## 0. Replacement: DFRobot Fermion C4002 (SEN0691), ordered 2026-10-07
+## Before you start
 
-Facts checked that day against DFRobot's wiki (wiki.dfrobot.com/sen0691), product page and the `DFRobot_C4002` Arduino library (MIT): 24 GHz FMCW, 3.6 to 5.5 V, 22 x 26 mm, 120 by 120 degree view, motion to 11 m, pins VIN, GND, RX, TX, OUT. Serial: the library's `getMotionTargetInfo()` returns distance, speed in m/s, energy and direction of the moving target; `getTargetState()` no target, presence or motion; `getDetectRange()` and its setter hold a closest and a farthest distance in cm; `getOutPinMode()` configures the OUT pin. Serial speeds the library lists: 57600, 115200, 230400, 460800, 500000, 921600, 1000000; the default is not stated and is found by trying. Current draw is not stated anywhere: meter it at first power-up (the three LD2450s before it never reported and their current was never measured; handle the board by its edges in dry air).
+- T1 to T8 pass: read `docs/commissioning_log.md` for a PASS row on each. If they are not there, the sensor can still be built and bench-read (S1, S2), but S3 to S5 wait.
+- The C4002 firmware is in the tree and has never run on a sensor: `src/radar.cpp` speaks the C4002's binary protocol, settings `sensor` 4002 or 2410, `approach`, `leadms` (`CHANGELOG.md` 2026-10-07). It is the pattern to copy for the C4001, not a thing to rewrite.
+- The sensor must be wired and the board locked and idle before any flash: `status` shows busy 0, driverOn 0, ready. Nothing moves until the owner says he is at the device.
 
-Wiring: VIN to the 5 V rail, GND, sensor TX (yellow) to GPIO16 (RX2), sensor RX (green) to GPIO17 (TX2), OUT to GPIO33 as the no-firmware fallback (HIGH = presence already fires the drop). Mount: `cad/c4002_plate.svg`, a flat plate for the existing radar fork, antenna face (two gold squares, pin names) outward, header at the bottom through the notch.
+## Read first
 
-**Firmware built 2026-10-07, builds clean, NOT yet run on a sensor.** What was built, against the spec below: (1) the `DFRobot_C4002` library (v1.0.0, MIT) was read and not linked: its receive call blocks up to 100 ms whenever the sensor is quiet, reads eight bytes blind so a stream split across reads never lines up again, and takes a result frame for a command reply; `src/radar.cpp` speaks its protocol with a non-blocking parser instead; (2) `sensor` 4002 or 2410 (an `out` word is not possible, settings are whole numbers; 2410 means the OUT pin only); (3) the trigger rule as specified, two readings in a row; the sensor's own detect range is read at boot and set with `radar range`, it filters what the sensor reports so the firmware does not re-check it; (4) clear as specified, 3 m is `RADAR_CLEAR_CM` in `config.h`; (5) to (8) as specified; `radar wake` and the Hi-Link `radar cmd` are gone. Still to do when the part arrives: wire it (doc 02), meter its current, flash, read the first log lines (`[radar] result frames carry N data bytes`: 20 is the layout the firmware expects, anything else means the decode is wrong and `radar raw` shows the bytes), S1 to S5. Two unknowns only the bench can settle: whether the report period command is kept by the sensor through a power cut (the firmware sends it at every boot anyway) and which way the direction word reads on the tilted mount (S2; if backwards, the fix is one comparison in `judge()` in `src/radar.cpp`).
+1. `src/radar.cpp` and `include/radar.h`: the parser `feed()` to `packetDone()` to `result()` to `judge()`, the rule, `fireRun`, `clearNow`, `setupSensor()`, and the console helpers.
+2. `src/machine.cpp` `readInputs()`: where `S.sensor == 4002` chooses the serial rule over the OUT pin.
+3. `src/settings.cpp`: the `sensor` row and the refusal of values other than 2410 and 4002.
+4. `src/console.cpp` `printRadar()` and the `radar` dispatch; `src/web.cpp` radar card, `/api/radar`.
+5. DFRobot's `DFRobot_C4001` library, MIT, github.com/DFRobot/DFRobot_C4001 v1.0.0. A clone may still be at `C:/Users/SuperMaster/AppData/Local/Temp/claude/c4001lib/DFRobot_C4001/`; re-clone if gone. Read `examples/mRangeVelocity/mRangeVelocity.ino`, `setSensorMode()` near line 119 of `src/DFRobot_C4001.cpp`, and `anaysisData()` near line 669.
 
-**Next, ruled by the owner 2026-10-08: add the DFRobot C4001 (SEN0609/SEN0610, on hand) as `sensor 4001`.** Facts read that day from DFRobot's `DFRobot_C4001` library (MIT, github.com/DFRobot/DFRobot_C4001, v1.0.0): in speed-and-range mode (`setSensorMode(eSpeedMode)`, the library sends an ASCII command) it reports one target as text lines `$DFDMD,par1..par7*` at 9600 baud 8N1, with target number, signed speed in hundredths of a m/s (parts[4] times 100 in the library's parser, so the direction is the sign), range in cm and energy; detect range `setDetectThres(min, max, thres)` 30 to 2000 cm; OUT pin with a presence rule and settable polarity; I2C also possible. Which sign of speed means approaching is not stated anywhere read; settle it on the bench (S2) and put it in one comparison. Build: a second parser in `src/radar.cpp` for the text lines, selected by `sensor 4001`, the same trigger rule, settings, web card and OUT pin fallback as the C4002's; `RADAR_BAUD` becomes per sensor (115200 for 4002, 9600 for 4001); `radar baud`, `radar range`, `radar version` work per protocol or say they do not apply. Read the library's `mRangeVelocity` example and its `$DFDMD` parse (around line 669 of `DFRobot_C4001.cpp`) before writing. Wiring: VCC 5 V, GND, its TX to GPIO16, RX to GPIO17, OUT to GPIO33. Bench S1 to S5 can then run on the C4001 before the C4002 arrives.
+## What the C4001 does (read 2026-10-08 from that library, nothing of it yet seen on a sensor)
 
-Firmware spec, replacing section 1's: (1) try the `DFRobot_C4002` library on espressif32@6.7.0 first and say whether it is used; (2) setting `sensor` = `4002` (default), `2410`/`out` (GPIO33 level only); (3) trigger rule, two consecutive readings, armed and idle only: direction = approaching, speed over `approach` (default 0.3 m/s), distance / speed under `leadms` (default 750 ms), distance inside the sensor's own detect range, whose closest value is set past the hanging and swinging spider (measure it on the live readout, S2); `doorwidth` is dropped, the C4002 has no side position; (4) clear for re-arm: target state no target, or distance over 3 m, for 2 s; (5) settings in NVS, console and web page with range checks; (6) web radar card shows distance, speed, direction, state and a would-fire indicator; (7) no reading for 1 s: fault logged, fall back to the OUT pin if `sensor` allows; (8) `radar` console commands keep working for it (version, raw bytes, baud scan at the C4002's speeds). Tests S1 to S5 as in section 1, with "dot tracks" read as the live distance following a walker.
+- Serial 9600 8N1, fixed ("Baud rate cannot be changed", the example). I2C is also possible (0x2A); not used, the fork's wiring is serial.
+- Two modes. Presence mode reports `$DFHPD,0*` or `$DFHPD,1*`. Speed-and-range mode, the one we want, reports one target per line: `$DFDMD,par1,par2,par3,par4,par5,par6,par7*`, where par1 = number of targets (0 or 1), par3 = range in meters as a decimal, par4 = speed in m/s as a signed decimal, par5 = energy. The library multiplies par3 and par4 by 100 to get cm and cm/s. Which sign of speed means approaching is stated nowhere read; S2 settles it.
+- Commands are plain words ending in a newline, sent while the sensor is stopped: `sensorStop`, then the command, then `saveConfig`, then `sensorStart`. Speed mode is `setRunApp 1` (presence is `setRunApp 0`). Detect range is `setRange <min m> <max m>` (30 to 2000 cm; the example sets 11 to 1200), read back with `getRange`. Threshold `setThrFactor <n>`. OUT pin polarity `setGpioMode 1 <0 or 1>`, read with `getGpioMode 1`. Factory reset `resetCfg`, restart `resetSystem`. The library waits 50 to 800 ms between these; the firmware must not block the machine task while it does.
+- Pins: VCC 5 V, GND, TX, RX, OUT. Wiring is the C4002's: VCC to the 5 V rail, GND, sensor TX to GPIO16 (RX2), sensor RX to GPIO17 (TX2), OUT to GPIO33 (HIGH = presence, the no-firmware fallback). Meter its current at first power-up; the library and wiki do not state it.
 
+## The work, in order
 
-## 1. Sensor: switch the trigger to the HLK-LD2450
+1. **Setting.** `sensor` accepts 4001; `src/settings.cpp` row range 2410 to 4002 and the refusal message name all three values. `DEF_SENSOR` in `include/config.h` becomes 4001 (the sensor on hand). Doc 04's settings row follows.
+2. **Baud per sensor.** `RADAR_BAUD` becomes two values, `RADAR_BAUD_4001 9600` and `RADAR_BAUD_4002 115200`, chosen from `S.sensor` in `radarBegin()`; changing `sensor` says "takes effect after restart", as `dir` does.
+3. **Second parser in `src/radar.cpp`.** A text-line reader selected by `S.sensor == 4001`: collect bytes to `*` or newline, 80 characters max, resync on `$`. Parse `$DFDMD` into the same `RadarReading`: state 2 when par1 is 1, else 0 (the C4001 has no still-person reading; leave `pdist` 0); `mdist` = par3 times 100; `speed` = par4 times 100, signed; `dir` from the sign of speed through one constant `C4001_APPROACH_SIGN` (+1 or -1, set by S2), 1 (none) when speed is 0; `menergy` from par5 clipped to 99. `$DFHPD` lines mean the sensor is in presence mode: log once and send the speed-mode command. Then the same `judge()`, the same `fireRun`, `clearNow`, `goodAt`, so `radarFire()`, `radarClear()`, `radarTalking()`, `radarJson()` and the machine task do not change.
+4. **Start-up command for the C4001** in `setupSensor()`: `sensorStop`, `setRunApp 1`, `saveConfig`, `sensorStart`, with the library's waits done as non-blocking steps from `radarPoll()`, 1.5 s after boot, as the C4002 path does. Skip the speed-mode command when `$DFDMD` lines are already arriving.
+5. **Console `radar` commands per protocol.** `radar range` reads `getRange` and sets `setRange`; `radar version`, `radar baud`, `radar out` and `radar cmd` with hex bytes say "does not apply to the C4001" (its baud is fixed; `radar cmd` may instead send one plain-word command and print the reply, which is how the OUT polarity and threshold get set by hand). `radar reset` sends `resetCfg` then `resetSystem`. `radar raw` and `radar probe` work unchanged. `status` shows `sensor=4001(radar)`.
+6. **Machine task.** `src/machine.cpp` `readInputs()`: `link` is true for 4001 or 4002 when `radarTalking()`. The fault and recovery log lines name the sensor.
+7. **Web page.** The radar card's readings table shows a dash for the still person when the sensor is a 4001; the help text names both sensors. `/api/radar` unchanged.
+8. **Docs.** Doc 02 pin rows and sensor wiring (the C4001 takes the C4002's wires; add its current once metered), doc 04 settings and `radar` command rows, doc 07 step 12, `CHANGELOG.md`, roadmap line 4. `cad/c4002_plate.svg` is the C4002's plate (22 x 26 mm board); whether the C4001 fits it is the owner's measurement of his board against the plate, its size was not read from any source.
+9. **Build** with `pio run`. Commit by name. No flash until the sensor is wired and the board is locked and idle.
+10. **When the C4002 arrives:** wire it in place of the C4001, `sensor 4002`, `save`, restart, meter its current, flash nothing new, read the first log lines: `[radar] result frames carry N data bytes` must say 20; anything else means the decode is wrong and `radar raw` shows the bytes. Then S1 to S5 again on it. Two things only that bench can settle: whether the C4002 keeps the report period through a power cut (the firmware sends it at every boot anyway) and which way its direction word reads on the tilted mount (if backwards, one comparison in `judge()`).
 
-### Decision
+The trigger rule, both sensors, unchanged from the C4002 build: armed and idle only, two readings in a row with the person approaching, speed at or above `approach` (default 30 cm/s), distance divided by speed at or below `leadms` (default 750 ms). Clear for re-arm: nobody, or everyone farther than `RADAR_CLEAR_CM` (300), for `CLEAR_BEFORE_REARM` (2 s). Serial silent for `RADAR_SILENT_MS` (1 s): fault logged, the OUT pin on GPIO33 carries the trigger; `sensor 2410` is the OUT pin only.
 
-The owner already has an LD2450. It becomes the primary trigger. The LD2410C is the fallback on GPIO33 (`sensor 2410`), fitted only if a named test fails; it is not fitted today. No purchases.
+## Inverted install: four things the firmware must handle (from the 2026-09-28 LD2450 plan, still true for any radar)
 
-### Why
+Numbers from `cad/inverted.py` and doc 06; none seen on real hardware yet.
 
-The prop only works if the spider lands as the person reaches the doorway. The LD2410C fires on anyone moving inside its range, in any direction, at a fixed distance. The LD2450 reports each person's X and Y position and speed, so the firmware can fire only on people walking toward the door and time the drop to their predicted arrival.
+1. **Radar placement.** The radar hangs in its cradle under the base at the servo end, about 154 mm out from the beam's face, looking back toward the beam and 50 degrees down (55 to 60 if the walk test asks; the cradle clears to 65). People approach from outside, under the beam, toward the radar. The radar sits about 2.28 m up and tilted, so its range is not the floor distance to the doorway; tune `leadms` and the clear distance on the porch, not on the bench. The C4001 and C4002 report range and speed, not position, so the LD2450's `doorwidth` and `xflip` ideas do not apply.
+2. **The spider is inside the radar's view.** Retracted it hangs a few cm below the base and about 37 mm toward the beam from the radar; dropped, near the lower edge of the view. It moves during the drop and the rewind and swings after, so the clear rule could see it as a person and hold the device in "waiting for the doorway to clear" after every scare. In S2, read what the sensor reports with the spider at rest, dropped and swinging, then set the sensor's own minimum detect range (`radar range`) past it; check that does not also hide a person standing in the doorway.
+3. **Aluminum blocks the radar.** At 24 GHz, aluminum siding or trim stops the signal completely, however thin. If the beam is clad, the radar sees people only once they are under the beam's bottom edge, and flat metal can bounce back phantom targets or jumpy readings. Keep the two-readings rule; do not loosen it to cure late firing. The owner's fix is a steeper tilt.
+4. **Line between the spool and the flap is longer.** `include/config.h` has `SPOOL_TO_EYELET_MM 40.0f` (its comment still says braid; the line is bonded nylon thread, size 69). Doc 06 gives 45 mm for the ceiling install and about 72 mm for the inverted one with fairlead v2 (doc 09, 2026-09-28). With 40 the drop-distance limit (`dropMmMax()` = line - 40 - 30) lets the spider stop 15 mm closer to the barrel knot than the 30 mm margin intends, and the rewind estimate in `machine.cpp` is 15 mm short (the 0.75-turn overshoot and the limit switch cover that). Also: the factory `dropmm` 620 only fits the old 720 line; the inverted line is about 636, so the page refuses the new line until `dropmm` is lowered. Fix: make it 72, or a setting, and check the factory `dropmm` fits the inverted line. This is roadmap line 1 and `docs/handoff_task1_firmware.md` step 1.
 
-Owner concern raised: "mmWave can be finicky without a clear visual picture." Answer: the LD2450's app shows each person as a moving dot on a map, which gives that picture. Reported user experience, researched 2026-09-24:
-- A Home Assistant user powered an LD2450 from 5 V only, connected over Bluetooth, and saw himself moving and standing in the app right away, before wiring it to anything (community.home-assistant.io).
-- Complaints that HLKRadarTool is complicated and unintuitive, raised by a sensor maker to Hi-Link, are about the LD2410C's per-gate number entry (screek.io).
-- LD2450 zones in the app are drag-and-drop boxes (Apollo Automation docs). We do not use them; see below.
-- The module has no external antenna; phone Bluetooth works only within a few feet (Apollo docs).
-- ESPHome requires LD2450 firmware V2.02.23090617 or later; the app can update it (esphome.io).
-- Weak at people standing still beyond about 2 m; it is a tracker (atomic14.com). Irrelevant: we only want walkers.
-
-**No calibration is required.** The LD2450 streams target data over UART from power-up. The app is optional: live view and firmware update.
-
-### Hardware facts
-
-- 4 pins: 5 V, GND, TX, RX. No OUT pin. Connector is 4-pin, 1.25 mm pitch; check the owner has the cable.
-- UART 256000 baud, 8N1, hardware UART only. About 10 frames per second, up to 3 targets, X/Y/speed in mm and cm/s per the Hi-Link protocol (confirm units against the library you pick).
-- Field of view about plus or minus 60 degrees horizontal, 35 vertical, range about 6 m.
-- Wiring: LD2450 TX to GPIO16 (UART2 RX), RX to GPIO17 (UART2 TX). On the 30-pin ESP32 DevKit V1 in use they are the pins printed RX2 and TX2.
-
-### Firmware spec
-
-1. Before writing a parser, find an existing Arduino or ESP-IDF LD2450 library. Name it, check it builds on espressif32@6.7.0, and say whether you use it and why. Known reference implementations: ESPHome's native `ld2450` component, and the GitHub project PeterkoCZ91/HLK-LD2450-security (has a tested parser with unit tests). Check licenses before copying.
-2. New setting `sensor` = `2450` (default) or `2410`.
-3. Trigger rule, all must hold for 2 consecutive frames, only while armed and idle:
-   - |X| < `doorwidth` / 2 (default `doorwidth` 1000 mm)
-   - approaching faster than `approach` (default 0.3 m/s). Confirm the speed sign convention on the bench and put it in a constant.
-   - Y / speed < `leadms` (default 750 ms)
-4. Clear (for re-arm): no target inside the door-width window with Y under 3 m, for 2 s.
-5. Settings in NVS, console, web page, with range checks: `sensor`, `doorwidth` (400 to 2000 mm), `approach` (0.1 to 1.5 m/s), `leadms` (200 to 2000 ms).
-6. Web page: live readout of up to 3 targets (X, Y, speed), and a "would trigger now" indicator, for bench tuning.
-7. Radar data loss: if no valid frame for 1 s, log a fault and fall back to the LD2410C if `sensor` allows, else stay disarmed.
-8. Do not send zone or region commands to the sensor. Leave its built-in area filter off so the firmware sees every target.
-
-### Tests (log as S1 to S5 in `commissioning_log.md`)
+## Tests (log as S1 to S5 in `docs/commissioning_log.md`, one row per attempt, sensor named)
 
 | # | Test | Pass |
 |---|---|---|
-| S1 | App check: firmware version, walk toward the door | version at or above V2.02.23090617; dot tracks through the frame |
-| S2 | Live readout while walking toward, away from, and across the door | sign of speed matches direction; X near 0 at the door center |
+| S1 | Power the sensor, meter its current, open the web radar card | `[radar] C4001 answers` in the log (or the C4002 line with 20 data bytes); the moving dot follows a walker |
+| S2 | Live readout while walking toward, away from, and across the doorway; spider at rest, dropped, swinging | speed sign for approaching known and put in `C4001_APPROACH_SIGN` (C4002: the direction word checked); spider excluded by the detect range without hiding a person in the doorway |
 | S3 | Walk in at normal pace, 10 times | fires every time; spider arrives as you reach the doorway |
 | S4 | Walk away, walk past across the hallway, stand still in the window | no trigger |
-| S5 | Unplug the radar's TX wire while armed | fault logged within 1 s; fallback per setting |
+| S5 | Unplug the sensor's TX wire while armed | fault logged within 1 s; the OUT pin takes over |
 
-### Inverted install: four things the firmware must handle (added 2026-09-28)
+## Done when
 
-The owner is building the inverted install (doc 06, V18): the device turned over on two steel corner braces on the porch beam's inside face. The mechanism, the winding sense, `dir` and the switch logic do not change. These four things do. Numbers from `cad/inverted.py` and doc 06; none of them has been seen on real hardware yet.
+`sensor 4001` fires the drop on the bench (S3 passes) and the docs in step 8 say so; the C4002 is a second pass of S1 to S5 when it arrives.
 
-1. **Radar placement and axes.** The LD2450 hangs in its cradle under the base at the servo end, about 154 mm out from the beam's face, looking back toward the beam and 50 degrees down (55 to 60 if the walk test asks; the cradle clears to 65). People approach from outside, under the beam, toward the radar. Its X axis runs along the rod, which is parallel to the beam, so X is across the walkway, and the line falls at about X = 0. Which way is +X depends on which end of the device the owner puts where. Do not hard-code the sign: add a setting (for example `xflip`, 0 or 1) or confirm it in S2 and store it. The radar sits about 2.28 m up and tilted, so Y is not the floor distance to the doorway; tune `leadms` and the clear distance on the porch, not on the bench.
-2. **The spider is inside the radar's view.** Retracted it hangs a few cm below the base and about 37 mm toward the beam from the radar, near X = 0 at short range; dropped, it hangs near the lower edge of the view. It moves during the drop and the rewind and swings after. As written, rule 4 (clear = no target in the window under 3 m for 2 s) could see the spider as a person and hold the device in "waiting for the doorway to clear" after every scare. Design for it: in S2, read the spider's X, Y and speed on the live readout at rest, dropped and swinging, then exclude it (for example a `minrange` setting below which targets are ignored, or ignore targets in a small box around the line during the cycle and for a few seconds after). Check the exclusion does not also hide a person standing in the doorway.
-3. **Aluminum blocks the radar.** At 24 GHz, aluminum siding or trim stops the signal completely, however thin. If the beam is clad, the radar sees people only once they are under the beam's bottom edge, and the flat metal can bounce back phantom targets or jumpy positions. Keep the 2-consecutive-frame rule; do not loosen it to cure late firing. The owner's fix is a steeper tilt.
-4. **Line between the spool and the flap is longer.** `include/config.h` has `SPOOL_TO_EYELET_MM 40.0f` (its comment still says braid; the line is bonded nylon thread, size 69). Doc 06 gives 45 mm for the ceiling install and about 72 mm for the inverted one with fairlead v2 (doc 09, 2026-09-28). With 40 the drop-distance limit (`dropMmMax()` = line - 40 - 30) lets the spider stop 15 mm closer to the barrel knot than the 30 mm margin intends, and the rewind estimate in `machine.cpp` is 15 mm short (the 0.75-turn overshoot and the limit switch cover that). Also: the factory `dropmm` 620 only fits the old 720 line; the inverted line is about 636, so the page refuses the new line until `dropmm` is lowered (the build guide tells the owner to do that first). Fix: make it 72 (fairlead v2, 2026-09-28, doc 09), or a setting, and check the factory `dropmm` fits the inverted line. This one bites task 1's bench tests too, not only the radar work.
+## Finish
 
-### Docs yours after the firmware lands
+Changelog line, roadmap line 4 removed, close V15 in `docs/08_open_items.md` with the S1 to S5 log rows, move this file to `docs/retired/`.
 
-`02_electrical.md` pin map and wiring picture, `04_firmware.md`, `07_commissioning.md` step 12, web help text, and the build guide's radar rows (sections 09, 10 and 12, now marked AFTER TASK 2).
+## Rules for the session
 
-### Finish
-
-Changelog line, remove this task's roadmap line, close V15 in `08_open_items.md` with the S1 to S5 log rows, move this file to `docs/retired/`. Bearing care, formerly section 2 here, is reference and lives in `01_mechanical_design.md`, "Bearing care".
+- The owner is not a developer: verdict first, short, plain English, gloss jargon in a few words. No em dashes, arrows, emojis.
+- No motion until he says he is at the device. Lock before any flash. Never plug or unplug the motor with 12 V on. Servo plug back in before any drop. Bench radar on 12 V through the buck, not USB.
+- Stage files by name; never `git add -A`.
+- The Pi4 is never touched from this repo.

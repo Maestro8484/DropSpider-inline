@@ -2,6 +2,11 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-08
+
+### Changed
+- `docs/handoff_sensor_bearings.md` rewritten as the work order for the sensor on hand: the DFRobot C4001 as `sensor 4001` (its 9600 baud `$DFDMD` text lines and plain-word commands, read from DFRobot's MIT library), with the C4002 as the second pass when it arrives and S1 to S5 written for both. The LD2450 design and why it was parked moved to `docs/retired/handoff_sensor_ld2450.md`; the inverted-install notes stay with the task. README doc map, CLAUDE.md, doc 03, doc 07 step 12 and roadmap line 4 point at the new shape. Firmware untouched.
+
 ## 2026-10-07
 
 ### Added

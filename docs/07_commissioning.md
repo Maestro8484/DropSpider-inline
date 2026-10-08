@@ -21,7 +21,7 @@ Step numbers 1 to 14 are unchanged from Rev C so the open-items table still poin
 | 9 | Watch the end of `rewind` | With the switch on: the bead lifts the fairlead flap, the switch clicks, the motor stops at once, no buzz; console says "stopped by the limit switch". With the switch off: the flap bottoms on the fairlead, motor buzzes briefly (skipping), then stops |
 | 10 | `lock` | Finger goes in, motor eases the spool down onto a tooth, motor goes off, spider drops no more than about 13 mm and stays. The flap drops back and the switch reads open: correct by design (doc 09, V14) |
 | 11 | `line <measured mm>`, `save`, then `drop` five times | All five complete, no tangles, finger always relocks. With the switch on, "Line length measured by the switch" on the page is within about 40 mm of `line` |
-| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. C4002 tests S1 to S5 in `handoff_sensor_bearings.md` |
+| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. Radar tests S1 to S5 (C4001 first, then the C4002) in `handoff_sensor_bearings.md` |
 | 13 | Stand still in front of it after a scare | No second scare until you leave and 20 s pass |
 | 14 | Hardware check after 20 cycles | Coupler set screws tight, no white stress marks on the finger or ledge, knot intact, flap swings freely on its pin, switch roller not bent, no groove worn in the fairlead bore |
 
