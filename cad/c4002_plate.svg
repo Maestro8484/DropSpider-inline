@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="30mm" height="45mm" viewBox="0 0 30 45">
+  <!-- DropSpider: plate for the DFRobot C4002 radar on the existing radar fork (ld2450_fork_screw).
+       Units are millimeters, 1:1. Three layers to extrude in Fusion:
+         plate_2mm      the whole outline with its holes, 2 mm thick
+         tab_6mm        the knuckle over the pivot, 6 mm thick, centered on the plate (3 mm each side)
+         standoffs_3mm  two bosses on the OUTWARD face, 3 mm tall, so the header soldered on the chip side clears the plate
+       The board goes antenna side OUT (the face with the two gold squares and the pin names), chip side to the plate,
+       header at the bottom edge through the notch. Two M2 screws into the 1.7 mm pilot holes.
+       Pivot: M3 clearance 3.4 mm, 10.5 mm above the board's top edge, same as the LD2450 cradle, 12.8 mm knuckle. -->
+  <g id="plate_2mm" fill="none" stroke="#000" stroke-width="0.2">
+    <path d="M 8.60 6.00 A 6.00 6.00 0 0 1 21.40 6.00 L 21.40 16.50 L 26.00 16.50 L 26.00 42.50 L 20.00 42.50 L 20.00 39.00 L 9.00 39.00 L 9.00 42.50 L 4.00 42.50 L 4.00 16.50 L 8.60 16.50 Z"/>
+    <circle cx="15.00" cy="6.00" r="1.70" />
+    <circle cx="5.90" cy="40.60" r="0.85" />
+    <circle cx="24.10" cy="40.60" r="0.85" />
+  </g>
+  <g id="tab_6mm" fill="none" stroke="#0066cc" stroke-width="0.2">
+    <path d="M 8.60 6.00 A 6.00 6.00 0 0 1 21.40 6.00 L 21.40 16.50 L 8.60 16.50 Z"/>
+    <circle cx="15.00" cy="6.00" r="1.70" />
+  </g>
+  <g id="standoffs_3mm" fill="none" stroke="#cc3300" stroke-width="0.2">
+    <circle cx="5.90" cy="40.60" r="2.50" />
+    <circle cx="24.10" cy="40.60" r="2.50" />
+    <circle cx="5.90" cy="40.60" r="0.85" />
+    <circle cx="24.10" cy="40.60" r="0.85" />
+  </g>
+  <g id="board_outline_reference" fill="none" stroke="#999" stroke-width="0.15" stroke-dasharray="0.6 0.4">
+    <rect x="4.00" y="16.50" width="22.00" height="26.00"/>
+    <circle cx="5.90" cy="40.60" r="1.10" />
+    <circle cx="24.10" cy="40.60" r="1.10" />
+    <circle cx="9.42" cy="40.90" r="0.50" /><circle cx="11.96" cy="40.90" r="0.50" /><circle cx="14.50" cy="40.90" r="0.50" /><circle cx="17.04" cy="40.90" r="0.50" /><circle cx="19.58" cy="40.90" r="0.50" />
+  </g>
+</svg>
