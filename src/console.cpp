@@ -95,6 +95,7 @@ static const char *const HELP[] = {
   "  radar reset     put the radar's own settings back to factory and restart it",
   "  radar raw       the last 96 bytes heard from the radar, as hex",
   "  radar baud      find the speed the radar answers at; set it back to 256000 if it moved",
+  "  radar cmd <hex> one protocol command by hand, e.g. radar cmd A4 0100 (Bluetooth on)",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
@@ -156,6 +157,7 @@ void consoleRun(const String &raw, String *capture) {
   else if (cmd == "radar")    {
     if ((argS == "wake" || argS == "reset" || argS == "baud") && machineStatus().busy) logf("refused: a move is running");
     else if (argS == "baud") radarBaud();
+    else if (argS.startsWith("cmd")) { if (machineStatus().busy) logf("refused: a move is running"); else radarCmd(argS.substring(3)); }
     else if (argS == "wake") radarWake();
     else if (argS == "reset") radarReset();
     else if (argS == "raw") radarRaw();

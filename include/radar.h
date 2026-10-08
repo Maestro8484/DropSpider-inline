@@ -27,5 +27,6 @@ void radarWake();       // ask a silent radar to speak: version, state, end conf
 void radarReset();      // factory reset the module and restart it (blocks about 6 s)
 void radarRaw();        // print the last 96 bytes heard on RX2
 void radarBaud();       // find which speed the module answers at and set it back to 256000 (blocks up to 5 s)
+void radarCmd(const String &hexBytes);  // one command by hand inside configuration mode, e.g. "A4 0100" (blocks about 1 s)
 RadarStats radarStats();
 String radarJson();     // {"talking":..,"age":..,"fps":..,"frames":..,"bad":..,"bytes":..,"t":[[x,y,speed,gate] or null, x3 slots]}

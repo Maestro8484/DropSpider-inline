@@ -251,6 +251,28 @@ void radarBaud() {
   have = 0;
 }
 
+// Any one command by hand: "radar cmd A4 0100" sends enable configuration, command A4
+// with value bytes 01 00, then end configuration, and logs each reply. For bench
+// experiments on a silent module; nothing here runs on its own.
+void radarCmd(const String &a) {
+  static const uint8_t one[2] = {0x01, 0x00};
+  String s = a; s.replace(" ", "");
+  if (s.length() < 2 || s.length() % 2 || s.length() > 2 + 2 * 32) { logf("radar cmd: give the command byte then value bytes as hex, e.g. radar cmd A4 0100"); return; }
+  uint8_t b[33]; int n = 0;
+  for (unsigned i = 0; i < s.length(); i += 2) b[n++] = (uint8_t)strtoul(s.substring(i, i + 2).c_str(), nullptr, 16);
+  uint8_t r[64];
+  while (Serial2.available()) Serial2.read();
+  sendCmd(0xFF, one, 2);
+  int got = gather(150, r, sizeof r);
+  if (!got) { logf("[radar] no reply to enable configuration: nothing reached it"); return; }
+  char what[24]; snprintf(what, sizeof what, "command %02X", b[0]);
+  ask(what, b[0], n > 1 ? b + 1 : nullptr, n - 1);
+  sendCmd(0xFE, nullptr, 0);
+  got = gather(600, r, sizeof r);
+  logf("[radar] end configuration: %d bytes in 0.6 s%s", got, hasFrame(r, got < (int)sizeof r ? got : sizeof r) ? ", target frames are flowing" : ", no target frames");
+  have = 0;
+}
+
 // Factory reset (A2) then restart: every setting the module keeps (tracking mode, area
 // boxes, baud rate, Bluetooth) goes back to how it shipped. Nothing of ours is stored in it.
 void radarReset() {

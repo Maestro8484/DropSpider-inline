@@ -153,6 +153,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `radar reset` | put the radar's own stored settings (tracking mode, area boxes, baud rate, Bluetooth) back to factory and restart it; then listens 5 s for target frames. The firmware stores nothing in the radar, so nothing of ours is lost. Refused while a move is running |
 | `radar raw` | the last 96 bytes heard on RX2 as hex, oldest first: FD FC FB FA starts a command reply, AA FF 03 00 a position frame |
 | `radar baud` | try enable configuration at each speed the module knows (256000 first, then 115200, 230400, 460800, 57600, 38400, 19200, 9600); if it answers at another speed, set it back to 256000 and restart it. For a module whose firmware update moved its speed |
+| `radar cmd <hex>` | one Hi-Link protocol command by hand, command byte then value bytes, inside enable and end configuration, each reply logged as hex. Bench experiments only. Known commands: 80 single target, 90 multi target, 91 ask the mode, A0 version, A1 speed (07 00 = 256000), A2 factory reset, A3 restart, A4 Bluetooth (00 00 off, 01 00 on), A5 ask the MAC, C1 ask the area setting |
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
