@@ -19,8 +19,8 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | C4002 OUT | in | HIGH = someone there. Firmware adds a pull-down. Carries the trigger if the serial link goes silent, or always with `sensor 2410` (any active-high sensor) |
 | GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
-| GPIO16 (RX2) | C4002 TX (yellow wire) | in | Primary trigger, UART2 at 115200 baud |
-| GPIO17 (TX2) | C4002 RX (green wire) | out | Primary trigger: the firmware asks for a report every 0.1 s at boot |
+| GPIO16 (RX2) | C4002 TX | in | Primary trigger, UART2 at 115200 baud |
+| GPIO17 (TX2) | C4002 RX | out | Primary trigger: the firmware asks for a report every 0.1 s at boot |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
 | GPIO2 | on-board LED | out | Slow blink = armed and ready |
 
@@ -69,7 +69,14 @@ By design the switch reads **open** at rest after the lock seat (doc 09, V14): t
 
 ## Sensor wiring
 
-**C4002 (primary, ordered 2026-10-07):** five pins on a 2.54 mm header, VIN, GND, RX, TX, OUT. VIN to the 5 V rail (3.6 to 5.5 V), GND, sensor TX (yellow) to GPIO16, sensor RX (green) to GPIO17, OUT to GPIO33. TX goes to RX and RX to TX: yellow is the sensor's transmit, so it lands on the ESP32's receive. The firmware needs both serial wires: it asks the sensor to report over GPIO17 at boot, and the sensor reports only once asked. Antenna face (two gold squares, pin names) toward the walkway. Mount: `cad/c4002_plate.svg`.
+**C4002 (primary, ordered 2026-10-07):** five pins on a 2.54 mm header, VIN, GND, RX, TX, OUT. VIN to the 5 V rail (3.6 to 5.5 V), GND, sensor TX to GPIO16, sensor RX to GPIO17, OUT to GPIO33. TX goes to RX and RX to TX: the sensor's transmit lands on the ESP32's receive. No cable comes with the board (bare holes, DFRobot photo): five dupont jumpers or a soldered 5-pin header. **OUT is wired, not optional:** it goes high while the sensor sees someone, and the firmware fires from it when the serial link has been quiet for 1 s (`sensor 4002`), or always (`sensor 2410`). The firmware needs both serial wires: it asks the sensor to report over GPIO17 at boot, and the sensor reports only once asked. Antenna face (two gold squares, pin names) toward the walkway. Mount: `cad/c4002_case.py` (`c4002_case_base.stl`, `c4002_case_lid.stl`) on the radar fork: antenna side down over the floor opening, so no PLA is in front of it (a 1 mm floor would cost about 6 to 10 percent of range by a flat-sheet calculation, 2026-10-10), pins toward the knuckle, wires out the 15 mm opening. Bench check: a person at 3 m, bare board then in the case.
+
+**C4001 (on hand, `sensor 4001`), three questions answered 2026-10-08:**
+
+- **Face against PLA: likely fine at 3 mm, bench to confirm** (corrected 2026-10-08; first answer said no). Plain PLA (dielectric constant about 2.75) is a weak absorber at 24 GHz; the loss is mostly reflection off the plate, by slab arithmetic about 0.8 dB round trip at 3 mm (about 5 percent less range) and about 2 dB at 2 mm (about 11 percent less, near the worst thickness, a quarter wavelength, 1.9 mm). The porch needs 3 to 4 m of an 11 to 12 m sensor. Unknown and only the bench can show: how much PLA touching the antenna detunes it. Waveshare's 24 GHz radome guide gives the ideal (6.2 mm gap, 3.75 mm thick, smooth, uniform, no metal or conductive coating). Plate: 3 mm, not 2, solid over the antenna (100 percent infill there), plain color, no silver, metallic or carbon-filled filament. Check: a person at 3 m read with `radar raw`, bare board then behind the plate.
+- **Mode switch: UART.** DFRobot's SEN0610 wiki, UART example: "switch the DIP switch on the back of the sensor to the UART direction". I2C instead would mean wires to GPIO21/22, a register driver in place of the text-line parser, and a different `radar` console; not built.
+- **Address switch: no effect in UART, leave it on 0x2A.** DFRobot's library uses the address only in its I2C class; the UART class takes a serial port and baud, no address.
+- **Pins (SEN0610 wiki): four, `+`, `-`, `C/R` (RX in UART), `D/T` (TX in UART). No OUT pin.** `+` to 5 V, `-` to GND, `D/T` to GPIO16, `C/R` to GPIO17. GPIO33 stays empty, so this sensor has no OUT fallback if the serial link goes silent.
 
 **OUT pin only (`sensor 2410`):** any sensor with an active-high output on GPIO33: the C4002's OUT, an LD2410C, a PIR, a step mat. 3.3 V or 5 V output both read; the pin has the firmware's pull-down.
 

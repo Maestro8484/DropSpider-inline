@@ -35,10 +35,10 @@
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO27</b></td><td style="border:1px solid #cccccc">expansion board DIR</td><td style="border:1px solid #cccccc">motor direction</td><td style="border:1px solid #cccccc">flip in software with <code>dir</code>, no rewiring</td></tr>
 <tr><td style="border:1px solid #cccccc"><b>GPIO25</b></td><td style="border:1px solid #cccccc">expansion board EN</td><td style="border:1px solid #cccccc">LOW = motor powered, HIGH = coils off</td><td style="border:1px solid #cccccc"></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO13</b></td><td style="border:1px solid #cccccc">servo signal (orange)</td><td style="border:1px solid #cccccc">finger lock and release</td><td style="border:1px solid #cccccc"><b>not GPIO14</b>: 14 pulses at boot and would drop the spider</td></tr>
-<tr><td style="border:1px solid #cccccc"><b>GPIO16</b> (RX2)</td><td style="border:1px solid #cccccc">LD2450 TX (yellow)</td><td style="border:1px solid #cccccc">radar data in</td><td style="border:1px solid #cccccc">TX crosses to RX</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO17</b> (TX2)</td><td style="border:1px solid #cccccc">LD2450 RX (green)</td><td style="border:1px solid #cccccc">radar data out</td><td style="border:1px solid #cccccc">RX crosses to TX</td></tr>
+<tr><td style="border:1px solid #cccccc"><b>GPIO16</b> (RX2)</td><td style="border:1px solid #cccccc">C4002 TX</td><td style="border:1px solid #cccccc">radar data in</td><td style="border:1px solid #cccccc">TX crosses to RX</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO17</b> (TX2)</td><td style="border:1px solid #cccccc">C4002 RX</td><td style="border:1px solid #cccccc">radar data out</td><td style="border:1px solid #cccccc">RX crosses to TX</td></tr>
 <tr><td style="border:1px solid #cccccc"><b>GPIO32</b></td><td style="border:1px solid #cccccc">KW12-3 switch, NO leg</td><td style="border:1px solid #cccccc">spider home: stops the rewind</td><td style="border:1px solid #cccccc">pull-up is inside the chip; no resistor</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO33</b></td><td style="border:1px solid #cccccc">LD2410C OUT</td><td style="border:1px solid #cccccc">backup radar, yes/no</td><td style="border:1px solid #cccccc">optional, see section 4</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO33</b></td><td style="border:1px solid #cccccc">C4002 OUT</td><td style="border:1px solid #cccccc">backup trigger, yes/no: high while it sees someone</td><td style="border:1px solid #cccccc">wire it: takes over if the serial link (GPIO16/17) goes quiet for 1 s</td></tr>
 <tr><td style="border:1px solid #cccccc">GPIO0</td><td style="border:1px solid #cccccc">on-board BOOT button</td><td style="border:1px solid #cccccc">manual test drop; hold for USB flashing</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GPIO2</td><td style="border:1px solid #cccccc">on-board blue LED</td><td style="border:1px solid #cccccc">slow blink = armed and ready</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
 <tr><td style="border:1px solid #cccccc">EN</td><td style="border:1px solid #cccccc">on-board button marked EN</td><td style="border:1px solid #cccccc">restart</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
@@ -51,7 +51,7 @@
 </tr>
 <tr><td style="border:1px solid #cccccc">12 V adapter +</td><td style="border:1px solid #cccccc">expansion board VMOT, and buck IN+</td><td style="border:1px solid #cccccc">motor draws about 0.6 A while moving</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">12 V adapter -</td><td style="border:1px solid #cccccc">expansion board GND, and buck IN-</td><td style="border:1px solid #cccccc"></td></tr>
-<tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, LD2450 5V, LD2410C VCC if fitted</td><td style="border:1px solid #cccccc"><b>meter 5.0 V before connecting anything</b></td></tr>
+<tr><td style="border:1px solid #cccccc">buck OUT+ (5.0 V)</td><td style="border:1px solid #cccccc">ESP32 VIN, servo red, C4002 VIN</td><td style="border:1px solid #cccccc"><b>meter 5.0 V before connecting anything</b></td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">buck OUT-</td><td style="border:1px solid #cccccc">ESP32 GND, servo brown, radar GND, switch COM</td><td style="border:1px solid #cccccc">one common ground</td></tr>
 </table>
 <ul style="margin:8px 0 0 0">
@@ -95,14 +95,15 @@
 <tr><td style="border:1px solid #cccccc">Normal</td><td style="border:1px solid #cccccc">reads open when the spider is parked; that is by design</td></tr>
 </table>
 
-<h3 style="font-size:12pt;margin:12px 0 4px 0">Radar: HLK-LD2450 (the trigger)</h3>
+<h3 style="font-size:12pt;margin:12px 0 4px 0">Radar: DFRobot C4002 (the trigger)</h3>
 <table style="border-collapse:collapse;width:100%" cellpadding="6">
-<tr><td style="border:1px solid #cccccc;width:30%">5V</td><td style="border:1px solid #cccccc">buck 5 V</td></tr>
+<tr><td style="border:1px solid #cccccc;width:30%">VIN</td><td style="border:1px solid #cccccc">5 V rail (the sensor takes 3.6 to 5.5 V)</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GND</td><td style="border:1px solid #cccccc">GND</td></tr>
-<tr><td style="border:1px solid #cccccc">TX</td><td style="border:1px solid #cccccc">GPIO16</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">RX</td><td style="border:1px solid #cccccc">GPIO17</td></tr>
-<tr><td style="border:1px solid #cccccc">Plug</td><td style="border:1px solid #cccccc">4-pin, 1.25 mm pitch at the sensor. No OUT pin</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Mount</td><td style="border:1px solid #cccccc">flat on the wall above the door, hallway side, looking straight out</td></tr>
+<tr><td style="border:1px solid #cccccc">TX</td><td style="border:1px solid #cccccc">GPIO16 (RX2): TX crosses to RX</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">RX</td><td style="border:1px solid #cccccc">GPIO17 (TX2): the firmware asks the sensor to report over this wire at boot, so it is needed</td></tr>
+<tr><td style="border:1px solid #cccccc">OUT</td><td style="border:1px solid #cccccc">GPIO33: the backup trigger, high while it sees someone. The firmware has a pull-down on it</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Pins</td><td style="border:1px solid #cccccc">five bare 2.54 mm holes along one short edge, printed VIN GND RX TX OUT; no cable comes with it: five dupont jumpers, or a 5-pin header soldered in</td></tr>
+<tr><td style="border:1px solid #cccccc">Mount</td><td style="border:1px solid #cccccc"><code>c4002_case_base</code> and <code>c4002_case_lid</code> on the radar fork under the base; gold antenna squares down, seen through the floor opening; pins toward the knuckle, wires out the 15 mm opening</td></tr>
 </table>
 
 <h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">4. Parts to leave out: over-engineering check</h2>
@@ -123,7 +124,7 @@
 <tr>
 <td style="border:1px solid #cccccc">LD2410C backup radar</td>
 <td style="border:1px solid #cccccc;background:#e6e6e6;color:#444444;font-weight:bold">SKIP</td>
-<td style="border:1px solid #cccccc">The LD2450 does the job and tells approaching from leaving. The LD2410C is only a fallback if the LD2450 dies. Leave it in the drawer; three wires if you ever need it (5 V, GND, OUT to GPIO33).</td>
+<td style="border:1px solid #cccccc">The C4002 carries its own backup: its OUT pin on GPIO33. The LD2410C would need that same pin, so it stays in the drawer.</td>
 </tr>
 <tr>
 <td style="border:1px solid #cccccc">Resistors or capacitors on the limit switch</td>
@@ -159,7 +160,7 @@
 <h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">Checked, and not checked</h2>
 <table style="border-collapse:collapse;width:100%" cellpadding="6">
 <tr><td style="border:1px solid #cccccc;width:30%">Checked 2026-09-25</td><td style="border:1px solid #cccccc">Pin numbers match the firmware (include/config.h) and doc 02. The board on COM13 is an ESP32 with 4 MB flash, on the home WiFi, updating by WiFi.</td></tr>
-<tr style="background:#fff1cc"><td style="border:1px solid #cccccc">Not yet checked</td><td style="border:1px solid #cccccc">Nothing on this sheet has been watched working with the motor, servo, switch or LD2450 connected. The LD2450 wiring is from the maker's pinout and doc 03; the firmware to read it is not written yet. The servo capacitor call is judgement, confirmed only when the servo moves on the bench without a restart.</td></tr>
+<tr style="background:#fff1cc"><td style="border:1px solid #cccccc">Not yet checked</td><td style="border:1px solid #cccccc">Nothing on this sheet has been watched working with the motor, servo, switch or C4002 connected. The C4002 pin names are from DFRobot's board photo and wiki (2026-10-10); its firmware is written and has never run on a sensor; its current draw is not published, meter it at first power-up. The servo capacitor call is judgement, confirmed only when the servo moves on the bench without a restart.</td></tr>
 </table>
 
 </body>

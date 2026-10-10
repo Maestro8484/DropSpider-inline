@@ -1,0 +1,7 @@
+DFRobot C4002 mmWave enclosure, by user_643277529 on MakerWorld
+https://makerworld.com/en/models/2826754-dfrobot-c4002-mmwave-enclosure (released 2026-05-20)
+License: Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA).
+
+base.stl and lid_blank.stl are the owner's download of that model's simplified files, unchanged.
+cad/c4002_case.py remixes them (ESP32 half cut off, end wall and wire notch added, fork knuckle added);
+its STLs, cad/stl/c4002_case_base.stl and cad/stl/c4002_case_lid.stl, carry the same license and credit.

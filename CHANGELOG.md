@@ -2,6 +2,14 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-10
+
+### Added
+- `cad/c4002_case.py` and `cad/stl/c4002_case_base.stl`, `c4002_case_lid.stl`: the C4002 radar case on the existing radar fork, drawn after a MakerWorld enclosure (CC BY-NC-SA, credit and the original download in `cad/ref/c4002_enclosure/`). Inside 22.75 x 31.5, body 10 tall, no screws (two buttons and a far ledge under the board, four lid posts on top), snap lid, knuckle and 15 mm wire opening on the same end, a 20.8 mm square opening in the floor so no PLA sits in front of the antenna, prints flat with no supports. Model checks: lid and board fit, every post reaches the board, clear of the fork at every tilt 0 to 90 degrees with the antenna toward the floor. Not yet printed.
+
+### Changed
+- Radar wiring in doc 02, `docs/wiring_guide.html` and the build guide moved from the LD2450 to the C4002: VIN to 5 V, GND, TX to GPIO16, RX to GPIO17, and OUT to GPIO33 as the wired backup trigger (the firmware already reads it: `sensor 4002` fires from it when the serial link is quiet for 1 s). Build guide also: parts list, pin map, protoboard pin for D33, header pins to solder, the radar card's pinout, and the mount step for the new case. Doc 02 records the three C4001 answers (PLA over the antenna, UART switch, address switch) and that the SEN0610 has no OUT pin. Firmware unchanged; `pio run` passes.
+
 ## 2026-10-08
 
 ### Changed
