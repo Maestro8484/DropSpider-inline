@@ -2,7 +2,7 @@
 
 Handoff from the lead mechanical engineer to the software/electrical team. Read `README.md`, then `docs/08_open_items.md`, before changing anything.
 
-**Work still to do, in order: `ROADMAP.md`.** Each task's detail is its handoff (`docs/handoff_task1_firmware.md` for the T1 to T8 bench tests, `docs/handoff_sensor_bearings.md` for the trigger sensor, the DFRobot C4001 on hand then the C4002); finished work is in `CHANGELOG.md`. Doc roles follow the owner's `repo-docs` standard: a handoff holds future work only, and moves to `docs/retired/` when done. The owner is building the inverted install (doc 06, V18): device turned over on steel corner braces on the porch beam; the braces and their holes are his.
+**Work still to do, in order: `ROADMAP.md`.** Each task's detail is its handoff (`docs/handoff_task1_firmware.md` for the T1 to T8 bench tests, `docs/handoff_sensor_bearings.md` for the trigger sensor, the DFRobot C4002); finished work is in `CHANGELOG.md`. Doc roles follow the owner's `repo-docs` standard: a handoff holds future work only, and moves to `docs/retired/` when done. The owner is building the inverted install (doc 06, V18): device turned over on steel corner braces on the porch beam; the braces and their holes are his.
 
 Firmware, doc 02, doc 04 and web help text are the team's to change. Rev C.1 rule from the owner: existing hardware only, no new purchases.
 
