@@ -6,17 +6,18 @@ Work order: bring up the DFRobot C4002 radar (SEN0691, 24 GHz, ordered 2026-10-0
 
 ## Before you start
 
-- **Firmware is written and has never run on a sensor.** `src/radar.cpp` speaks the C4002's binary protocol; settings `sensor` (4002 or 2410), `approach`, `leadms` (`CHANGELOG.md` 2026-10-07). Which build the board runs now is not known; assume it needs the current one.
+- **Firmware is written, audited, and has never run on a sensor.** `src/radar.cpp` speaks the C4002's binary protocol; settings `sensor` (4002 or 2410), `approach`, `leadms`, `radarinv` (`CHANGELOG.md` 2026-10-07 and 2026-10-10). Which build the board runs now is not known; assume it needs the current one.
 - **Case and wiring are done in the repo, not on the bench** (`CHANGELOG.md` 2026-10-10): `cad/c4002_case.py`, STLs `c4002_case_base.stl` and `c4002_case_lid.stl`; wiring in doc 02 "Sensor wiring", the wiring guide and build guide.
 - **T1 to T8:** read `docs/commissioning_log.md` for a PASS row on each. Without them S1 and S2 can still run; S3 to S5 wait.
 - **Gate for any flash or motion:** the owner says he is at the device and `status` shows busy 0, driverOn 0, ready. The session runs every command itself; the owner is never handed one.
 
-## Escalated: Fable for the audit and the web page polish (owner 2026-10-10)
+## What the audit left for the bench (2026-10-10, `CHANGELOG.md` that day)
 
-The owner runs this session on Fable (his model picker) for two jobs before the sensor goes on the bench. Both are in step 3 below.
+The radar code was audited against DFRobot's three decoders and the web radar card rebuilt with its controls on it (walking speed, lead time, direction swap, trigger source, the sensor's detect range with Set and Read). Three things only the sensor can settle:
 
-- **Audit the mmWave radar code, most of all.** Cold read of `src/radar.cpp`, `include/radar.h`, the radar parts of `src/machine.cpp` `readInputs()`, `src/console.cpp` and `src/web.cpp`, against DFRobot's published C4002 protocol (wiki and `DFRobot_C4002` library, re-read, not recalled). Look for: frame sync and resync after garbage, the 20-byte result layout and its padded/packed guess, signed speed and the direction word, the two-in-a-row rule and `leadms` arithmetic (units, divide by zero at speed 0), the silent-link fallback to OUT and back, the boot command sequence (report period sent each boot, not blocking the machine task), and anything that could fire a drop when not armed and idle. Every finding verified in the code before it is reported; fixes go in, built with `pio run`, nothing flashed until the gate.
-- **Polish the web page, the radar card first.** The card today: a live strip (`/api/radar` about 8 times a second), status chips, a long help paragraph (`src/web.cpp` line 86), and a "Read detect range" button with the range itself set from the console only (`radar range 60 600`). Aim: everything needed at the bench and on the porch is on the card, set and read with controls, not the console: detect range closest and farthest, `approach`, `leadms`, the live distance, speed and direction, the last trigger and why it fired, link health and the OUT pin. Help text cut to what a person needs at the device. Then the rest of the page for the same plainness. Owner's interface rule: controls beside the thing they set, parent above child, visual cues over remembered commands.
+- **The data byte count.** The firmware decodes the result frame as 18 bytes packed, the way DFRobot's Python port and ESPHome component read it. The first frame's count is logged; the page's radar card shows it under the timeline. 18 is right. Any other count: `radar raw` and compare the bytes with the layout at the top of `src/radar.cpp` before trusting a single reading.
+- **The direction word.** DFRobot's code says 2 = approaching; its Home Assistant tutorial says 0. Walk toward the sensor in S2 and read the card: if it says going away, tick "Direction reads backwards" (`radarinv 1`), Save settings. No rebuild.
+- **The sensor's current draw** for doc 02's power table.
 
 ## Read first
 
@@ -29,14 +30,13 @@ The owner runs this session on Fable (his model picker) for two jobs before the 
 
 1. **Print and fit the case (owner).** `c4002_case_base` and `c4002_case_lid`, flat side down, no supports. Board antenna side (two gold squares) down over the floor opening, pin end at the two buttons, wires out the 15 mm opening; the lid's four posts hold the board, the snaps hold the lid. Knuckle between the fork's ears (`ld2450_fork_screw`), M3 bolt. First print may need filing; note what was filed in the commissioning log.
 2. **Wire (owner).** Five dupont jumpers or a soldered 5-pin header: VIN to the 5 V rail, GND, sensor TX to GPIO16 (RX2), sensor RX to GPIO17 (TX2), OUT to GPIO33 (hot glue off D33). Power from the 12 V adapter through the buck, never USB alone.
-3. **Audit and polish (session, on Fable, no hardware needed).** The two jobs in the escalation section above, done and committed before the first flash, so the first firmware the sensor sees is the audited one.
-4. **Build and flash (session, behind the gate).** `pio run`; then the owner's update road, `scripts\update_firmware.bat`, run by the session. `sensor 4002` is the factory default (`DEF_SENSOR`); if `status` shows otherwise, set it, `save`, restart.
-5. **First power-up readings.** Meter the sensor's current and add it to doc 02's power table (DFRobot does not state it). Read the log: `[radar] C4002 answers: reporting every ... ms` and `[radar] result frames carry 20 data bytes`. Any count but 20 means the decode is wrong; `radar raw` shows the bytes. No answer: `radar baud` scans for it, and check TX and RX are crossed.
-6. **S1 to S5** below, one row per attempt in `docs/commissioning_log.md`.
-7. **PLA check.** A person at 3 m, read with `radar raw` or the web card: bare board, then in the case. The floor opening leaves no PLA over the antenna, so the two should match; if the case reads clearly shorter, say so before S3.
-8. **Two things only this bench can settle.** Whether the C4002 keeps its report period through a power cut (the firmware sends it at every boot anyway). Which way its direction word reads on the tilted mount; if backwards, one comparison in `judge()` flips, rebuild, log it.
-9. **Build guide section 10 radar card drawing** (team, any time): it is still the old LD2450 top view; only its label says C4002. Redraw from the C4002 card in the wiring section, run `python tools/make_build_guide.py`.
-10. **Docs** after the bench: doc 02 current, doc 04 if any setting or command changed, doc 07 step 12, `CHANGELOG.md`. Commit by name.
+3. **Build and flash (session, behind the gate).** `pio run`; then the owner's update road, `scripts\update_firmware.bat`, run by the session. `sensor 4002` is the factory default (`DEF_SENSOR`); if `status` shows otherwise, set it, `save`, restart.
+4. **First power-up readings.** Meter the sensor's current and add it to doc 02's power table (DFRobot does not state it). Read the log: `[radar] C4002 answers: reporting every ... ms` and `[radar] result frames carry 18 data bytes`. Any count but 18 means the decode is wrong; `radar raw` shows the bytes. No answer: the firmware asks again every 5 s and says so once; `radar baud` scans for its speed, and check TX and RX are crossed.
+5. **S1 to S5** below, one row per attempt in `docs/commissioning_log.md`.
+6. **PLA check.** A person at 3 m, read with `radar raw` or the web card: bare board, then in the case. The floor opening leaves no PLA over the antenna, so the two should match; if the case reads clearly shorter, say so before S3.
+7. **Two things only this bench can settle.** Whether the C4002 keeps its report period through a power cut (the firmware sends it at every boot anyway, and again every 5 s while silent). Which way its direction word reads on the tilted mount: if backwards, tick "Direction reads backwards" on the radar card (`radarinv 1`), Save settings, log it.
+8. **Build guide section 10 radar card drawing** (team, any time): it is still the old LD2450 top view; only its label says C4002. Redraw from the C4002 card in the wiring section, run `python tools/make_build_guide.py`.
+9. **Docs** after the bench: doc 02 current, doc 04 if any setting or command changed, doc 07 step 12, `CHANGELOG.md`. Commit by name.
 
 The trigger rule, unchanged: armed and idle only, two readings in a row with the person approaching, speed at or above `approach` (default 30 cm/s), distance divided by speed at or below `leadms` (default 750 ms). Clear for re-arm: nobody, or everyone farther than `RADAR_CLEAR_CM` (300), for `CLEAR_BEFORE_REARM` (2 s). Serial silent for 1 s: fault logged, OUT on GPIO33 carries the trigger. `sensor 2410` is the OUT pin only.
 
@@ -53,7 +53,7 @@ Numbers from `cad/inverted.py` and doc 06; none seen on real hardware yet.
 
 | # | Test | Pass |
 |---|---|---|
-| S1 | Power the sensor, meter its current, open the web radar card | `[radar] C4002 answers` and 20 data bytes in the log; the reading follows a walker |
+| S1 | Power the sensor, meter its current, open the web radar card | `[radar] C4002 answers` and 18 data bytes in the log; the reading follows a walker |
 | S2 | Live readout walking toward, away from, and across the doorway; spider at rest, dropped, swinging | direction word checked on the tilted mount; spider excluded by the detect range without hiding a person in the doorway |
 | S3 | Walk in at normal pace, 10 times | fires every time; spider arrives as you reach the doorway |
 | S4 | Walk away, walk past across the hallway, stand still in the window | no trigger |
@@ -61,7 +61,7 @@ Numbers from `cad/inverted.py` and doc 06; none seen on real hardware yet.
 
 ## Done when
 
-`sensor 4002` in its case fires the drop on the bench (S3 passes), S4 and S5 pass, and the docs in step 10 say so.
+`sensor 4002` in its case fires the drop on the bench (S3 passes), S4 and S5 pass, and the docs in step 9 say so.
 
 ## Finish
 

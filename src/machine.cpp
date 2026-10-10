@@ -331,6 +331,7 @@ static void startCycle(TriggerSource src) {
   dropCountBump();
   drops++;
   if (faultRun == 0) fault = "";
+  if (src == TRIG_SENSOR) radarMarkFire(viaRadar);   // keep what the radar saw, for the page
   logf("[cycle] trigger: %s", triggerName(src));
   startRelease();
   enter(ST_RELEASE);

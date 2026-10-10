@@ -4,12 +4,14 @@
 #include "settings.h"
 #include <soc/gpio_reg.h>
 
-// DFRobot Fermion C4002 (SEN0691). Protocol read 2026-10-07 from DFRobot's own
-// DFRobot_C4002 Arduino library (MIT, github.com/DFRobot/DFRobot_C4002) and its
-// Python port; DFRobot publishes no protocol sheet. That library is not linked:
-// its receive call blocks up to 100 ms whenever the sensor is quiet, reads eight
-// bytes blind so a stream split across reads never lines up again, and takes a
-// result frame for a command reply. The frame layout below is the same.
+// DFRobot Fermion C4002 (SEN0691). Protocol read 2026-10-07 and again 2026-10-10
+// from DFRobot's own code (all MIT): the DFRobot_C4002 Arduino library, its Python
+// port, and the dfrobot_c4002 ESPHome component in DFRobot's fork of ESPHome
+// (github.com/cdjq/esphome, branch dev). DFRobot publishes no protocol sheet and
+// the wiki has no frame table. None of that code is linked: the Arduino library's
+// receive call blocks up to 100 ms whenever the sensor is quiet, reads eight bytes
+// blind so a stream split across reads never lines up again, and takes a result
+// frame for a command reply. The frame layout below is the same.
 //
 // Every packet, both directions:
 //   FA F5 AA A5 | total length lo, hi | 00 | type | cmd | code | data length lo, hi | data | checksum lo, hi
@@ -17,12 +19,17 @@
 // code and itself (4) plus the data bytes; the checksum is the 16-bit sum of every
 // byte before it. type: 00 write request, 01 read request, 02 write reply, 03 read
 // reply, 04 notification. code in a reply: 01 = ok. The sensor sends type 04 cmd 60
-// (a detection result) every report period once one is set; the result's data is
-// the library's sDetectResult_t copied byte for byte, 20 bytes with the C padding
-// both ports rely on (status, pad, light 2, gate bits 4, countdown 2, still
-// distance 2, still energy, pad, moving distance 2, moving speed 2, moving energy,
-// direction); an 18-byte unpadded form is decoded too in case the sensor sends that.
-// Default speed 115200 (the library's setBaudrate example).
+// (a detection result) every report period once one is set. Its data is 18 bytes,
+// packed, as the Python port and the ESPHome component read it byte by byte:
+//   0 status (0 nobody, 1 someone still, 2 someone moving)
+//   1-2 light, tenths of a lux          3-6 presence gate bits    7-8 presence countdown, s
+//   9-10 still person distance, cm      11 still energy 0-99
+//   12-13 moving person distance, cm    14-15 moving speed, cm/s, signed
+//   16 moving energy 0-99               17 direction (0 away, 1 none, 2 approaching, per both code enums)
+// The Arduino library instead copies the bytes over a C struct with padding (20
+// bytes); the ESPHome component has that copy commented out and decodes packed,
+// which reads as the fix. The count seen is logged once; 18 is right.
+// Default speed 115200 (the library's setBaudrate example and the ESPHome yaml).
 
 static const uint8_t HEAD[4] = {0xFA, 0xF5, 0xAA, 0xA5};
 enum { T_WRITE = 0, T_READ = 1, T_WRITE_REPLY = 2, T_READ_REPLY = 3, T_NOTE = 4 };
@@ -44,9 +51,14 @@ static volatile uint32_t goodAt = 0;    // = lastGood, for the machine task
 static int rxPin = PIN_RADAR_RX, txPin = PIN_RADAR_TX;
 static uint32_t begunAt = 0;
 static bool autoProbed = false, setUp = false;
+static uint32_t setupAt = 0;            // when first contact was last tried
+static int setupFails = 0;              // tries in a row with no answer (the log speaks on the first only)
 static int layoutSeen = 0;              // data bytes in the first result frame, logged once
+static bool stateWarned = false;        // an unknown status byte, logged once
 static uint16_t rangeClosest = 0, rangeFarthest = 0;
 static String version;
+static char why[112] = "";              // what the last radar-fired drop saw, for the page
+static volatile uint32_t whyAt = 0;
 
 // The last command reply seen, for whoever is waiting on one.
 static struct { bool fresh; uint8_t type, cmd, code; uint8_t data[48]; int n; } reply;
@@ -55,33 +67,39 @@ static uint16_t le16(const uint8_t *p) { return (uint16_t)(p[0] | (p[1] << 8)); 
 
 // The trigger rule, one reading: someone moving, coming closer, at least 'approach'
 // cm/s, and distance / speed under 'leadms'. Two in a row fire (radarFire).
+// 'radarinv' swaps approaching and away: DFRobot's code enums say 2 = approaching,
+// its Home Assistant tutorial says 0; the bench (S2) settles it without a rebuild.
 static void judge() {
+  bool moving = rd.state == 2 || rd.state == 3;    // 3 (both) is in the Arduino library's enum, never seen
+  bool still  = rd.state == 1 || rd.state == 3;
+  if (rd.state > 3 && !stateWarned) { stateWarned = true; logf("[radar] status byte %u is not one DFRobot's code knows (0 nobody, 1 still, 2 moving): treated as nobody", rd.state); }
+  rd.dir = rd.dirRaw;
+  if (S.radarInv && rd.dirRaw != 1) rd.dir = rd.dirRaw == 2 ? 0 : 2;
   int sp = abs((int)rd.speed);
-  rd.etaMs = (rd.state == 2 && rd.dir == 2 && sp > 0 && rd.mdist > 0) ? (int)((long)rd.mdist * 1000 / sp) : 0;
+  rd.etaMs = (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) ? (int)((long)rd.mdist * 1000 / sp) : 0;
   rd.fire = rd.etaMs > 0 && sp >= S.approach && rd.etaMs <= S.leadMs;
   fireRun = rd.fire ? fireRun + 1 : 0;
   int near = 0;                         // the nearest person, cm; 0 = nobody
-  if (rd.state == 2 && rd.mdist > 0) near = rd.mdist;
-  if (rd.state == 1 && rd.pdist > 0) near = rd.pdist;
-  if (rd.state == 2 && rd.pdist > 0 && (near == 0 || rd.pdist < near)) near = rd.pdist;
-  clearNow = rd.state == 0 || near == 0 || near > RADAR_CLEAR_CM;
+  if (moving && rd.mdist > 0) near = rd.mdist;
+  if (still && rd.pdist > 0 && (near == 0 || rd.pdist < near)) near = rd.pdist;
+  clearNow = near == 0 || near > RADAR_CLEAR_CM;
 }
 
 static void result(const uint8_t *d, int n) {
   if (n < 18) { bad++; return; }
-  bool padded = n >= 20;
-  if (!layoutSeen) { layoutSeen = n; logf("[radar] result frames carry %d data bytes (%s layout)", n, padded ? "padded, as DFRobot's library reads them" : "packed"); }
-  rd.state = d[0];
-  if (padded) {
-    rd.light = le16(d + 2);  rd.pdist = (int16_t)le16(d + 10); rd.penergy = d[12];
-    rd.mdist = (int16_t)le16(d + 14); rd.speed = (int16_t)le16(d + 16); rd.menergy = d[18]; rd.dir = d[19];
-  } else {
-    rd.light = le16(d + 1);  rd.pdist = (int16_t)le16(d + 9);  rd.penergy = d[11];
-    rd.mdist = (int16_t)le16(d + 12); rd.speed = (int16_t)le16(d + 14); rd.menergy = d[16]; rd.dir = d[17];
+  if (!layoutSeen) {
+    layoutSeen = n;
+    logf("[radar] result frames carry %d data bytes%s", n,
+         n == 18 ? ", as DFRobot's decoders read them" : " (18 expected: if the readings look wrong, 'radar raw' shows the bytes)");
   }
+  rd.state = d[0];
+  rd.light = le16(d + 1);  rd.pdist = (int16_t)le16(d + 9);  rd.penergy = d[11];
+  rd.mdist = (int16_t)le16(d + 12); rd.speed = (int16_t)le16(d + 14); rd.menergy = d[16]; rd.dirRaw = d[17];
+  uint32_t now = millis();
+  if (lastGood && now - lastGood > RADAR_RUN_GAP_MS) fireRun = 0;   // "two in a row" means consecutive frames, not across a gap
   judge();
   frames++; fpsCount++;
-  lastGood = millis(); goodAt = lastGood;
+  lastGood = now; goodAt = now;
 }
 
 // A whole packet is in buf: check it, then hand it to the result decoder or park it as a reply.
@@ -177,19 +195,31 @@ static const char *codeName(uint8_t c) {
 // The outcome of the last command as a word, for a log line.
 static const char *outcome(bool ok) { return codeName(ok ? 1 : (reply.fresh ? reply.code : 0)); }
 
+// The reply's data as printable text (a version string), safe inside JSON.
+static String replyText() {
+  String s;
+  for (int i = 0; i < reply.n; i++) { char c = reply.data[i]; if (c >= 0x20 && c < 0x7F && c != '"' && c != '\\') s += c; }
+  return s;
+}
+
 // First contact, 1.5 s after boot (the sensor takes a moment to wake): report
-// every 0.1 s, then its version and detect range for the page. Any failure here
-// is logged and the pin fallback carries the trigger until 'radar baud' or power.
+// every 0.1 s, then its version and detect range for the page. No answer: tried
+// again every RADAR_RETRY_MS while no frames arrive (the sensor may boot slower
+// than the board, or lose power on its own); the pin fallback carries the trigger
+// meanwhile. The log speaks on the first failure and on success.
 static void setupSensor() {
+  setupAt = millis();
   uint8_t period = RADAR_REPORT_TENTHS;
   bool ok = command(T_WRITE, CMD_PERIOD, &period, 1);
   if (!ok) {
-    logf("[radar] no answer from the C4002 on GPIO%d/%d at %lu baud (%s): try 'radar baud', 'radar probe', or check its 5 V",
-         rxPin, txPin, (unsigned long)RADAR_BAUD, outcome(ok));
+    if (setupFails++ == 0)
+      logf("[radar] no answer from the C4002 on GPIO%d/%d at %lu baud (%s): asking again every %d s. Check its 5 V and that TX and RX are crossed; 'radar baud' and 'radar probe' look further",
+           rxPin, txPin, (unsigned long)RADAR_BAUD, outcome(ok), RADAR_RETRY_MS / 1000);
     return;
   }
+  setupFails = 0;
   uint8_t sw = 1;
-  if (command(T_READ, CMD_VERSION, &sw, 1)) { version = ""; for (int i = 0; i < reply.n; i++) if (reply.data[i] >= 0x20 && reply.data[i] < 0x7F) version += (char)reply.data[i]; }
+  if (command(T_READ, CMD_VERSION, &sw, 1)) version = replyText();
   if (command(T_READ, CMD_RANGE, nullptr, 0) && reply.n >= 4) { rangeClosest = le16(reply.data); rangeFarthest = le16(reply.data + 2); }
   logf("[radar] C4002 answers: reporting every %d ms, version %s, detect range %u to %u cm",
        RADAR_REPORT_TENTHS * 100, version.length() ? version.c_str() : "?", rangeClosest, rangeFarthest);
@@ -199,6 +229,7 @@ void radarPoll() {
   pump();
   uint32_t now = millis();
   if (!setUp && now - begunAt > 1500) { setUp = true; setupSensor(); }
+  else if (setUp && S.sensor == 4002 && !radarTalking() && now - setupAt >= RADAR_RETRY_MS) setupSensor();
   // Nothing at all heard 3 s after starting: look for the signal once by itself.
   if (!autoProbed && !bytes && now - begunAt > 3000) { autoProbed = true; logf("[radar] nothing heard on RX2 in 3 s, looking for the signal"); radarProbe(); return; }
   if (now - fpsFrom >= 1000) { fps = fpsCount * 1000.0f / (now - fpsFrom); fpsCount = 0; fpsFrom = now; }
@@ -207,6 +238,19 @@ void radarPoll() {
 bool radarTalking() { uint32_t g = goodAt; return g && millis() - g < RADAR_SILENT_MS; }
 bool radarFire()    { return radarTalking() && fireRun >= 2; }
 bool radarClear()   { return radarTalking() && clearNow; }
+
+// Called by the machine task the moment a drop starts on the sensor: keep what the
+// radar saw, in words, for the page's "last drop fired by the radar" row.
+void radarMarkFire(bool viaLink) {
+  if (viaLink) {
+    RadarReading r = rd;
+    snprintf(why, sizeof why, "%d cm away, %d cm/s %s, %d ms before arrival, two readings in a row",
+             r.mdist, abs((int)r.speed), r.dir == 2 ? "approaching" : r.dir == 0 ? "going away" : "no direction", r.etaMs);
+  } else {
+    snprintf(why, sizeof why, "OUT pin high on GPIO33 (serial link %s)", S.sensor == 4002 ? "silent" : "not used, sensor 2410");
+  }
+  whyAt = millis();
+}
 
 // Where is the sensor's signal? Its TX idles high and sends a burst every report
 // period, so the pin it is on flips many times in 400 ms while sitting mostly high.
@@ -300,7 +344,7 @@ void radarVersion() {
   for (int k = 0; k < 2; k++, which = 0) {
     bool ok = command(T_READ, CMD_VERSION, &which, 1);
     if (ok) {
-      String s; for (int i = 0; i < reply.n; i++) if (reply.data[i] >= 0x20 && reply.data[i] < 0x7F) s += (char)reply.data[i];
+      String s = replyText();
       if (which == 1) version = s;
       logf("[radar] %s version: %s", which == 1 ? "software" : "hardware", s.c_str());
     } else logf("[radar] %s version: %s", which == 1 ? "software" : "hardware", outcome(ok));
@@ -373,20 +417,24 @@ RadarStats radarStats() {
   if (!r.talking) { r.r.fire = false; r.r.etaMs = 0; }
   r.closest = rangeClosest; r.farthest = rangeFarthest;
   r.version = version;
+  r.why = why;
+  r.whyAgoMs = whyAt ? now - whyAt : 0;
   return r;
 }
 
 String radarJson() {
   RadarStats r = radarStats();
   String j = "{\"talking\":" + String(r.talking) + ",\"age\":" + String(r.ageMs) + ",\"fps\":" + String(r.fps, 1) +
-             ",\"frames\":" + String(r.frames) + ",\"bad\":" + String(r.bad) + ",\"bytes\":" + String(r.bytes);
+             ",\"frames\":" + String(r.frames) + ",\"bad\":" + String(r.bad) + ",\"bytes\":" + String(r.bytes) +
+             ",\"layout\":" + String(layoutSeen);
   if (r.talking) {
     j += ",\"state\":" + String(r.r.state) + ",\"mdist\":" + String(r.r.mdist) + ",\"speed\":" + String(r.r.speed) +
-         ",\"dir\":" + String(r.r.dir) + ",\"menergy\":" + String(r.r.menergy) + ",\"pdist\":" + String(r.r.pdist) +
-         ",\"penergy\":" + String(r.r.penergy) + ",\"light\":" + String(r.r.light / 10.0f, 1) +
+         ",\"dir\":" + String(r.r.dir) + ",\"rawdir\":" + String(r.r.dirRaw) + ",\"menergy\":" + String(r.r.menergy) +
+         ",\"pdist\":" + String(r.r.pdist) + ",\"penergy\":" + String(r.r.penergy) + ",\"light\":" + String(r.r.light / 10.0f, 1) +
          ",\"eta\":" + String(r.r.etaMs) + ",\"fire\":" + String(r.r.fire) + ",\"run\":" + String(r.fireRun) +
          ",\"clear\":" + String(clearNow);
   }
-  j += ",\"closest\":" + String(r.closest) + ",\"farthest\":" + String(r.farthest) + ",\"ver\":\"" + r.version + "\"}";
+  j += ",\"closest\":" + String(r.closest) + ",\"farthest\":" + String(r.farthest) + ",\"ver\":\"" + r.version + "\"" +
+       ",\"why\":\"" + r.why + "\",\"whyAgo\":" + String(r.whyAgoMs) + "}";
   return j;
 }

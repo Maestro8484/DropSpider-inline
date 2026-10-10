@@ -93,6 +93,8 @@
 #define RADAR_SILENT_MS     1000     // no good frame this long = radar silent: the OUT pin carries the trigger
 #define RADAR_REPORT_TENTHS 1        // asked of the sensor at boot: a result every 0.1 s
 #define RADAR_CLEAR_CM      300      // everyone farther than this (or nobody) = the doorway is clear
+#define RADAR_RUN_GAP_MS    500      // a gap this long between result frames breaks the "two readings in a row" count
+#define RADAR_RETRY_MS      5000     // while no result frames arrive, the report-period command is sent again this often
 
 // ---------- DEFAULTS (runtime tunable, saved in flash) ----------
 #define DEF_SERVO_LOCK      90     // finger level, in the teeth, resting on the ledge
@@ -113,3 +115,4 @@
 #define DEF_SENSOR          4002   // 4002 = C4002 over serial, OUT pin if it goes silent; 2410 = OUT pin on GPIO33 only
 #define DEF_APPROACH        30     // cm/s toward the sensor, slower than this does not fire
 #define DEF_LEAD_MS         750    // fire when distance / speed is under this (ms before the person arrives)
+#define DEF_RADAR_INV       0      // 1 = the sensor's direction word reads backwards on this mount (swap approaching and away); test S2 decides

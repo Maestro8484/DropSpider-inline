@@ -96,6 +96,7 @@ static const char *const HELP[] = {
   "  radar raw       the last 96 bytes heard from the sensor, as hex | radar baud   find its speed; set it back to 115200 if it moved",
   "  radar cmd r|w <cmd> [hex]  one protocol command by hand, e.g. radar cmd r 82 01 (software version)",
   "  sensor 4002|2410  4002 = C4002 over serial, OUT pin if silent; 2410 = OUT pin on GPIO33 only | approach cm/s | leadms ms",
+  "  radarinv 0|1    1 = the radar's direction word reads backwards on this mount (swap approaching and away)",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
@@ -109,12 +110,13 @@ static void printRadar() {
   if (!r.talking) return;
   const RadarReading &d = r.r;
   if (d.state == 0) logf("  nobody in view");
-  if (d.state == 2) logf("  moving: %d cm away, %d cm/s, %s, energy %u%s", d.mdist, d.speed,
-                         d.dir == 2 ? "approaching" : d.dir == 0 ? "going away" : "no direction", d.menergy,
+  if (d.state == 2 || d.state == 3) logf("  moving: %d cm away, %d cm/s, %s%s, energy %u%s", d.mdist, d.speed,
+                         d.dir == 2 ? "approaching" : d.dir == 0 ? "going away" : "no direction", S.radarInv ? " (word swapped by radarinv 1)" : "", d.menergy,
                          d.etaMs ? (String(", arrives in ") + d.etaMs + " ms").c_str() : "");
-  if (d.state == 1 || (d.state == 2 && d.pdist > 0)) logf("  still: %d cm away, energy %u", d.pdist, d.penergy);
+  if (d.state == 1 || d.state == 3 || (d.state == 2 && d.pdist > 0)) logf("  still: %d cm away, energy %u", d.pdist, d.penergy);
   logf("  rule (approach %d cm/s, leadms %d): %s%s", S.approach, S.leadMs, d.fire ? "PASSES" : "does not pass",
        r.fireRun >= 2 ? ", two in a row: WOULD FIRE" : "");
+  if (r.why.length()) logf("  last drop fired by the sensor: %s, %lu s ago", r.why.c_str(), (unsigned long)(r.whyAgoMs / 1000));
 }
 
 static void printHelp() {

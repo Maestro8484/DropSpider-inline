@@ -54,7 +54,7 @@ The web page is the console on your phone or PC. Every button sends a console co
 | Card | What is on it |
 |---|---|
 | Status | state, chips (armed, spider home, trigger: radar rule or OUT pin on GPIO33, motor powered, fault), drop count, last trigger, last rewind, last drop as measured by the rewind, limit switch (open or closed, and closures counted since power-up) |
-| Radar | the C4002's readings: a distance strip with the moving person (dot, 4 s trail, arrow for the direction) and the still person, the red zone where the trigger rule passes at the current speed, the 3 m clear line, the sensor's own detect range as dashed lines, a ripple per frame; rows for distance, speed, direction, time to arrive, confidence, rule state (one reading or two in a row), doorway clear, light, detect range, sensor software; a 60 s timeline (nearest person, rule would fire, OUT pin, limit switch, motor). Show 3 m or 6 m, freeze, read detect range |
+| Radar | the C4002's readings: chips (talking or silent, who is in view, would fire, OUT pin, direction word swapped), a distance strip with the moving person (dot, 4 s trail, arrow for the direction) and the still person, the red zone where the trigger rule passes at the current speed, the 3 m clear line, the sensor's own detect range as dashed lines, a ripple per frame; rows for distance, speed, direction (with the raw word), time to arrive, confidence, rule state (one reading or two in a row), doorway clear, light, the last drop the sensor fired and what it saw, the OUT pin, sensor software. Controls beside what they set: walking speed that fires (`approach`), lead time (`leadms`), direction reads backwards (`radarinv`), what fires the drop (`sensor`), the sensor's own detect range with Set and Read, Save settings. A 60 s timeline (nearest person, rule would fire, OUT pin, limit switch, motor). Show 3 m or 6 m, freeze |
 | Run | Drop it now, Arm or Disarm, Stop, Motor and servo off, Clear fault |
 | Bench: finger servo | live angle, nudge 1 or 5 degrees, go to lock or release angle, store the current angle as lock or release |
 | Bench: motor | jog one turn or 1/8 turn each way, Rewind, Lock, Release |
@@ -145,6 +145,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `sensor <4002/2410>` | 4002 (default): the C4002 over serial fires the drop, its OUT pin on GPIO33 takes over if the serial link is silent for 1 s. 2410: the OUT pin only (any active-high sensor: LD2410C, PIR, step mat) |
 | `approach <cm/s>` | the moving person must be coming closer at least this fast, 10 to 150, default 30 |
 | `leadms <ms>` | fire when the person's distance divided by speed is under this, 200 to 2000, default 750 |
+| `radarinv <0/1>` | 1 = the radar's direction word reads backwards on this mount: approaching and away are swapped before the rule. DFRobot's code enums say 2 = approaching, its Home Assistant tutorial says 0; test S2 decides, no rebuild. The page shows the raw word beside the reading |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
 | `settle <ms>`, `rearm <ms>` | hang time, lockout time |
@@ -192,6 +193,8 @@ Speed ramps up over 600 steps and down at the end of a counted move. A stop by t
 ## Known limits
 
 - No stall detection: needs the driver's UART line, which the expansion board does not expose.
-- The C4002 reports one moving and one still person, not several: two people walking in together read as one. Its result frame layout (20 data bytes with C padding) is taken from DFRobot's library, not a protocol sheet; the firmware also decodes an 18-byte form and logs which it sees. Not yet seen on a real sensor.
+- The C4002 reports one moving and one still person, not several: two people walking in together read as one. Its result frame layout (18 data bytes, packed) is taken from DFRobot's code, not a protocol sheet: the Python port and the ESPHome component decode it byte by byte that way, the Arduino library copies the bytes over a padded C struct (20) and the ESPHome component has that copy commented out. The firmware logs the count it sees at the first frame; 18 is right, anything else means `radar raw` and a look. Not yet seen on a real sensor.
+- The direction word: DFRobot's two code enums say 0 away, 1 none, 2 approaching; its Home Assistant tutorial yaml says 0 approaching, 2 away. The firmware follows the code; `radarinv 1` (the page's "Direction reads backwards" tick) swaps it if the walk test says otherwise.
+- The report-period command is sent 1.5 s after boot and again every 5 s while no result frames arrive, so a sensor that boots slower than the board, or loses power on its own, still comes up without a restart. Whether the sensor keeps its period through a power cut is not known.
 - The update page and network upload use one shared password from `secrets.ini`. Fine on a home network; not for anything public.
 - Static IP address: not yet.
