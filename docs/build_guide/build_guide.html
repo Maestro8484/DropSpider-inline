@@ -412,7 +412,7 @@ a{color:var(--accent)}
   <ol class="steps">
     <li><div><h3>Buck alone</h3><p>12 V on, nothing on the 5 V side. Meter reads 4.95 to 5.05 V (fixed 5 V module, nothing to adjust).</p></div></li>
     <li><div><h3>Driver current</h3><p>Motor unplugged, 12 V on. Meter from the pot's metal top to GND: turn to <b>0.85 V</b> (that is 0.6 A). Factory setting is about 1.2 V, too high for this motor.</p></div></li>
-    <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The blue LED blinks slowly when armed and ready. The finger servo swings to its lock angle once at start-up: keep fingers clear.</p></div></li>
+    <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The blue LED is solid when armed and ready, and blinks fast when it has stopped on a fault. The finger servo swings to its lock angle once at start-up: keep fingers clear.</p></div></li>
     <li><div><h3>Motor last</h3><p>Power off, plug in the motor, power on. Never plug or unplug the motor with 12 V on.</p></div></li>
   </ol>
 </section>

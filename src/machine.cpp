@@ -732,11 +732,12 @@ static void step() {
       break;
   }
 
-  // LED: slow blink = armed and ready, solid = working, fast blink = stopped on faults
+  // LED (owner 2026-10-11): solid = armed and ready, fast blink = stopped on a fault
+  // (send clear), slow blink = working, off = not armed or waiting to re-arm
   bool led = false;
-  if (state == ST_IDLE && S.armed) led = (now / 1000) % 2;
+  if (state == ST_IDLE && S.armed) led = true;
   else if (state == ST_FAULT)      led = (now / 150) % 2;
-  else if (isBusy())               led = true;
+  else if (isBusy())               led = (now / 500) % 2;
   digitalWrite(PIN_LED, led);
 }
 
