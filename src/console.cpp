@@ -99,7 +99,8 @@ static const char *const HELP[] = {
   "  radar sens motion|presence [low|mid|high]  the sensor's own sensitivity for the moving and the still reading",
   "  sensor 4002|2410  4002 = C4002 over serial, OUT pin if silent; 2410 = OUT pin on GPIO33 only | approach cm/s | leadms ms",
   "  firecm <cm>     fire when someone approaching is within this distance, 0 = off | radarinv 0|1   direction word reads backwards",
-  "  clearcm <cm>    the doorway is clear when nobody reads within this distance (re-arm after a scare), 50 to 1100",
+  "  clearcm <cm>    the doorway is clear when nobody moving reads within this distance (re-arm after a scare), 50 to 1100",
+  "  clearms <ms>    re-arm anyway after waiting this long for the doorway to clear, 0 = wait for clear | clear   also skips the lockout and the wait",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };

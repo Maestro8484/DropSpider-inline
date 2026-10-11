@@ -512,8 +512,13 @@ static void handleReq(const Req &r) {
   }
   if (r.a == ACT_CLEAR) {
     fault = ""; faultRun = 0;
-    logf("[done] fault cleared");
-    if (state == ST_FAULT) enter(ST_WAIT_CLEAR);
+    if (state == ST_LOCKOUT || state == ST_WAIT_CLEAR) {
+      enter(ST_IDLE);
+      logf(S.armed ? "[done] cleared: armed now, lockout and doorway wait skipped" : "[done] cleared: ready now, not armed");
+    } else {
+      logf("[done] fault cleared");
+      if (state == ST_FAULT) enter(ST_WAIT_CLEAR);
+    }
     return;
   }
   if (isBusy()) { logf("refused: busy (%s)", stateName(state)); return; }
@@ -605,6 +610,9 @@ static void step() {
       if (clearNow && now - lowSince >= CLEAR_BEFORE_REARM) {
         enter(ST_IDLE);
         logf(S.armed ? "[armed] doorway clear" : "[ready] doorway clear, not armed");
+      } else if (S.clearMs && inState() >= (uint32_t)S.clearMs) {
+        enter(ST_IDLE);   // safe: the rule still wants a fresh approach before it fires
+        logf(S.armed ? "[armed] re-armed after %d ms waiting (clearms), doorway not clear" : "[ready] after %d ms waiting (clearms), not armed", S.clearMs);
       }
       break;
 

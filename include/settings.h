@@ -8,7 +8,7 @@ struct Settings {
   int servoLock, servoRel, lineMm, rpm, rewindDir, settleMs, rearmMs, armed;
   int limitFitted, limitInverted;
   int dropMm, dropRpm, dropAcc, dropDec, releaseMs;
-  int sensor, approach, leadMs, fireCm, clearCm, radarInv;
+  int sensor, approach, leadMs, fireCm, clearCm, clearMs, radarInv;
 };
 
 // The live copy everything reads. Change it only through settingsSet().

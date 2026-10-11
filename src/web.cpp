@@ -87,7 +87,8 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <label><span>Walking speed that fires<small>cm/s toward the sensor, 10 to 150. Slower than this never fires</small></span><input type="number" id="f_approach" min="10" max="150" onchange="c('approach '+this.value)"></label>
  <label><span>Fire distance<small>cm from the sensor, straight line. Fires when someone approaching is this close; 0 = off</small></span><input type="number" id="f_firecm" min="0" max="1100" onchange="c('firecm '+this.value)"></label>
  <label><span>Lead time<small>ms, 200 to 2000. Also fires early when distance divided by speed is under this</small></span><input type="number" id="f_leadms" min="200" max="2000" onchange="c('leadms '+this.value)"></label>
- <label><span>Clear distance<small>cm. The doorway counts as clear, and it re-arms, when nobody reads closer than this for 2 s</small></span><input type="number" id="f_clearcm" min="50" max="1100" onchange="c('clearcm '+this.value)"></label>
+ <label><span>Clear distance<small>cm. The doorway counts as clear, and it re-arms, when nobody moving reads closer than this for 2 s; someone standing still never holds it</small></span><input type="number" id="f_clearcm" min="50" max="1100" onchange="c('clearcm '+this.value)"></label>
+ <label><span>Re-arm anyway after<small>ms of waiting for the doorway to clear, 0 to 600000; 0 = wait for clear. Still needs a fresh approach to fire</small></span><input type="number" id="f_clearms" min="0" max="600000" step="1000" onchange="c('clearms '+this.value)"></label>
  <label><span>Direction reads backwards<small>tick if the card says going away while you walk toward it (test S2)</small></span><input type="checkbox" id="f_radarinv" onchange="c('radarinv '+(this.checked?1:0))"></label>
  <label><span>What fires the drop<small>serial = the rule above; OUT pin = whenever the sensor sees someone</small></span><select id="f_sensor" onchange="c('sensor '+this.value)"><option value="4002">C4002 serial, OUT pin if silent</option><option value="2410">OUT pin on GPIO33 only</option></select></label>
  <h3>Sensor's own detect range</h3>
@@ -118,7 +119,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
   <button id="armb" onclick="c(armed?'disarm':'arm')">Arm</button>
   <button class="d" onclick="c('stop')">Stop</button>
   <button onclick="c('off')">Motor and servo off</button>
-  <button onclick="c('clear')">Clear fault</button>
+  <button onclick="c('clear')">Clear and re-arm</button>
  </div>
 </div>
 

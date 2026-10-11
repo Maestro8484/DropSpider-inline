@@ -88,9 +88,11 @@ static void judge() {
   bool toward = moving && rd.dir == 2 && sp >= S.approach && rd.mdist > 0;
   rd.fire = toward && ((S.fireCm && rd.mdist <= S.fireCm) || (rd.etaMs > 0 && rd.etaMs <= S.leadMs));
   fireRun = rd.fire ? fireRun + 1 : 0;
-  int near = 0;                         // the nearest person, cm; 0 = nobody
-  if (moving && rd.mdist > 0) near = rd.mdist;
-  if (still && rd.pdist > 0 && (near == 0 || rd.pdist < near)) near = rd.pdist;
+  // Only a moving person holds the re-arm (owner 2026-10-11: "it needs to have a better
+  // self-resetting clear fault function"). A still reading can never fire the rule, which
+  // wants someone approaching, and on the bench it held the device for 44 s at 25 to 70 cm.
+  (void)still;
+  int near = (moving && rd.mdist > 0) ? rd.mdist : 0;   // the nearest moving person, cm; 0 = nobody
   clearNow = near == 0 || near > S.clearCm;
 }
 

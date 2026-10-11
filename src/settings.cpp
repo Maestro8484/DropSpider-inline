@@ -41,6 +41,7 @@ static const Row ROWS[] = {
   { "leadms",  "leadMs", &S.leadMs,        200,  2000,   DEF_LEAD_MS },
   { "firecm",  "fireCm", &S.fireCm,        0,    1100,   DEF_FIRE_CM },       // 0 = off
   { "clearcm", "clearCm",&S.clearCm,       50,   1100,   DEF_CLEAR_CM },
+  { "clearms", "clearMs",&S.clearMs,       0,    600000, DEF_CLEAR_MS },      // 0 = wait for clear
   { "radarinv","radInv", &S.radarInv,      0,    1,      DEF_RADAR_INV },
 };
 static const size_t N = sizeof(ROWS) / sizeof(ROWS[0]);

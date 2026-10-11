@@ -116,4 +116,5 @@
 #define DEF_LEAD_MS         750    // fire when distance / speed is under this (ms before the person arrives)
 #define DEF_FIRE_CM         120    // fire when someone approaching at 'approach' or faster is within this slant distance, cm; 0 = time rule only (owner 2026-10-10: proximity over timing)
 #define DEF_CLEAR_CM        300    // the doorway is clear when nobody reads within this slant distance (was the fixed RADAR_CLEAR_CM; a setting since the office bench 2026-10-10, where a mirror at 2.2 m held it)
+#define DEF_CLEAR_MS        30000  // waiting for the doorway to clear re-arms anyway after this long, ms; 0 = wait for clear (owner 2026-10-11)
 #define DEF_RADAR_INV       0      // 1 = the sensor's direction word reads backwards on this mount (swap approaching and away); test S2 decides
