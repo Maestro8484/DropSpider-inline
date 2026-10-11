@@ -39,6 +39,8 @@ static const Row ROWS[] = {
   { "sensor",  "sensor", &S.sensor,        2410, 4002,   DEF_SENSOR },        // only 2410 or 4002
   { "approach","apprch", &S.approach,      10,   150,    DEF_APPROACH },
   { "leadms",  "leadMs", &S.leadMs,        200,  2000,   DEF_LEAD_MS },
+  { "firecm",  "fireCm", &S.fireCm,        0,    1100,   DEF_FIRE_CM },       // 0 = off
+  { "clearcm", "clearCm",&S.clearCm,       50,   1100,   DEF_CLEAR_CM },
   { "radarinv","radInv", &S.radarInv,      0,    1,      DEF_RADAR_INV },
 };
 static const size_t N = sizeof(ROWS) / sizeof(ROWS[0]);

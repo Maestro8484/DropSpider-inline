@@ -32,6 +32,7 @@ struct MachineStatus {
   uint32_t drops;
   TriggerSource lastTrigger;
   uint32_t lastTriggerAgoMs;// 0 if never
+  uint32_t landMs;          // trigger to the spider at the bottom, last cycle; 0 if none yet
   const char *fault;        // "" when all is well
   int      faultRun;
 };

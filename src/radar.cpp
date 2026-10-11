@@ -33,8 +33,9 @@
 
 static const uint8_t HEAD[4] = {0xFA, 0xF5, 0xAA, 0xA5};
 enum { T_WRITE = 0, T_READ = 1, T_WRITE_REPLY = 2, T_READ_REPLY = 3, T_NOTE = 4 };
-enum { CMD_RESTART = 0x00, CMD_FACTORY_USER = 0x02, CMD_BAUD = 0x21, CMD_RESULT = 0x60, CMD_FACTORY = 0x80,
-       CMD_VERSION = 0x82, CMD_PERIOD = 0x83, CMD_RANGE = 0x86, CMD_OUT_MODE = 0xA0 };
+enum { CMD_RESTART = 0x00, CMD_FACTORY_USER = 0x02, NOTE_CALIB = 0x03, CMD_BAUD = 0x21, CMD_RESULT = 0x60, CMD_CALIB = 0x60,
+       CMD_RES = 0x66, CMD_FACTORY = 0x80, CMD_VERSION = 0x82, CMD_PERIOD = 0x83, CMD_DELAY = 0x84, CMD_RANGE = 0x86,
+       CMD_SENS = 0x87, CMD_OUT_MODE = 0xA0 };
 
 static uint8_t buf[64];
 static int have = 0;
@@ -57,6 +58,9 @@ static int layoutSeen = 0;              // data bytes in the first result frame,
 static bool stateWarned = false;        // an unknown status byte, logged once
 static uint16_t rangeClosest = 0, rangeFarthest = 0;
 static String version;
+static int resMode = -1, sensM = -1, sensP = -1, delaySec = -1;   // the sensor's own settings, as last read
+static int calibLeft = 0;             // seconds left of a room calibration, from its countdown notes
+static bool quietReads = false;       // true while setupSensor reads the sensor's settings, so the reads do not log
 static char why[112] = "";              // what the last radar-fired drop saw, for the page
 static volatile uint32_t whyAt = 0;
 
@@ -66,7 +70,11 @@ static struct { bool fresh; uint8_t type, cmd, code; uint8_t data[48]; int n; } 
 static uint16_t le16(const uint8_t *p) { return (uint16_t)(p[0] | (p[1] << 8)); }
 
 // The trigger rule, one reading: someone moving, coming closer, at least 'approach'
-// cm/s, and distance / speed under 'leadms'. Two in a row fire (radarFire).
+// cm/s, and either within 'firecm' (proximity, the owner's rule 2026-10-10: on a 2 m
+// overhead mount the slant distance floors near the head and the speed toward the
+// sensor fades as a person comes under it, so distance / speed never got small at a
+// slow pace) or distance / speed under 'leadms' (a fast walker fires early). Two in a
+// row fire (radarFire).
 // 'radarinv' swaps approaching and away: DFRobot's code enums say 2 = approaching,
 // its Home Assistant tutorial says 0; the bench (S2) settles it without a rebuild.
 static void judge() {
@@ -77,12 +85,13 @@ static void judge() {
   if (S.radarInv && rd.dirRaw != 1) rd.dir = rd.dirRaw == 2 ? 0 : 2;
   int sp = abs((int)rd.speed);
   rd.etaMs = (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) ? (int)((long)rd.mdist * 1000 / sp) : 0;
-  rd.fire = rd.etaMs > 0 && sp >= S.approach && rd.etaMs <= S.leadMs;
+  bool toward = moving && rd.dir == 2 && sp >= S.approach && rd.mdist > 0;
+  rd.fire = toward && ((S.fireCm && rd.mdist <= S.fireCm) || (rd.etaMs > 0 && rd.etaMs <= S.leadMs));
   fireRun = rd.fire ? fireRun + 1 : 0;
   int near = 0;                         // the nearest person, cm; 0 = nobody
   if (moving && rd.mdist > 0) near = rd.mdist;
   if (still && rd.pdist > 0 && (near == 0 || rd.pdist < near)) near = rd.pdist;
-  clearNow = near == 0 || near > RADAR_CLEAR_CM;
+  clearNow = near == 0 || near > S.clearCm;
 }
 
 static void result(const uint8_t *d, int n) {
@@ -110,7 +119,14 @@ static void packetDone(int len) {
   uint8_t type = buf[7], cmd = buf[8], code = buf[9];
   int dataLen = le16(buf + 10), n = dataLen - 4;
   if (n < 0 || 12 + n > len - 2) { bad++; return; }
-  if (type == T_NOTE) { if (cmd == CMD_RESULT) result(buf + 12, n); return; }
+  if (type == T_NOTE) {
+    if (cmd == CMD_RESULT) result(buf + 12, n);
+    else if (cmd == NOTE_CALIB && n >= 2) {        // the sensor counting down a room calibration
+      int left = le16(buf + 12);
+      if (left != calibLeft) { calibLeft = left; if (left == 0 || left % 5 == 0) logf("[radar] room calibration: %d s left%s", left, left ? "" : ", done"); }
+    }
+    return;
+  }
   reply.type = type; reply.cmd = cmd; reply.code = code;
   reply.n = n < (int)sizeof reply.data ? n : (int)sizeof reply.data;
   memcpy(reply.data, buf + 12, reply.n);
@@ -221,6 +237,7 @@ static void setupSensor() {
   uint8_t sw = 1;
   if (command(T_READ, CMD_VERSION, &sw, 1)) version = replyText();
   if (command(T_READ, CMD_RANGE, nullptr, 0) && reply.n >= 4) { rangeClosest = le16(reply.data); rangeFarthest = le16(reply.data + 2); }
+  quietReads = true; radarRes(-1); radarSens(0, -1); radarSens(1, -1); radarDelay(-1); quietReads = false;
   logf("[radar] C4002 answers: reporting every %d ms, version %s, detect range %u to %u cm",
        RADAR_REPORT_TENTHS * 100, version.length() ? version.c_str() : "?", rangeClosest, rangeFarthest);
 }
@@ -357,7 +374,16 @@ void radarRange(int closest, int farthest) {
   if (closest >= 0 && farthest >= 0) {
     if (closest > farthest || farthest > 1100) { logf("radar range: closest then farthest, 0 to 1100 cm, e.g. radar range 60 600"); return; }
     uint8_t v[4] = {(uint8_t)closest, (uint8_t)(closest >> 8), (uint8_t)farthest, (uint8_t)(farthest >> 8)};
-    logf("[radar] set detect range %d to %d cm: %s", closest, farthest, outcome(command(T_WRITE, CMD_RANGE, v, 4)));
+    bool set = command(T_WRITE, CMD_RANGE, v, 4);
+    logf("[radar] set detect range %d to %d cm: %s", closest, farthest, outcome(set));
+    // Bench 2026-10-10: the sensor answers ok but keeps reporting the old range until it
+    // restarts (a reading at 230 cm stayed through a 0 to 200 set, and went with the restart).
+    if (set) {
+      uint8_t zero = 0;
+      logf("[radar] restarting the sensor so the range takes effect: %s", outcome(command(T_WRITE, CMD_RESTART, &zero, 1)));
+      delay(1500);
+      pump();
+    }
   }
   bool ok = command(T_READ, CMD_RANGE, nullptr, 0);
   if (ok && reply.n >= 4) {
@@ -379,6 +405,66 @@ void radarOut(int mode) {
   else logf("[radar] OUT pin rule: %s", outcome(ok));
 }
 
+// The sensor's range step (DFRobot "resolution mode"): 80 cm steps, 15 of them to
+// 11.6 m, or 20 cm steps, 25 of them to 4.9 m. The detect range and the clear
+// distance both round to a step, so 20 cm steps let a close cut-off land where it
+// is set (the office mirror at 2.2 m stayed through a 200 cm cap on 80 cm steps).
+void radarRes(int mode) {
+  bool talk = mode >= 0 || !quietReads;
+  if (mode >= 0) {
+    if (mode > 1) { logf("radar res: 80 (steps to 11.6 m) or 20 (steps to 4.9 m)"); return; }
+    uint8_t m = mode;
+    logf("[radar] set range step %s cm: %s", mode ? "20" : "80", outcome(command(T_WRITE, CMD_RES, &m, 1)));
+  }
+  bool ok = command(T_READ, CMD_RES, nullptr, 0);
+  if (ok && reply.n >= 1) { resMode = reply.data[0] ? 1 : 0; if (talk) logf("[radar] range step now %s cm", resMode ? "20" : "80"); }
+  else if (talk) logf("[radar] range step: %s", outcome(ok));
+}
+
+// The sensor learns the empty room (DFRobot "environment calibration"): it waits
+// delaySec so whoever pressed the button can leave, then listens contSec and sets
+// its own per-step thresholds from the noise it hears. Nobody in view meanwhile.
+// It counts down in notes (cmd 03), logged every 5 s.
+void radarCalib(int delaySec, int contSec) {
+  if (delaySec < 0 || delaySec > 600 || contSec < 5 || contSec > 600) { logf("radar calib: delay seconds then listen seconds, e.g. radar calib 10 30"); return; }
+  uint8_t v[5] = {(uint8_t)delaySec, (uint8_t)(delaySec >> 8), (uint8_t)contSec, (uint8_t)(contSec >> 8), 1};
+  bool ok = command(T_WRITE, CMD_CALIB, v, 5);
+  logf("[radar] room calibration: %s. Leave the view for the next %d s", outcome(ok), delaySec + contSec);
+  if (ok) calibLeft = delaySec + contSec;
+}
+
+// Sensitivity, one of DFRobot's threshold groups, for the motion reading (gate 0)
+// and the still-person reading (gate 1): 0 low, 1 mid, 2 high; 3 = the custom set
+// a room calibration leaves behind.
+static const char *sensName(int g) { return g == 0 ? "low" : g == 1 ? "mid" : g == 2 ? "high" : g == 3 ? "custom (from calibration)" : "?"; }
+void radarSens(int gate, int group) {
+  if (gate < 0 || gate > 1) return;
+  bool talk = group >= 0 || !quietReads;
+  if (group >= 0) {
+    if (group > 2) { logf("radar sens: motion or presence, then low, mid or high"); return; }
+    uint8_t v[2] = {(uint8_t)gate, (uint8_t)group};
+    logf("[radar] set %s sensitivity %s: %s", gate ? "presence" : "motion", sensName(group), outcome(command(T_WRITE, CMD_SENS, v, 2)));
+  }
+  uint8_t q[2] = {(uint8_t)gate, 0};
+  bool ok = command(T_READ, CMD_SENS, q, 2);
+  if (ok && reply.n >= 2) { (gate ? sensP : sensM) = reply.data[1]; if (talk) logf("[radar] %s sensitivity now %s", gate ? "presence" : "motion", sensName(reply.data[1])); }
+  else if (talk) logf("[radar] %s sensitivity: %s", gate ? "presence" : "motion", outcome(ok));
+}
+
+// How long the sensor keeps reporting a person after it last saw one (DFRobot
+// "target disappear delay"), seconds. Shorter = the doorway reads clear sooner.
+void radarDelay(int sec) {
+  bool talk = sec >= 0 || !quietReads;
+  if (sec >= 0) {
+    if (sec > 600) { logf("radar delay: 0 to 600 seconds"); return; }
+    uint8_t v[2] = {(uint8_t)sec, (uint8_t)(sec >> 8)};
+    logf("[radar] set disappear delay %d s: %s", sec, outcome(command(T_WRITE, CMD_DELAY, v, 2)));
+  }
+  bool ok = command(T_READ, CMD_DELAY, nullptr, 0);
+  if (ok && reply.n >= 2) { delaySec = le16(reply.data); if (talk) logf("[radar] disappear delay now %d s", delaySec); }
+  else if (talk) logf("[radar] disappear delay: %s", outcome(ok));
+}
+
 // Factory settings (two steps, as DFRobot's library does it), then restart.
 void radarReset() {
   uint8_t zero = 0;
@@ -387,7 +473,7 @@ void radarReset() {
   logf("[radar] factory reset step 2: %s", outcome(command(T_WRITE, CMD_FACTORY, &zero, 1)));
   delay(50);
   logf("[radar] restart: %s", outcome(command(T_WRITE, CMD_RESTART, &zero, 1)));
-  version = ""; rangeClosest = rangeFarthest = 0;
+  version = ""; rangeClosest = rangeFarthest = 0; resMode = sensM = sensP = delaySec = -1; calibLeft = 0;
   setUp = false; begunAt = millis();    // first contact again once it is back
 }
 
@@ -417,6 +503,7 @@ RadarStats radarStats() {
   if (!r.talking) { r.r.fire = false; r.r.etaMs = 0; }
   r.closest = rangeClosest; r.farthest = rangeFarthest;
   r.version = version;
+  r.res = resMode; r.sensM = sensM; r.sensP = sensP; r.delaySec = delaySec; r.calibLeft = calibLeft;
   r.why = why;
   r.whyAgoMs = whyAt ? now - whyAt : 0;
   return r;
@@ -434,6 +521,7 @@ String radarJson() {
          ",\"eta\":" + String(r.r.etaMs) + ",\"fire\":" + String(r.r.fire) + ",\"run\":" + String(r.fireRun) +
          ",\"clear\":" + String(clearNow);
   }
+  j += ",\"res\":" + String(r.res) + ",\"sensm\":" + String(r.sensM) + ",\"sensp\":" + String(r.sensP) + ",\"delay\":" + String(r.delaySec) + ",\"calib\":" + String(r.calibLeft);
   j += ",\"closest\":" + String(r.closest) + ",\"farthest\":" + String(r.farthest) + ",\"ver\":\"" + r.version + "\"" +
        ",\"why\":\"" + r.why + "\",\"whyAgo\":" + String(r.whyAgoMs) + "}";
   return j;

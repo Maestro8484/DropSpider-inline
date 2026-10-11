@@ -95,8 +95,11 @@ static const char *const HELP[] = {
   "  radar out <1|2|3>  what its OUT pin goes high on: 1 motion, 2 presence, 3 either | radar reset   its factory settings",
   "  radar raw       the last 96 bytes heard from the sensor, as hex | radar baud   find its speed; set it back to 115200 if it moved",
   "  radar cmd r|w <cmd> [hex]  one protocol command by hand, e.g. radar cmd r 82 01 (software version)",
+  "  radar res [80|20]  the sensor's range step | radar calib <delay s> <listen s>  it learns the empty room | radar delay [s]  how long it keeps a person after losing them",
+  "  radar sens motion|presence [low|mid|high]  the sensor's own sensitivity for the moving and the still reading",
   "  sensor 4002|2410  4002 = C4002 over serial, OUT pin if silent; 2410 = OUT pin on GPIO33 only | approach cm/s | leadms ms",
-  "  radarinv 0|1    1 = the radar's direction word reads backwards on this mount (swap approaching and away)",
+  "  firecm <cm>     fire when someone approaching is within this distance, 0 = off | radarinv 0|1   direction word reads backwards",
+  "  clearcm <cm>    the doorway is clear when nobody reads within this distance (re-arm after a scare), 50 to 1100",
   "  (settings change immediately; 'save' keeps them after power loss)",
   "  motion commands disarm the sensor; 'arm' when bench work is done",
 };
@@ -114,7 +117,7 @@ static void printRadar() {
                          d.dir == 2 ? "approaching" : d.dir == 0 ? "going away" : "no direction", S.radarInv ? " (word swapped by radarinv 1)" : "", d.menergy,
                          d.etaMs ? (String(", arrives in ") + d.etaMs + " ms").c_str() : "");
   if (d.state == 1 || d.state == 3 || (d.state == 2 && d.pdist > 0)) logf("  still: %d cm away, energy %u", d.pdist, d.penergy);
-  logf("  rule (approach %d cm/s, leadms %d): %s%s", S.approach, S.leadMs, d.fire ? "PASSES" : "does not pass",
+  logf("  rule (approach %d cm/s, firecm %d, leadms %d): %s%s", S.approach, S.fireCm, S.leadMs, d.fire ? "PASSES" : "does not pass",
        r.fireRun >= 2 ? ", two in a row: WOULD FIRE" : "");
   if (r.why.length()) logf("  last drop fired by the sensor: %s, %lu s ago", r.why.c_str(), (unsigned long)(r.whyAgoMs / 1000));
 }
@@ -166,7 +169,8 @@ void consoleRun(const String &raw, String *capture) {
   else if (cmd == "radar")    {
     String sub = argS, rest; int sp2 = argS.indexOf(' ');
     if (sp2 >= 0) { sub = argS.substring(0, sp2); rest = argS.substring(sp2 + 1); rest.trim(); }
-    bool talks = sub == "reset" || sub == "baud" || sub == "cmd" || sub == "range" || sub == "out" || sub == "version";
+    bool talks = sub == "reset" || sub == "baud" || sub == "cmd" || sub == "range" || sub == "out" || sub == "version" ||
+                 sub == "res" || sub == "calib" || sub == "sens" || sub == "delay";
     if (talks && machineStatus().busy) logf("refused: a move is running");
     else if (sub == "baud") radarBaud();
     else if (sub == "cmd") radarCmd(rest);
@@ -178,9 +182,18 @@ void consoleRun(const String &raw, String *capture) {
       else radarRange((int)a, (int)b);
     }
     else if (sub == "out") { long m = 0; if (rest.length() && !parseLong(rest, m)) logf("radar out: 1 motion, 2 presence, 3 either; alone = read it"); else radarOut((int)m); }
+    else if (sub == "res") { long m = -1; if (rest.length() && !(parseLong(rest, m) && (m == 20 || m == 80))) logf("radar res: 80 or 20; alone = read it"); else radarRes(m < 0 ? -1 : (m == 20 ? 1 : 0)); }
+    else if (sub == "calib") { long a = -1, b = -1; int sp3 = rest.indexOf(' '); if (!(sp3 > 0 && parseLong(rest.substring(0, sp3), a) && parseLong(rest.substring(sp3 + 1), b))) logf("radar calib: delay seconds then listen seconds, e.g. radar calib 10 30"); else radarCalib((int)a, (int)b); }
+    else if (sub == "delay") { long s = -1; if (rest.length() && !parseLong(rest, s)) logf("radar delay: seconds; alone = read it"); else radarDelay((int)s); }
+    else if (sub == "sens") {
+      String g = rest, lv; int sp3 = rest.indexOf(' '); if (sp3 > 0) { g = rest.substring(0, sp3); lv = rest.substring(sp3 + 1); lv.trim(); }
+      int gate = g == "motion" ? 0 : g == "presence" ? 1 : -1, grp = lv == "low" ? 0 : lv == "mid" ? 1 : lv == "high" ? 2 : lv.length() ? 9 : -1;
+      if (gate < 0 || grp == 9) logf("radar sens: motion or presence, then low, mid or high; without a level = read it");
+      else radarSens(gate, grp);
+    }
     else if (sub == "raw") radarRaw();
     else if (sub == "probe") radarProbe();
-    else if (sub.length()) logf("radar: alone, or probe, raw, baud, version, range, out, reset, cmd");
+    else if (sub.length()) logf("radar: alone, or probe, raw, baud, version, range, res, calib, sens, delay, out, reset, cmd");
     if (!sub.length() || sub == "probe" || sub == "baud" || sub == "reset") printRadar();
   }
   else if (settingsIsName(cmd)) {

@@ -92,7 +92,6 @@
 #define RADAR_BAUD          115200   // C4002 as shipped (DFRobot library example); 'radar baud' finds it if it moved
 #define RADAR_SILENT_MS     1000     // no good frame this long = radar silent: the OUT pin carries the trigger
 #define RADAR_REPORT_TENTHS 1        // asked of the sensor at boot: a result every 0.1 s
-#define RADAR_CLEAR_CM      300      // everyone farther than this (or nobody) = the doorway is clear
 #define RADAR_RUN_GAP_MS    500      // a gap this long between result frames breaks the "two readings in a row" count
 #define RADAR_RETRY_MS      5000     // while no result frames arrive, the report-period command is sent again this often
 
@@ -115,4 +114,6 @@
 #define DEF_SENSOR          4002   // 4002 = C4002 over serial, OUT pin if it goes silent; 2410 = OUT pin on GPIO33 only
 #define DEF_APPROACH        30     // cm/s toward the sensor, slower than this does not fire
 #define DEF_LEAD_MS         750    // fire when distance / speed is under this (ms before the person arrives)
+#define DEF_FIRE_CM         120    // fire when someone approaching at 'approach' or faster is within this slant distance, cm; 0 = time rule only (owner 2026-10-10: proximity over timing)
+#define DEF_CLEAR_CM        300    // the doorway is clear when nobody reads within this slant distance (was the fixed RADAR_CLEAR_CM; a setting since the office bench 2026-10-10, where a mirror at 2.2 m held it)
 #define DEF_RADAR_INV       0      // 1 = the sensor's direction word reads backwards on this mount (swap approaching and away); test S2 decides

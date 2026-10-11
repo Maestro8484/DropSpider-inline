@@ -30,6 +30,10 @@ struct RadarStats {
   RadarReading r;
   uint16_t closest, farthest;  // the sensor's own detect range, cm, as read at start-up (0 0 if never read)
   String   version;     // the sensor's software version, as read at start-up ("" if never read)
+  int      res;         // range step, 0 = 80 cm, 1 = 20 cm, -1 not read
+  int      sensM, sensP;// sensitivity group, motion and presence: 0 low, 1 mid, 2 high, 3 custom, -1 not read
+  int      delaySec;    // the sensor's disappear delay, s, -1 not read
+  int      calibLeft;   // seconds left of a room calibration, 0 when none is running
   String   why;         // what the radar saw when the last sensor-fired drop started ("" if none yet)
   uint32_t whyAgoMs;    // how long ago that was (0 if none yet)
 };
@@ -38,7 +42,7 @@ void radarBegin();      // call once from setup()
 void radarPoll();       // call from loop(): reads whatever the UART holds; 1.5 s after boot asks the sensor to report 10 times a second, again every RADAR_RETRY_MS while silent
 bool radarTalking();    // result frames arriving (task safe)
 bool radarFire();       // the last two readings both passed the trigger rule (task safe)
-bool radarClear();      // nobody in view, or everyone farther than RADAR_CLEAR_CM (task safe); false while silent
+bool radarClear();      // nobody in view, or everyone farther than the setting clearcm (task safe); false while silent
 void radarMarkFire(bool viaLink);   // the machine task says a drop just started on the sensor: keep what it saw, for the page (task safe)
 int  radarProbe();      // find which free pin carries the sensor's signal and listen there; -1 if none (blocks 0.4 s)
 void radarRaw();        // print the last 96 bytes heard on RX2
@@ -46,6 +50,10 @@ void radarBaud();       // find which speed the sensor answers at and set it bac
 void radarVersion();    // ask the sensor its software and hardware version
 void radarRange(int closest, int farthest);   // read the sensor's detect range, or set it (cm); -1 -1 = read only
 void radarOut(int mode);                      // set the OUT pin's rule: 1 motion, 2 presence, 3 either; 0 = read only
+void radarRes(int mode);                      // the sensor's range step: 0 = 80 cm steps to 11.6 m, 1 = 20 cm steps to 4.9 m; -1 = read only
+void radarCalib(int delaySec, int contSec);   // the sensor learns the empty room: waits delaySec, then listens contSec (nobody in view); countdown logged
+void radarSens(int gate, int group);          // sensitivity, gate 0 = motion, 1 = presence; group 0 low, 1 mid, 2 high; -1 = read only
+void radarDelay(int sec);                     // how long the sensor keeps reporting a person after it last saw one, s; -1 = read only
 void radarReset();      // factory reset the sensor and restart it (blocks about 1 s)
 void radarCmd(const String &a);               // one protocol command by hand: "r 82 01" (read) or "w 83 01" (write)
 RadarStats radarStats();

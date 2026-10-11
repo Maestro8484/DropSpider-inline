@@ -85,20 +85,30 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div id="rtab"></div>
  <h3>Trigger rule</h3>
  <label><span>Walking speed that fires<small>cm/s toward the sensor, 10 to 150. Slower than this never fires</small></span><input type="number" id="f_approach" min="10" max="150" onchange="c('approach '+this.value)"></label>
- <label><span>Lead time<small>ms, 200 to 2000. Fires when distance divided by speed is under this</small></span><input type="number" id="f_leadms" min="200" max="2000" onchange="c('leadms '+this.value)"></label>
+ <label><span>Fire distance<small>cm from the sensor, straight line. Fires when someone approaching is this close; 0 = off</small></span><input type="number" id="f_firecm" min="0" max="1100" onchange="c('firecm '+this.value)"></label>
+ <label><span>Lead time<small>ms, 200 to 2000. Also fires early when distance divided by speed is under this</small></span><input type="number" id="f_leadms" min="200" max="2000" onchange="c('leadms '+this.value)"></label>
+ <label><span>Clear distance<small>cm. The doorway counts as clear, and it re-arms, when nobody reads closer than this for 2 s</small></span><input type="number" id="f_clearcm" min="50" max="1100" onchange="c('clearcm '+this.value)"></label>
  <label><span>Direction reads backwards<small>tick if the card says going away while you walk toward it (test S2)</small></span><input type="checkbox" id="f_radarinv" onchange="c('radarinv '+(this.checked?1:0))"></label>
  <label><span>What fires the drop<small>serial = the rule above; OUT pin = whenever the sensor sees someone</small></span><select id="f_sensor" onchange="c('sensor '+this.value)"><option value="4002">C4002 serial, OUT pin if silent</option><option value="2410">OUT pin on GPIO33 only</option></select></label>
  <h3>Sensor's own detect range</h3>
- <label><span>Closest to farthest<small>cm, 0 to 1100, kept in the sensor. Closest goes past the hanging spider (test S2)</small></span><span class="pair"><input type="number" id="rclose" min="0" max="1100"> to <input type="number" id="rfar" min="0" max="1100"></span></label>
+ <label><span>Closest to farthest<small>cm, 0 to 1100, kept in the sensor. Closest goes past the hanging spider (test S2). Rounds to the range step</small></span><span class="pair"><input type="number" id="rclose" min="0" max="1100"> to <input type="number" id="rfar" min="0" max="1100"></span></label>
  <div class="g" style="margin-top:8px">
   <button onclick="rrange()">Set range</button>
   <button onclick="c('radar range')">Read range</button>
+ </div>
+ <label><span>Range step<small>20 cm steps reach 4.9 m and let a close cut-off land where it is set; 80 cm steps reach 11.6 m</small></span><select id="rres" onchange="c('radar res '+this.value)"><option value="80">80 cm, to 11.6 m</option><option value="20">20 cm, to 4.9 m</option></select></label>
+ <label><span>Motion sensitivity<small>the moving-person reading. Lower if the dog or the swinging spider fires it</small></span><select id="rsensm" onchange="c('radar sens motion '+this.value)"><option value="low">low</option><option value="mid">mid</option><option value="high">high</option><option value="custom" disabled>custom (from calibration)</option></select></label>
+ <label><span>Presence sensitivity<small>the still-person reading. Lower if furniture or a screen holds the doorway busy</small></span><select id="rsensp" onchange="c('radar sens presence '+this.value)"><option value="low">low</option><option value="mid">mid</option><option value="high">high</option><option value="custom" disabled>custom (from calibration)</option></select></label>
+ <label><span>Keeps a person for<small>s after it last saw them. Shorter = the doorway clears sooner</small></span><input type="number" id="rdelay" min="0" max="600" onchange="c('radar delay '+this.value)"></label>
+ <div class="g" style="margin-top:8px">
+  <button onclick="if(confirm('The sensor learns the empty room: 10 s for you to leave its view, then 30 s of listening. Keep everyone and the dog out of its view until the countdown ends. Start?'))c('radar calib 10 30')">Learn the empty room</button>
   <button class="p" onclick="c('save')">Save settings</button>
  </div>
+ <div class="sub" id="rcheck" style="margin-top:8px"></div>
  <h3>Last 60 seconds</h3>
  <canvas id="tl"></canvas>
  <div class="sub" id="rhealth" style="margin-top:8px"></div>
- <div class="sub">Fires while armed and ready when two readings in a row show someone walking toward the sensor at the speed above or faster, close enough to arrive within the lead time. The red zone on the strip is where that passes at the current speed. Clear to re-arm: nobody within 3 m for 2 s. Serial quiet for 1 s: the OUT pin carries the trigger. Distances run along the radar's tilted view, not the floor.</div>
+ <div class="sub">Fires while armed and ready when two readings in a row show someone walking toward the sensor at the speed above or faster and inside the fire distance (or, for a fast walker, close enough to arrive within the lead time). The red zone on the strip is where that passes at the current speed. Clear to re-arm: nobody within the clear distance for 2 s. Serial quiet for 1 s: the OUT pin carries the trigger. Distances run along the radar's tilted view, not the floor.</div>
 </div>
 
 <div class="card">
@@ -243,16 +253,22 @@ function rtable(d){const r=d.r;let h='';
   if(stl||(mv&&r.pdist>0))h+='<div class="row"><span><span class="key" style="background:#a995ff"></span>Still person</span><b>'+(r.pdist/100).toFixed(2)+' m away, confidence '+r.penergy+' of 99</b></div>';
   if(r.state===0)h+='<div class="row"><span>Nobody in view</span><b>-</b></div>';
   h+='<div class="row"><span>Trigger rule</span><b>'+(r.fire?'passes':'not met')+(r.run>=2?' (two in a row: fires)':r.run===1?' (one reading)':'')+'</b></div>';
-  h+='<div class="row"><span>Doorway</span><b>'+(r.clear?'clear (nobody within 3 m)':'someone within 3 m')+'</b></div>';
+  const ccm=st?st.settings.clearcm:300;h+='<div class="row"><span>Doorway</span><b>'+(r.clear?'clear (nobody within '+ccm+' cm)':'someone within '+ccm+' cm')+'</b></div>';
   h+='<div class="row"><span>Light at the sensor</span><b>'+r.light+' lux</b></div>'}
  h+='<div class="row"><span>Last drop fired by the sensor</span><b>'+(r.why?r.why+', '+ms(r.whyAgo)+' ago':'none since power-up')+'</b></div>';
  h+='<div class="row"><span>OUT pin (GPIO33)</span><b>'+(d.out?'high, someone there':'low, clear')+'</b></div>';
  if(r.ver)h+='<div class="row"><span>Sensor software</span><b>'+r.ver+'</b></div>';
  document.getElementById('rtab').innerHTML=h;
+ const sn=['low','mid','high','custom'];for(const[id,v]of[['rres',r.res<0?'':(r.res?'20':'80')],['rsensm',r.sensm<0?'':sn[r.sensm]||''],['rsensp',r.sensp<0?'':sn[r.sensp]||''],['rdelay',r.delay<0?'':r.delay]]){const f=document.getElementById(id);if(f&&document.activeElement!==f&&v!=='')f.value=v}
+ if(st){const land=st.landMs||0,fc=st.settings.firecm||0,v=(r.talking&&(r.state===2||r.state===3)&&r.dir===2)?Math.abs(r.speed):0;let t='';
+  if(land&&fc){t='The spider takes '+(land/1000).toFixed(2)+' s from the trigger to the bottom. Firing at '+fc+' cm: someone walking at 100 cm/s is about '+Math.max(0,Math.round(fc-100*land/1000))+' cm from the sensor when it lands'+(v?', at the '+v+' cm/s seen now about '+Math.max(0,Math.round(fc-v*land/1000))+' cm':'')+'. Raise the fire distance if that is past the doorway.'}
+  else if(fc)t='Fire distance '+fc+' cm. After the first drop this line says where the person is when the spider lands.';
+  document.getElementById('rcheck').textContent=t}
  if(r.farthest){for(const[id,v]of[['rclose',r.closest],['rfar',r.farthest]]){const f=document.getElementById(id);if(document.activeElement!==f&&!f.dataset.touched)f.value=v}}
  let c=r.talking?chip('radar talking, '+r.fps.toFixed(1)+' frames/s','ok'):chip(r.frames?'radar silent '+ms(r.age)+', OUT pin carries the trigger':'no radar frames yet','no');
  if(r.talking)c+=(r.state===2||r.state===3)?chip('someone moving','wa'):r.state===1?chip('someone still','wa'):chip('nobody in view','ok');
  if(r.talking&&r.run>=2)c+=chip(d.via?'WOULD FIRE NOW':'rule passing (not the trigger: OUT pin only is set)','no');
+ if(r.calib>0)c+=chip('learning the empty room, '+r.calib+' s left: stay out of view','wa');
  if(d.out)c+=chip('OUT pin high','wa');
  if(d.inv)c+=chip('direction word swapped','wa');
  document.getElementById('rchips').innerHTML=c;
@@ -263,14 +279,14 @@ function rdraw(){requestAnimationFrame(rdraw);if(document.hidden)return;
  const cv=document.getElementById('scope');if(!cv.clientWidth)return;const[x,w,h]=fit(cv,.3);const now=performance.now();
  const L=40,R=w-16,y0=h*0.55,k=(R-L)/(rz*100);const X=cm=>L+cm*k;
  x.clearRect(0,0,w,h);
- const r=rlast&&rlast.r.talking?rlast.r:null,ap=st?st.settings.approach:30,lead=st?st.settings.leadms:750;
- const sp=r&&(r.state===2||r.state===3)&&r.dir===2?Math.max(Math.abs(r.speed),ap):ap;const zone=sp*lead/1000;
+ const r=rlast&&rlast.r.talking?rlast.r:null,ap=st?st.settings.approach:30,lead=st?st.settings.leadms:750,fcm=st?st.settings.firecm||0:0;
+ const sp=r&&(r.state===2||r.state===3)&&r.dir===2?Math.max(Math.abs(r.speed),ap):ap;const zone=Math.max(sp*lead/1000,fcm);
  x.fillStyle='rgba(226,96,79,.18)';x.fillRect(X(0),y0-18,Math.min(X(zone),R)-X(0),36);
- x.fillStyle='rgba(232,180,74,.10)';x.fillRect(X(300),y0-18,R-X(300),36);
+ const ccm=st?st.settings.clearcm:300;x.fillStyle='rgba(232,180,74,.10)';x.fillRect(X(ccm),y0-18,Math.max(0,R-X(ccm)),36);
  x.strokeStyle='#332e3d';x.font='11px system-ui';x.fillStyle='#9a93a8';
  x.beginPath();x.moveTo(L,y0);x.lineTo(R,y0);x.stroke();
  for(let m=0;m<=rz;m++){const px=X(m*100);x.beginPath();x.moveTo(px,y0-22);x.lineTo(px,y0+22);x.stroke();x.fillText(m+' m',px-8,h-4)}
- x.fillText('fires here at '+sp+' cm/s',X(0)+4,y0-26);x.fillText('clear past 3 m',X(300)+4,y0-26);
+ x.fillText('fires here at '+sp+' cm/s',X(0)+4,y0-26);if(ccm<rz*100)x.fillText('clear past '+ccm+' cm',X(ccm)+4,y0-26);
  if(r&&r.farthest){x.strokeStyle='#e8b44a';x.setLineDash([3,3]);for(const cm of[r.closest,r.farthest]){if(cm<=rz*100){x.beginPath();x.moveTo(X(cm),y0-20);x.lineTo(X(cm),y0+20);x.stroke()}}x.setLineDash([])}
  ripples=ripples.filter(t=>now-t<900);
  for(const t of ripples){const f=(now-t)/900;x.strokeStyle='rgba(169,149,255,'+(.4*(1-f)).toFixed(3)+')';x.beginPath();x.arc(L,y0,Math.max(1,f*(R-L)),-Math.PI/2,Math.PI/2);x.stroke()}
@@ -349,6 +365,7 @@ static void sendStatus() {
   j += ",\"drops\":" + String(m.drops);
   j += ",\"trigger\":\"" + String(triggerName(m.lastTrigger)) + "\"";
   j += ",\"triggerAgo\":" + String(m.lastTriggerAgoMs);
+  j += ",\"landMs\":" + String(m.landMs);
   j += ",\"fault\":\"" + jsonEscape(m.fault) + "\"";
   j += ",\"faultRun\":" + String(m.faultRun);
   j += ",\"uptime\":" + String(millis());

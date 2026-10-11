@@ -78,6 +78,7 @@ static long lastDropSteps = 0;          // what the last powered drop was told t
 static bool decelApplied = false;       // the drop has switched to its stopping rate
 static int32_t dropDecNow = 0;          // stopping rate for the drop in progress
 static uint32_t dropStartMs = 0;
+static uint32_t landMs = 0;             // trigger to the end of the drop, last cycle (the page uses it to check the fire distance)
 
 // V14: after a rewind stopped by the switch and a seat move, the spider sits on the
 // finger with the switch reading open. homeFlag remembers that (also kept in flash).
@@ -234,7 +235,7 @@ static void readInputs() {
   // approaching fast enough to arrive within leadms); if the link goes silent for
   // RADAR_SILENT_MS the sensor's OUT pin on GPIO33 carries it until frames return.
   // sensor 2410: the OUT pin only. The doorway is clear when the radar sees nobody
-  // within RADAR_CLEAR_CM, or the pin reads low.
+  // within the setting clearcm, or the pin reads low.
   bool pin = digitalRead(PIN_SENSOR) == HIGH;
   bool link = S.sensor == 4002 && radarTalking();
   if (link != viaRadar) {
@@ -625,6 +626,7 @@ static void step() {
       long ran = moveStartPos - stepper->getCurrentPosition();
       logf("[drop] ran %ld steps (%d mm) in %lu ms at up to %d rpm; motor holding",
            ran, (int)(ran * mmPerStep()), (unsigned long)(millis() - dropStartMs), S.dropRpm);
+      if (cycle && lastTriggerMs) landMs = millis() - lastTriggerMs;
       enter(ST_SETTLE);
       break;
     }
@@ -799,6 +801,7 @@ MachineStatus machineStatus() {
   m.drops = drops;
   m.lastTrigger = lastTrigger;
   m.lastTriggerAgoMs = lastTriggerMs ? millis() - lastTriggerMs : 0;
+  m.landMs = landMs;
   m.fault = fault;
   m.faultRun = faultRun;
   return m;
