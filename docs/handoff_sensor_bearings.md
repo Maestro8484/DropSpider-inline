@@ -28,11 +28,11 @@ The sensor gives the straight-line distance from itself to the person and the sp
 
 ## Gate for any flash or motion
 
-The owner says he is at the device and `status` shows busy 0, driverOn 0, ready. Before a flash the spider is seated on the finger with the motor off (that is the lock state the board leaves after every move). The session runs every command itself; the owner is never handed one. One motion command per turn, read the board back, write the log row, then the next.
+The owner says he is watching the device and `status` shows busy 0, driverOn 0, ready. Before a flash the spider is seated on the finger with the motor off (that is the lock state the board leaves after every move). The session runs every command itself; the owner is never handed one. One motion command per turn, read the board back, write the log row, then the next.
 
 ## The work, in order
 
-1. **Arm and walk in (owner at the device).** When the owner says the radar is remounted and aimed: `arm`, `save`, then he walks in three times at normal pace; read each from the board log, one log row each. Then three walk-outs from behind the door side. If walk-outs fire, the tilt is the lever (shallower, toward 30 degrees down, per the field of view page), then a steel shroud.
+1. **Arm and walk in (owner watching).** When the owner says the radar is remounted and aimed: `arm`, `save`, then he walks in three times at normal pace; read each from the board log, one log row each. Then three walk-outs from behind the door side. If walk-outs fire, the tilt is the lever (shallower, toward 30 degrees down, per the field of view page), then a steel shroud.
 2. **Exercise the new rewind code** on the first drops: the log must show the slow finish, and any miss must show the second try. One row each.
 3. **Release time, owner's call (asked 2026-10-12, not answered):** seat the spider about 1/2 in lower so the unload stops hitting the switch (saves the 220 ms driver reset), and shorten the finger wait from 500 to 300 ms. Each needs 2 or 3 test drops.
 4. **Learn the empty room** at this mount, hall empty for 40 s (radar card button).
@@ -62,7 +62,7 @@ Changelog line, roadmap line 4 removed, close V15 in `docs/08_open_items.md` wit
 ## Rules for the session
 
 - The owner is not a developer: verdict first, short, plain English, gloss jargon in a few words. No em dashes, arrows, emojis. A question gets a one-line answer and no work.
-- No flash and no motion until he says he is at the device and the board shows busy 0, driverOn 0, ready. Never plug or unplug the motor with 12 V on. Servo plug back in before any drop.
+- No flash and no motion until he says he is watching and the board shows busy 0, driverOn 0, ready. Never plug or unplug the motor with 12 V on. Servo plug back in before any drop.
 - Never hand him a command to run.
 - Stage files by name; never `git add -A`.
 - The Pi4 is never touched from this repo.
