@@ -4,14 +4,17 @@ Work order: finish the bench of the DFRobot C4002 radar (SEN0691, 24 GHz) as the
 
 **Ground truth:** the repo on disk wins over this file, and the board wins over both. Staleness check: `git log -1 --oneline` against `git log -1 --oneline -- docs/handoff_sensor_bearings.md`; a different hash means commits landed after this was written, read `CHANGELOG.md` for them. Every bench result so far is in `docs/commissioning_log.md`, rows dated 2026-10-10.
 
-## State facts, recorded at the close of 2026-10-10 (each line says how it was read)
+## State facts, recorded at the close of 2026-10-13 (each line says how it was read)
 
-- **On the board, FLASHED and VERIFIED:** the C4002 talks at 115200, 18 data bytes per result frame, 10 frames a second, 0 bad frames (board log and `/api/radar`). Direction word 2 = approaching, negative speed = approaching, so `radarinv` stays 0 (walk test, sampled). Keeps its report period through a power cut (boot log order). Silent-link fallback to the OUT pin and back both fire (board log during a sensor restart). The radar fired the drop twice, drops 27 and 28, each a clean cycle to the switch and the lock (board log).
-- **Settings saved on the board** (`/api/status`): `sensor 4002`, `approach 30`, `firecm 200`, `clearcm 150`, `leadms 1200`, `radarinv 0`. `firecm` and `clearcm` are the office numbers, not the porch's.
-- **Settings kept in the sensor** (read back with `radar res`, `radar delay`, `radar sens`, `radar range`): detect range 0 to 300 cm, range step 20 cm, disappear delay 2 s (shipped at 15 s), motion and presence sensitivity mid (as shipped). Learn the empty room has NOT been run.
-- **The mount is a mockup:** office doorway, 6 ft 10 in up, 55 degrees down, facing out into the hall. A screen (a magic mirror) with a dresser sits about 6.5 ft in front of it and reads as a still person at about 2.2 m. The owner's chair is behind the sensor at its 4 o'clock and the radar sees him there through its back.
-- **Not measured, by the owner's call:** the sensor's current draw.
-- **Open, not the sensor's:** one page drop on 2026-10-10 rewound its full 750 mm without the switch closing, with the spider ending at the top in the locked position; later rewinds all stopped at the switch. The switch itself works (5 hand presses logged). Watch the flap on the next few rewinds.
+Staleness check: compare `git log -1 --oneline` with `git log -1 --oneline -- docs/handoff_sensor_bearings.md`; a different hash means work landed after this was written.
+
+- **Mount:** the device is over the inside of the front door, about 7.5 ft up (owner). Radar on the owner's new parts: `c4002_case_base_extended.stl` (19 mm longer pivot to case) on `c4002_case_Swivel_mount.stl` (swivels left and right as well as tilting). Being remounted and re-aimed by the owner at the close; tilt and swivel not yet known.
+- **On the board, FLASHED (f82b153), read from `/api/status`:** ready, home, no fault, disarmed (armed saved 0). dropmm 607 (the owner's own teach from the page, kept by him), droprpm 600 (700 skipped steps, log 2026-10-12), dropacc 80000, dropdec 60000, rearm 0, clearms 1000, firecm 200, clearcm 150, approach 30, radar detect range 0 to 300.
+- **VERIFIED:** a power-up with the spider down stops on a fault instead of arming; the C4002 at 10 frames a second; drops at 600 rpm without skipped steps; the page teach sets dropmm from the wound length.
+- **FLASHED, NOT yet exercised:** 3 presses of the limit switch = bring it home (lower 1/2 turn, wind at 80 rpm, clear the fault, re-arm); every rewind after a drop finishes at 80 rpm; one slow second try when a rewind misses the switch; `lastlog` (page: Last fault log) keeps the log up to a fault through a power cut.
+- **Open, not the sensor's:** rewinds that never close the switch (3 on record, 0 switch edges, spider at the top or part way). If one comes back, read `lastlog` before anything else.
+- **Timing, measured 2026-10-12:** trigger to end of drop about 1.7 s; the fall is about 0.7 s, the rest is the release (driver start 200 ms, finger wait 500 ms, a driver reset of about 220 ms because the unload hits the switch every time).
+- **Field of view page:** https://claude.ai/artifact/HBP7CQnUQara66fL5Zy2jv (computed: at 55 degrees down the radar sees about 2 ft 5 in behind itself; about 30 degrees down stops walk-out drops).
 
 ## Why the rule is proximity (so nobody re-litigates it)
 
@@ -29,15 +32,14 @@ The owner says he is at the device and `status` shows busy 0, driverOn 0, ready.
 
 ## The work, in order
 
-1. **Foil behind the sensor (owner).** Kitchen foil or aluminum tape on the outside of the case lid, covering the back of the board, touching no pin. Why: walking out of the office is an approach from behind, and the radar sees through its back; on the porch that is anyone stepping out the front door. Then the test: owner inside the office, walks out under the sensor at normal pace, three times, device armed; the board log must show no `[cycle] trigger: radar`. If it still fires, a second layer and a wider patch; if that fails, the mount angle is the lever (steeper down means less view behind).
-2. **Learn the empty room.** The card's button (10 s to leave, 30 s of listening) with everyone and the dog out of the sensor's view until the chip on the card goes away. Then read the sensitivity selects: they should say custom. Why: the sensor sets its own per-step thresholds from the room's noise, which is DFRobot's answer to the screen at 2.2 m. If the still reading at about 2.2 m is gone afterwards, `clearcm` can go back toward 300 here; if not, leave `clearcm` 150 for the office.
-3. **S3, the count.** Fire distance 200 cm, owner walks in from the hall at normal pace, straight through under it, stepping out of view between runs so it re-arms (the chip says armed, doorway clear). Ten runs, one log row each, with the owner's one-line view of each (early, on time, late). Read the card's check line after the first: it says where the person is when the spider lands at the current fire distance; raise `firecm` if the spider lands behind them, lower it if it lands while they are still out in the hall. Save settings.
-4. **S2, the swinging spider.** Device disarmed, spider hanging after a drop (page Drop, then watch the card while it swings, then still). The card must not say "someone moving, approaching" at 30 cm/s or more for two readings while it swings; if it does, motion sensitivity low on the card, and note it.
-5. **S4, no trigger.** Armed. Walk away from under it, walk across the hall past the doorway, stand still in the doorway for 30 s. Three log rows; `drops` on the page must not move.
-6. **S5, the wire.** Armed, nobody near. Owner pulls the sensor's TX wire (the one on GPIO16) for 5 s and puts it back. Board log must show `[radar] FAULT: no result frame for 1000 ms` within a second and `[radar] frames back` after. One row.
-7. **Porch numbers, when it hangs there (doc 06).** Range step 80 cm if the walk starts beyond 4.9 m, else keep 20. Detect range 0 to about 600. `clearcm` 300. `firecm` from a walk at the porch: the check line on the card gives the landing point. Learn the empty room again on the porch, at night with the porch empty. Then `save`.
-8. **Build guide section 10 radar card drawing** (team, any time): it is still the old LD2450 top view; only its label says C4002. Redraw from the C4002 card in the wiring section, run `python tools/make_build_guide.py`.
-9. **Docs** after the bench: doc 02 current (the five wires are right), doc 04 if any setting or command changed, doc 07 step 12, `CHANGELOG.md`. Commit by name.
+1. **Arm and walk in (owner at the device).** When the owner says the radar is remounted and aimed: `arm`, `save`, then he walks in three times at normal pace; read each from the board log, one log row each. Then three walk-outs from behind the door side. If walk-outs fire, the tilt is the lever (shallower, toward 30 degrees down, per the field of view page), then a steel shroud.
+2. **Exercise the new rewind code** on the first drops: the log must show the slow finish, and any miss must show the second try. One row each.
+3. **Release time, owner's call (asked 2026-10-12, not answered):** seat the spider about 1/2 in lower so the unload stops hitting the switch (saves the 220 ms driver reset), and shorten the finger wait from 500 to 300 ms. Each needs 2 or 3 test drops.
+4. **Learn the empty room** at this mount, hall empty for 40 s (radar card button).
+5. **S2 swinging spider, S4 no trigger, S5 the wire**, as below, at this mount.
+6. **Porch numbers when it hangs there** (doc 06): range step 80 cm if the walk starts beyond 4.9 m, detect range to about 600, clearcm 300, firecm from a porch walk, learn the empty room again.
+7. **Build guide section 10 radar card drawing** (team, any time): still the old LD2450 view; redraw for the C4002 and the owner's swivel mount, then `python tools/make_build_guide.py`.
+8. **Docs** after the bench: doc 02, doc 04 if anything changed, doc 07 step 12, `CHANGELOG.md`. Commit by name.
 
 ## Tests (S1 to S5 in `docs/commissioning_log.md`, one row per attempt)
 
