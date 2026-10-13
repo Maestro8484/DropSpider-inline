@@ -26,6 +26,10 @@ void settingsDefaults();               // factory values into the live copy (not
 bool settingsSet(const String &name, const String &value, String &why);
 bool settingsIsName(const String &name);
 
+// The log lines around the last fault, kept in flash so a power cut does not lose them.
+void faultLogSave(const String &text);
+String faultLogLoad();
+
 // A comma separated JSON fragment of every setting, for the web page.
 String settingsJson();
 

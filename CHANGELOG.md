@@ -2,6 +2,16 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-13
+
+### Changed
+- Pressing the limit switch 3 times fast now brings the spider home from anywhere (lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm) instead of setting the drop length; setting the length stays on the page button. BUILT, not flashed.
+- Rewinds after a drop finish at 80 rpm over their last 2 1/4 turns, and a rewind that misses the switch gets one slow second try before the fault. BUILT, not flashed.
+- The owner's radar mount redesign is in the STL folder: `c4002_case_base_extended.stl` (19 mm longer pivot to case) and `c4002_case_Swivel_mount.stl` (swivels left and right); the old fork is `c4002_case_short_mount.stl`. Docs and the export name follow.
+
+### Added
+- The log up to the last fault survives a power cut: `lastlog`, page button Last fault log. BUILT, not flashed.
+
 ## 2026-10-12
 
 ### Added

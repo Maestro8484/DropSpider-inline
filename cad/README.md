@@ -68,7 +68,7 @@ Units: millimeters.
 5. Update the doc that describes the part (01 for the spool, finger and bracket, 09 for the fairlead).
 6. Tell the owner which STL changed and whether an already-printed part is now out of date.
 7. Geometry changes need the owner's approval (CLAUDE.md hard constraints).
-8. Some STLs are the owner's own files, not the code's output (`fairlead_flap_inv.stl` is his Fusion redesign, kept as the print file; the code builds it to within 3.5 mm3). A session never overwrites one of those; if the code's version is wanted, the owner says so.
+8. Some STLs are the owner's own files, not the code's output (`fairlead_flap_inv.stl` is his Fusion redesign, kept as the print file; the code builds it to within 3.5 mm3; `c4002_case_base_extended.stl` and `c4002_case_Swivel_mount.stl` are his radar mount redesign of 2026-10-13, not in the code at all). `c4002_case_short_mount.stl` is the code's radar fork, renamed by the owner from `ld2450_fork_screw.stl`; its export key now writes that name. A session never overwrites one of those; if the code's version is wanted, the owner says so.
 
 ## Lessons already learned (do not repeat these)
 

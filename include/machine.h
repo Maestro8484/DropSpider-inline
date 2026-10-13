@@ -8,7 +8,7 @@ enum TriggerSource { TRIG_NONE, TRIG_SENSOR, TRIG_BUTTON, TRIG_CONSOLE, TRIG_WEB
 
 // What can be asked of the machine. Motion requests are refused with a reason
 // while a cycle is running; stop and off are always accepted.
-enum Action { ACT_DROP, ACT_REL, ACT_LOCK, ACT_REWIND, ACT_JOG, ACT_SERVO, ACT_OFF, ACT_STOP, ACT_CLEAR, ACT_TEACH };
+enum Action { ACT_DROP, ACT_REL, ACT_LOCK, ACT_REWIND, ACT_JOG, ACT_SERVO, ACT_OFF, ACT_STOP, ACT_CLEAR, ACT_TEACH, ACT_REHOME };
 
 struct MachineStatus {
   const char *state;        // plain-English state name

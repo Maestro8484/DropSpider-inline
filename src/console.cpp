@@ -28,6 +28,29 @@ void logf(const char *fmt, ...) {
   xSemaphoreGive(logLock);
 }
 
+void logSnapshot() {
+  if (!logLock) return;
+  String t;
+  xSemaphoreTake(logLock, portMAX_DELAY);
+  uint32_t first = seq >= 40 ? seq - 39 : 1;
+  for (uint32_t n = first; n <= seq; n++) { t += ring[n % LOG_LINES]; t += "\n"; }
+  xSemaphoreGive(logLock);
+  faultLogSave(t);
+}
+
+static void printLastLog() {
+  String t = faultLogLoad();
+  if (!t.length()) { logf("lastlog: nothing kept yet (it is kept at every fault)"); return; }
+  logf("lastlog: the log lines up to the last fault, kept through power cuts:");
+  int a = 0;
+  while (a < (int)t.length()) {
+    int b = t.indexOf('\n', a);
+    if (b < 0) b = t.length();
+    logf("  | %s", t.substring(a, b).c_str());
+    a = b + 1;
+  }
+}
+
 static String jsonEscape(const String &in) {
   String out; out.reserve(in.length() + 8);
   for (size_t i = 0; i < in.length(); i++) {
@@ -81,7 +104,9 @@ static const char *const HELP[] = {
   "  rel             unload + finger out only; motor stays on holding the spider",
   "  lock            finger in, seat move onto a tooth, then driver off",
   "  rewind          rewind (finger out first); at the limit switch it eases off 1/8 turn and locks",
-  "  teach           spider hanging where a drop should stop: wind up to the switch, count it, save it as dropmm (same as 3 fast presses of the switch)",
+  "  teach           spider hanging where a drop should stop: wind up to the switch, count it, save it as dropmm (page: Set drop length here)",
+  "  rehome          bring it home from anywhere: lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm (same as 3 fast presses of the switch)",
+  "  lastlog         the log lines up to the last fault, kept through a power cut",
   "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; finger out first; driver stays on",
   "  stop            halt everything now, leave the motor as it is",
   "  off             driver off and servo off",
@@ -162,6 +187,8 @@ void consoleRun(const String &raw, String *capture) {
   else if (cmd == "lock")     motion(ACT_LOCK, 0, src);
   else if (cmd == "rewind")   motion(ACT_REWIND, 0, src);
   else if (cmd == "teach")    motion(ACT_TEACH, 0, src);
+  else if (cmd == "rehome")   motion(ACT_REHOME, 0, src);
+  else if (cmd == "lastlog")  printLastLog();
   else if (cmd == "stop")     motion(ACT_STOP, 0, src);
   else if (cmd == "off")      motion(ACT_OFF, 0, src);
   else if (cmd == "jog" || cmd == "servo") {

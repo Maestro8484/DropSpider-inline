@@ -117,7 +117,8 @@ The same swing means the knot can end up to half a turn either side of the botto
 | shim_1mm.stl, shim_2mm.stl | only if needed (05 step 8) | flat | rectilinear 100% | 4 | none | none |
 | fairlead_base.stl | 1, inverted install only (doc 06), instead of fairlead_body | as exported (17 mm tall) | gyroid 40% | 4 | none | 5 mm |
 | fairlead_base_ptfe.stl | optional, inverted install only, instead of fairlead_base, only if a wedged PTFE tube walks or wobbles (doc 09) | as fairlead_base | gyroid 40% | 4 | none | 5 mm |
-| ld2450_fork_screw.stl | 1, both installs: the only radar fork, bolted with 2x M3, no glue (the glued ld2450_fork is retired) | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
+| c4002_case_base_extended.stl, c4002_case_Swivel_mount.stl | the owner's own redesign (2026-10-13), not the code's output: the case base 19 mm longer from the hinge pivot to the case (clears the door overhang and the brick), and a mount that lets the radar swivel left and right as well as tilt. Print these for the over-the-door and porch mounts |
+| c4002_case_short_mount.stl | 1, both installs (the code's `ld2450_fork_screw`, renamed by the owner 2026-10-13; the extended base and swivel mount above replace it on the door and porch): the only radar fork, bolted with 2x M3, no glue (the glued ld2450_fork is retired) | as exported (plate face down, ears standing up) | gyroid 40% | 4 | none | none |
 
 PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom layers. `cad/retired/line_guide.stl` is obsolete; do not print it.
 

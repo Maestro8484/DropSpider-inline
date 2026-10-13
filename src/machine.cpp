@@ -17,7 +17,7 @@ static Servo pawl;
 
 enum St {
   ST_BOOT, ST_IDLE, ST_LOCKOUT, ST_WAIT_CLEAR, ST_FAULT,          // at rest
-  ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND,                      // cycle
+  ST_RELEASE, ST_DROP, ST_SETTLE, ST_REWIND, ST_RETRY_DOWN, ST_RETRY_WAIT,   // cycle
   ST_LOCK_IN, ST_LOCK_SEAT, ST_LOCK_HOLD,                         // cycle or bench
   ST_JOG, ST_BENCH_REL, ST_BENCH_SERVO, ST_BENCH_FREE             // bench only
 };
@@ -121,6 +121,8 @@ static const char *stateName(St s) {
     case ST_DROP:        return "spider dropping (motor leading)";
     case ST_SETTLE:      return "spider hanging";
     case ST_REWIND:      return "rewinding";
+    case ST_RETRY_DOWN:  return "missed the switch: lowering 1/2 turn to try again";
+    case ST_RETRY_WAIT:  return "missed the switch: letting the swing settle";
     case ST_LOCK_IN:     return "finger going in";
     case ST_LOCK_SEAT:   return "spool settling onto the finger";
     case ST_LOCK_HOLD:   return "finger holding, motor off";
@@ -202,6 +204,15 @@ static bool homeKnown() { return !S.limitFitted || limitHome() || homeFlag; }
 // and that count becomes the drop distance.
 static bool teaching = false;
 static int teachWasArmed = 0;
+// Rehome (owner 2026-10-13, 3 presses of the switch): from anywhere, lower 1/2 turn
+// so the stopper is surely below the flap, then wind slowly to the switch.
+static bool rehoming = false;
+static int rehomeWasArmed = 0;
+// A rewind that misses the switch gets one slow second try (lower 1/2 turn, settle,
+// wind 2 1/2 turns at FEED_RPM). rewindCarry holds what the first wind netted.
+static bool rewindRetried = false;
+static long rewindCarry = 0;
+static long slowAt = 0;                 // steps into a rewind where it drops to FEED_RPM; 0 = never
 
 static void applyDir() {
   if (appliedDir != S.rewindDir) {
@@ -233,6 +244,7 @@ static void strike(const char *why) {
   fault = why;
   faultRun++;
   logf("[fault %d of %d] %s", faultRun, FAULT_STRIKES, why);
+  logSnapshot();
 }
 
 static void disarmForBench() {
@@ -361,10 +373,11 @@ static void startCycle(TriggerSource src) {
   enter(ST_RELEASE);
 }
 
-static void startRewind() {
+static void startRewind(int rpm = 0) {
   driverOn();
   homeLost();
   ignoreLimit = false;
+  rewindRetried = false; rewindCarry = 0; slowAt = 0;
   if (limitHome()) {
     if (cycle) {
       // The spider has just fallen, so a pressed switch is lying. Wind the counted
@@ -385,15 +398,25 @@ static void startRewind() {
   // After a powered drop the spool is down only as far as the drop went, so wind
   // that plus the usual overshoot. The switch or the bead stop ends it first.
   long n = rewindSteps();
-  if (cycle && lastDropSteps > 0) n = min(n, lastDropSteps + (long)(OVERSHOOT_TURNS * STEPS_PER_TURN));
-  startMove(n, S.rpm);
+  if (cycle && lastDropSteps > 0) {
+    n = min(n, lastDropSteps + (long)(OVERSHOOT_TURNS * STEPS_PER_TURN));
+    slowAt = max(0L, n - (long)(FEED_ZONE_TURNS * STEPS_PER_TURN));   // fast most of the way, slow onto the switch
+    if (slowAt == 0) rpm = FEED_RPM;
+  }
+  startMove(n, rpm ? rpm : S.rpm);
   enter(ST_REWIND);
+}
+
+// The wind ran its whole count, the switch fitted and never closing.
+static bool rewindMissed() {
+  return S.limitFitted && !cutByLimit && !ignoreLimit &&
+         !(stepper->getCurrentPosition() == moveStartPos && limitHome());
 }
 
 // Returns true when the wind ran its whole count with the switch fitted and never
 // closing: the spider is then pulled hard against the top.
 static bool finishRewind() {
-  long ran = stepper->getCurrentPosition() - moveStartPos;
+  long ran = stepper->getCurrentPosition() - moveStartPos + rewindCarry;
   uint32_t closes = limCloses - limClosesAtStart;
   bool alreadyHome = !cutByLimit && ran == 0 && limitHome();
   if (!alreadyHome) {
@@ -418,8 +441,9 @@ static bool finishRewind() {
       }
     }
   }
-  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s, switch edges seen %lu", ran, ran / (float)STEPS_PER_TURN,
-       (int)(ran * mmPerStep()), cutByLimit ? ", stopped by the limit switch" : "", (unsigned long)closes);
+  logf("[rewind] ran %ld steps (%.2f turns, %d mm)%s%s, switch edges seen %lu", ran, ran / (float)STEPS_PER_TURN,
+       (int)(ran * mmPerStep()), cutByLimit ? ", stopped by the limit switch" : "",
+       rewindRetried ? " on the second, slow try" : "", (unsigned long)closes);
   bool stalled = S.limitFitted && !alreadyHome && !cutByLimit && !ignoreLimit;
   if (stalled) {
     strike("full rewind ran without the limit switch closing: either the bead was already above the flap, "
@@ -457,6 +481,17 @@ static void finishTeach() {
        "drop distance set to %d mm (was %d) and saved", r, r / (float)STEPS_PER_TURN, (int)lround(r * mmPerStep()), mm, was);
 }
 
+// The rehome wind reached the switch: home, fault cleared, armed as it was.
+static void finishRehome() {
+  rehoming = false;
+  S.armed = rehomeWasArmed;
+  fault = ""; faultRun = 0;
+  benchReturn = ST_WAIT_CLEAR;
+  long r = lastRewind - RETRY_DOWN_STEPS + unloadRan;
+  logf("[rehome] home: the spider was about %d mm below the switch; fault cleared%s",
+       (int)(r * mmPerStep()), S.armed ? ", armed" : ", not armed");
+}
+
 // Finger in while the motor holds, then (after a dead stop) the driver is reset
 // with the finger in, then the motor lets the spool down onto a tooth (the seat
 // move, 1.2/12 turn; the 1/8 turn back-off after the switch). Once a tooth lands
@@ -485,6 +520,7 @@ static void benchMove(Action a, long arg) {
     logf("refused: the limit switch stopped the last wind and nothing has moved since, so the spider is already at the top. "
          "Send lock, or jog down first");
     if (teaching) { teaching = false; S.armed = teachWasArmed; }
+    if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; }
     enter(benchReturn);
     return;
   }
@@ -575,6 +611,19 @@ static void handleReq(const Req &r) {
   }
   if (isBusy()) { logf("refused: busy (%s)", stateName(state)); return; }
   benchReturn = (state == ST_FAULT) ? ST_FAULT : ST_WAIT_CLEAR;
+  if (r.a == ACT_REHOME) {
+    if (homeKnown()) {
+      fault = ""; faultRun = 0;
+      logf("[rehome] the spider is already home: fault cleared%s", S.armed ? ", armed" : ", not armed");
+      if (state == ST_FAULT || state == ST_LOCKOUT) enter(ST_WAIT_CLEAR);
+      return;
+    }
+    rehomeWasArmed = S.armed;
+    rehoming = true;
+    logf("[rehome] lowering 1/2 turn so the stopper is below the flap, then winding slowly up to the switch");
+    benchMoveFingerOut(ACT_JOG, -RETRY_DOWN_STEPS);
+    return;
+  }
   if (r.a == ACT_TEACH) {
     if (!S.limitFitted) { logf("[teach] needs the limit switch fitted (limit 1)"); return; }
     if (limitHome() || homeFlag) {
@@ -645,15 +694,16 @@ static void step() {
   uint32_t now = millis();
   bool pressed = buttonEdge();
 
-  // Teach by hand: the limit switch pressed 3 times within TEACH_WINDOW_MS while at
-  // rest, then let go for TEACH_QUIET_MS.
+  // Rehome by hand: the limit switch pressed 3 times within TEACH_WINDOW_MS while at
+  // rest, then let go for TEACH_QUIET_MS (owner 2026-10-13: he pressed it 3 times to
+  // recover a spider left part way down; setting the drop length is the page's job).
   if (pressN >= 3) {
     uint32_t first = pressAt[(pressN - 3) % 3], last = pressAt[(pressN - 1) % 3];
     if (!atRest(state) || now - last > TEACH_WINDOW_MS) pressN = 0;
     else if (last - first <= TEACH_WINDOW_MS && !limStable && now - limAt >= TEACH_QUIET_MS) {
       pressN = 0;
-      logf("[teach] limit switch pressed 3 times");
-      handleReq(Req{ACT_TEACH, 0, TRIG_BUTTON});
+      logf("[rehome] limit switch pressed 3 times");
+      handleReq(Req{ACT_REHOME, 0, TRIG_BUTTON});
     }
   }
 
@@ -723,7 +773,24 @@ static void step() {
       break;
 
     case ST_REWIND:
-      if (stepper->isRunning()) break;
+      if (stepper->isRunning()) {
+        if (slowAt && stepper->getCurrentPosition() - moveStartPos >= slowAt) {
+          slowAt = 0;
+          stepper->setSpeedInHz((uint32_t)FEED_RPM * STEPS_PER_TURN / 60);
+          stepper->applySpeedAcceleration();
+        }
+        break;
+      }
+      if (!rewindRetried && rewindMissed()) {
+        long ranFirst = stepper->getCurrentPosition() - moveStartPos + rewindCarry;
+        rewindRetried = true;
+        rewindCarry = ranFirst - RETRY_DOWN_STEPS;
+        logf("[rewind] the switch did not close in %ld steps (%d mm): lowering 1/2 turn, then one slow try",
+             ranFirst, (int)(ranFirst * mmPerStep()));
+        if (!startMove(-RETRY_DOWN_STEPS, FEED_RPM)) logf("[rewind] lowering move would not start");
+        enter(ST_RETRY_DOWN);
+        break;
+      }
       // Stalled against the top, or stopped by the switch: finger in now, driver reset
       // with the finger in, then the 1/8 turn back-off lets the spool down onto a tooth
       // and the bead clear of the flap. Owner rule 2026-10-06: the motor never loses
@@ -731,17 +798,31 @@ static void step() {
       // alone (it ran the whole line every time it did).
       if (finishRewind()) {
         if (teaching) { teaching = false; logf("[teach] the switch never closed, so nothing was measured; drop distance kept at %d mm", S.dropMm); }
+        if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; logf("[rehome] the switch never closed: check the stopper meets the flap, and for a snag on the line"); }
         logf("[fault] full rewind without the switch: locking, then stopped. Send clear when it is fixed.");
         startLock("lock (stopped on a fault)", BACKOFF_STEPS);   // faultNow stays set: the lock ends in ST_FAULT
         break;
       }
       if (cutByLimit) {
         if (teaching) finishTeach();
+        if (rehoming) finishRehome();
         startLock(cycle ? "drop" : "rewind (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS);
         break;
       }
       if (teaching) { teaching = false; S.armed = teachWasArmed; }
+      if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; }
       startLock(cycle ? "drop" : "rewind (finger in, seated, motor off)");
+      break;
+
+    case ST_RETRY_DOWN:
+      if (stepper->isRunning()) break;
+      enter(ST_RETRY_WAIT);
+      break;
+
+    case ST_RETRY_WAIT:
+      if (inState() < RETRY_SETTLE_MS) break;
+      if (!startMove(RETRY_UP_STEPS, FEED_RPM)) logf("[rewind] second try would not start");
+      enter(ST_REWIND);
       break;
 
     case ST_LOCK_IN:
@@ -767,8 +848,9 @@ static void step() {
            upByLimit ? "; spider home" : "; home not known (last rewind was not stopped by the switch)");
       if (faultNow) {
         faultNow = false; cycle = false;
-        logf("[fault] stopped: %s. Send clear when it is fixed.", fault);
+        logf("[fault] stopped: %s. Send clear when it is fixed, or press the limit switch 3 times to bring it home.", fault);
         logf("[done] lock (stopped on a fault)");
+        logSnapshot();
         enter(ST_FAULT);
       } else if (cycle) {
         cycle = false;
@@ -790,6 +872,7 @@ static void step() {
       if (stepper->isRunning()) break;
       logf("[jog] ran %ld steps%s", stepper->getCurrentPosition() - moveStartPos,
            cutByLimit ? ", stopped by the limit switch" : "");
+      if (rehoming) { startRewind(FEED_RPM); break; }
       if (cutByLimit) { startLock("jog (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS); break; }
       startLock("jog (finger in, seated, motor off)");
       break;
@@ -851,6 +934,7 @@ void machineBegin() {
 
   drops = dropCount();
   homeFlag = homeSaved();
+  if (faultLogLoad().length()) logf("[boot] the log up to the last fault is kept: send lastlog (page: Last fault log)");
   limLast = limStable = [] { bool l = digitalRead(PIN_LIMIT) == LOW; return S.limitInverted ? !l : l; }();
   btnLast = btnStable = btnWas = digitalRead(PIN_BUTTON) == HIGH;
   limAt = btnAt = millis();

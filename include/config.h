@@ -61,6 +61,12 @@
 #define CLEAR_BEFORE_REARM  2000   // sensor must read LOW this long before the next scare
 #define TEACH_WINDOW_MS     2500   // the limit switch pressed 3 times within this, at rest = measure the drop (owner 2026-10-12)
 #define TEACH_QUIET_MS      600    // and then left alone this long before the motor moves
+// Homing the way a CNC machine does it (GRBL: seek fast, then feed slowly onto the switch)
+#define FEED_RPM            80     // the last part of every rewind after a drop, and the whole of a reset wind
+#define FEED_ZONE_TURNS     2.25f  // a rewind after a drop slows to FEED_RPM this far before the end of its count
+#define RETRY_DOWN_STEPS    (STEPS_PER_TURN / 2)       // a rewind that misses the switch lowers this much (about 78 mm)...
+#define RETRY_UP_STEPS      (STEPS_PER_TURN * 5 / 2)   // ...then winds this far at FEED_RPM, once, before it calls a fault
+#define RETRY_SETTLE_MS     1000   // swing settles between the two
 #define BUTTON_DEBOUNCE_MS  40
 #define LIMIT_DEBOUNCE_MS   4      // short on purpose: this reading stops the motor
 #define MACHINE_TICK_MS     2      // how often the machine task looks at everything

@@ -6,6 +6,7 @@
 
 // Print a line to the serial port and to the web page's log.
 void logf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void logSnapshot();     // keep the last 40 log lines in flash (called on a fault)
 
 // Run one command line. Replies go through logf. If capture is given, the reply
 // lines are also appended to it (the web page uses this for its instant answer).

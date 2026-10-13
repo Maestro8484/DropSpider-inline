@@ -120,6 +120,8 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
   <button class="d" onclick="c('stop')">Stop</button>
   <button onclick="c('off')">Motor and servo off</button>
   <button onclick="c('clear')">Clear and re-arm</button>
+  <button onclick="c('rehome')">Bring it home</button>
+  <button onclick="c('lastlog')">Last fault log</button>
  </div>
 </div>
 
@@ -151,7 +153,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="g">
   <button onclick="c('teach')">Set drop length here</button>
  </div>
- <div class="sub">Set drop length here: lower the spider with -1 turn and -1/8 to where a drop should stop, then press this, or press the limit switch 3 times fast by hand. It winds up to the switch, counts the turns, and saves that as the drop distance.</div>
+ <div class="sub">Set drop length here: lower the spider with -1 turn and -1/8 to where a drop should stop, then press this. It winds up to the switch, counts the turns, and saves that as the drop distance. Bring it home (or the limit switch pressed 3 times fast by hand): from anywhere, lowers 1/2 turn, winds slowly to the switch, clears the fault and re-arms; the drop distance is not changed.</div>
  <div class="sub">+ is the rewind direction. A rewind locks by itself once it reaches the switch. The motor stays powered after a jog or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
 </div>
 

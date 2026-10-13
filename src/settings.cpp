@@ -128,6 +128,9 @@ void wifiSave(const String &ssid, const String &pass) {
 
 int dropMmMax() { return S.lineMm - (int)SPOOL_TO_EYELET_MM - DROP_KNOT_MARGIN_MM; }
 
+void faultLogSave(const String &text) { Guard g; prefs.putString("lastlog", text.length() > 3900 ? text.substring(text.length() - 3900) : text); }
+String faultLogLoad() { Guard g; return prefs.getString("lastlog", ""); }
+
 bool homeSaved() { Guard g; return prefs.getBool("home", false); }
 void homeSave(bool home) {
   Guard g;
