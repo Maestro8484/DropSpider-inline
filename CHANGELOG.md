@@ -2,6 +2,20 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-12
+
+### Added
+- Teach the drop length: with the spider hanging where a drop should stop, press the limit switch 3 times fast (or the page button Set drop length here, or `teach`); it winds up to the switch, counts the steps and saves them as `dropmm`. FLASHED, not yet exercised.
+- Setting `clearms` (re-arm anyway after waiting this long for the doorway to clear) and the page button Clear and re-arm. VERIFIED on the board.
+
+### Changed
+- A still radar reading no longer holds the re-arm; only someone moving does. Lockout after a drop set to 0 and `clearms` to 1000 at the owner's ask, so it re-arms about 1 s after the lock.
+- Blue LED: solid = armed and ready, fast blink = fault or spider not home, slow blink = moving.
+- Drop now 700 mm at 600 rpm (was 620 at 500): the spider goes about 2 in farther and each millimeter is about 10 percent quicker. 700 rpm was tried and lost about 10 cm of drop to skipped steps.
+
+### Fixed
+- No drop starts unless the spider is home. A power-up with the spider down used to arm and fire, leaving it hanging part way; it now stops on a fault. VERIFIED at power-up.
+
 ## 2026-10-10
 
 ### Fixed
