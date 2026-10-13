@@ -59,6 +59,8 @@
 #define LOCK_SEAT_MS        700    // servo keeps pushing while the spool settles onto a tooth
 #define TRIGGER_DEBOUNCE_MS 60     // sensor must stay HIGH this long
 #define CLEAR_BEFORE_REARM  2000   // sensor must read LOW this long before the next scare
+#define TEACH_WINDOW_MS     2500   // the limit switch pressed 3 times within this, at rest = measure the drop (owner 2026-10-12)
+#define TEACH_QUIET_MS      600    // and then left alone this long before the motor moves
 #define BUTTON_DEBOUNCE_MS  40
 #define LIMIT_DEBOUNCE_MS   4      // short on purpose: this reading stops the motor
 #define MACHINE_TICK_MS     2      // how often the machine task looks at everything

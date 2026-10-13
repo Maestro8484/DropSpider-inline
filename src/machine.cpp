@@ -52,6 +52,8 @@ static_assert(PIN_LIMIT >= 32 && PIN_LIMIT <= 39, "limIsr reads the GPIO32-39 in
 static volatile bool limHit = false;          // closed at least once since the move started
 static volatile uint32_t limCloses = 0;       // closed edges seen by the interrupt, bounce included
 static uint32_t limPresses = 0;               // steady closures since power-up (what the page shows)
+static uint32_t pressAt[3] = {0, 0, 0};        // the last three closures at rest, for the 3-press teach
+static int pressN = 0;
 static uint32_t limClosesAtStart = 0;
 static void IRAM_ATTR limIsr() {
   bool low = !(REG_READ(GPIO_IN1_REG) & BIT(PIN_LIMIT - 32));
@@ -189,6 +191,17 @@ static bool limitHome() { return S.limitFitted && limStable; }
 
 static void setHome(bool h) { homeFlag = h; homeSave(h); }
 static void homeLost() { upByLimit = false; setHome(false); }
+// Where the spider is: at the top (switch pressed, or locked after a rewind the switch
+// stopped). A drop from anywhere else cannot be wound back to the switch, because the
+// rewind after a drop is capped at the drop's own length (2026-10-12: a boot with the
+// spider down re-armed, fired, and left it hanging part way up).
+static bool homeKnown() { return !S.limitFitted || limitHome() || homeFlag; }
+
+// Teach (owner 2026-10-12): the spider hangs where a drop should stop; the switch
+// pressed 3 times fast, or `teach`, winds it up to the switch and counts the steps,
+// and that count becomes the drop distance.
+static bool teaching = false;
+static int teachWasArmed = 0;
 
 static void applyDir() {
   if (appliedDir != S.rewindDir) {
@@ -260,6 +273,7 @@ static void readInputs() {
   if (now - limAt >= LIMIT_DEBOUNCE_MS && limStable != l) {
     limStable = l;
     if (l) limPresses++;
+    if (l) { if (atRest(state)) pressAt[pressN++ % 3] = now; else pressN = 0; }
     logf("[limit] switch %s", l ? "closed" : "open");
   }
 }
@@ -326,6 +340,15 @@ static void startDrop() {
 }
 
 static void startCycle(TriggerSource src) {
+  if (!homeKnown()) {
+    static uint32_t warnedAt = 0;
+    if (warnedAt == 0 || millis() - warnedAt > 10000) {
+      warnedAt = millis();
+      logf("[cycle] not dropping (%s): the spider is not home. Rewind it, or lower it to where a drop should stop "
+           "and press the limit switch 3 times", triggerName(src));
+    }
+    return;
+  }
   cycle = true;
   lastTrigger = src;
   lastTriggerMs = millis();
@@ -406,6 +429,34 @@ static bool finishRewind() {
   return stalled;
 }
 
+// The teach wind reached the switch: what it ran, plus the unload before it, is the
+// line from where the spider hung to the top. That becomes the drop distance (and the
+// line length grows if the drop would not fit). Armed goes back to what it was.
+static void finishTeach() {
+  teaching = false;
+  S.armed = teachWasArmed;
+  long r = unloadRan + lastRewind;
+  int mm = (int)lround(r * mmPerStep());
+  int was = S.dropMm;
+  if (mm < 100) {
+    logf("[teach] only %d mm from where the spider hung to the switch: too short, drop distance kept at %d mm", mm, was);
+    return;
+  }
+  String why;
+  int lineNeed = mm + (int)SPOOL_TO_EYELET_MM + DROP_KNOT_MARGIN_MM;
+  if (lineNeed > S.lineMm) {
+    if (settingsSet("line", String(lineNeed), why)) logf("[teach] line raised to %d mm so the measured drop fits", lineNeed);
+    else logf("[teach] line could not grow to %d mm: %s", lineNeed, why.c_str());
+  }
+  if (mm > dropMmMax()) mm = dropMmMax();
+  if (!settingsSet("dropmm", String(mm), why)) { logf("[teach] drop distance not changed: %s", why.c_str()); return; }
+  settingsSave();
+  fault = ""; faultRun = 0;
+  benchReturn = ST_WAIT_CLEAR;
+  logf("[teach] wound %ld steps (%.2f turns, %d mm) from where the spider hung up to the switch: "
+       "drop distance set to %d mm (was %d) and saved", r, r / (float)STEPS_PER_TURN, (int)lround(r * mmPerStep()), mm, was);
+}
+
 // Finger in while the motor holds, then (after a dead stop) the driver is reset
 // with the finger in, then the motor lets the spool down onto a tooth (the seat
 // move, 1.2/12 turn; the 1/8 turn back-off after the switch). Once a tooth lands
@@ -433,6 +484,7 @@ static void benchMove(Action a, long arg) {
   if (upByLimit && (a == ACT_REWIND || arg > 0)) {
     logf("refused: the limit switch stopped the last wind and nothing has moved since, so the spider is already at the top. "
          "Send lock, or jog down first");
+    if (teaching) { teaching = false; S.armed = teachWasArmed; }
     enter(benchReturn);
     return;
   }
@@ -523,6 +575,19 @@ static void handleReq(const Req &r) {
   }
   if (isBusy()) { logf("refused: busy (%s)", stateName(state)); return; }
   benchReturn = (state == ST_FAULT) ? ST_FAULT : ST_WAIT_CLEAR;
+  if (r.a == ACT_TEACH) {
+    if (!S.limitFitted) { logf("[teach] needs the limit switch fitted (limit 1)"); return; }
+    if (limitHome() || homeFlag) {
+      logf("[teach] the spider is already at the top. Lower it to where a drop should stop (page: -1 turn, -1/8), then press the switch 3 times");
+      return;
+    }
+    teachWasArmed = S.armed;
+    teaching = true;
+    unloadRan = 0;
+    logf("[teach] winding the spider up to the switch to measure the drop distance");
+    benchMoveFingerOut(ACT_REWIND, 0);
+    return;
+  }
   switch (r.a) {
     case ACT_DROP:
       startCycle(r.src);
@@ -580,14 +645,28 @@ static void step() {
   uint32_t now = millis();
   bool pressed = buttonEdge();
 
+  // Teach by hand: the limit switch pressed 3 times within TEACH_WINDOW_MS while at
+  // rest, then let go for TEACH_QUIET_MS.
+  if (pressN >= 3) {
+    uint32_t first = pressAt[(pressN - 3) % 3], last = pressAt[(pressN - 1) % 3];
+    if (!atRest(state) || now - last > TEACH_WINDOW_MS) pressN = 0;
+    else if (last - first <= TEACH_WINDOW_MS && !limStable && now - limAt >= TEACH_QUIET_MS) {
+      pressN = 0;
+      logf("[teach] limit switch pressed 3 times");
+      handleReq(Req{ACT_TEACH, 0, TRIG_BUTTON});
+    }
+  }
+
   switch (state) {
     case ST_BOOT:
       if (inState() < 50) break;              // let the switch readings settle
       // V14: after a lock seat the switch reads open by design. Home is the switch
       // pressed, or the last lock having followed a rewind the switch stopped.
       if (S.limitFitted && !limitHome() && !homeFlag) {
-        fault = "spider not home at power-up. Boot never rewinds on its own: use rewind, then lock.";
+        fault = "spider not home at power-up. Boot never rewinds on its own: rewind, or lower it to the drop length and press the switch 3 times.";
         logf("[boot] %s", fault);
+        enter(ST_FAULT);
+        break;
       } else if (S.limitFitted && !limitHome()) {
         logf("[boot] switch open, spider home from the last lock (seated below the switch)");
       }
@@ -651,11 +730,17 @@ static void step() {
       // power before the finger is holding, and the spider never hangs on the motor
       // alone (it ran the whole line every time it did).
       if (finishRewind()) {
+        if (teaching) { teaching = false; logf("[teach] the switch never closed, so nothing was measured; drop distance kept at %d mm", S.dropMm); }
         logf("[fault] full rewind without the switch: locking, then stopped. Send clear when it is fixed.");
         startLock("lock (stopped on a fault)", BACKOFF_STEPS);   // faultNow stays set: the lock ends in ST_FAULT
         break;
       }
-      if (cutByLimit) { startLock(cycle ? "drop" : "rewind (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS); break; }
+      if (cutByLimit) {
+        if (teaching) finishTeach();
+        startLock(cycle ? "drop" : "rewind (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS);
+        break;
+      }
+      if (teaching) { teaching = false; S.armed = teachWasArmed; }
       startLock(cycle ? "drop" : "rewind (finger in, seated, motor off)");
       break;
 
@@ -733,10 +818,11 @@ static void step() {
   }
 
   // LED (owner 2026-10-11): solid = armed and ready, fast blink = stopped on a fault
-  // (send clear), slow blink = working, off = not armed or waiting to re-arm
+  // or the spider not home (send clear, rewind, or teach), slow blink = working,
+  // off = not armed or waiting to re-arm
   bool led = false;
-  if (state == ST_IDLE && S.armed) led = true;
-  else if (state == ST_FAULT)      led = (now / 150) % 2;
+  if (state == ST_FAULT || (atRest(state) && !homeKnown())) led = (now / 150) % 2;
+  else if (state == ST_IDLE && S.armed) led = true;
   else if (isBusy())               led = (now / 500) % 2;
   digitalWrite(PIN_LED, led);
 }

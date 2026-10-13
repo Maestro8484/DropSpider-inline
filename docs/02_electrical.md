@@ -22,7 +22,7 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 | GPIO16 (RX2) | C4002 TX | in | Primary trigger, UART2 at 115200 baud |
 | GPIO17 (TX2) | C4002 RX | out | Primary trigger: the firmware asks for a report every 0.1 s at boot |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
-| GPIO2 | on-board LED | out | Solid = armed and ready; fast blink = stopped on a fault (send clear); slow blink = moving; off = not armed or waiting to re-arm |
+| GPIO2 | on-board LED | out | Solid = armed and ready; fast blink = stopped on a fault or spider not home (send clear, rewind, or teach); slow blink = moving; off = not armed or waiting to re-arm |
 
 ## Driver: BIGTREETECH TMC2209 V1.3 on the A4988/DRV8825 expansion board
 

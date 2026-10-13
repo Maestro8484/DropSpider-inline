@@ -81,6 +81,7 @@ static const char *const HELP[] = {
   "  rel             unload + finger out only; motor stays on holding the spider",
   "  lock            finger in, seat move onto a tooth, then driver off",
   "  rewind          rewind (finger out first); at the limit switch it eases off 1/8 turn and locks",
+  "  teach           spider hanging where a drop should stop: wind up to the switch, count it, save it as dropmm (same as 3 fast presses of the switch)",
   "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; finger out first; driver stays on",
   "  stop            halt everything now, leave the motor as it is",
   "  off             driver off and servo off",
@@ -160,6 +161,7 @@ void consoleRun(const String &raw, String *capture) {
   else if (cmd == "rel")      motion(ACT_REL, 0, src);
   else if (cmd == "lock")     motion(ACT_LOCK, 0, src);
   else if (cmd == "rewind")   motion(ACT_REWIND, 0, src);
+  else if (cmd == "teach")    motion(ACT_TEACH, 0, src);
   else if (cmd == "stop")     motion(ACT_STOP, 0, src);
   else if (cmd == "off")      motion(ACT_OFF, 0, src);
   else if (cmd == "jog" || cmd == "servo") {
