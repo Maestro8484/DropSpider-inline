@@ -37,6 +37,24 @@ struct MachineStatus {
   int      faultRun;
 };
 
+// One finished cycle, for the page's Last cycles card (owner 2026-10-14: "what happened
+// while I was out", answered on the page). The last CYCLES_KEPT are kept in flash.
+struct CycleRec {
+  uint32_t n;        // drop number, 0 for a rehome or a teach
+  uint32_t upSec;    // seconds since power-up when it ended
+  uint16_t boot;     // the power-up it happened in (bootCount())
+  uint8_t  kind;     // 0 drop, 1 bring it home, 2 set drop length
+  uint8_t  trigger;  // TriggerSource
+  uint8_t  ending;   // 0 switch first try, 1 switch on the retry, 2 count only (no switch), 3 stopped on a fault, 4 stopped by hand
+  uint8_t  home;     // home at the end
+  uint16_t toldMm;   // drop told
+  uint16_t measMm;   // drop measured by the rewind, 0 if none
+  uint16_t landMs;   // trigger to the spider at the bottom, 0 if none
+};
+#define CYCLES_KEPT 20
+String   cyclesJson();                         // newest first, with the power-up number and seq
+uint32_t cyclesSeq();                          // bumps at every record, so the page knows when to ask again
+
 void machineBegin();                           // call once from setup(), after settingsBegin()
 bool machineRequest(Action a, long arg, TriggerSource src, String &why);
 MachineStatus machineStatus();

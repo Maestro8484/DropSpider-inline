@@ -12,3 +12,4 @@ Every piece of work still to do, in order. One line each; the handoff holds the 
 | 6 | Calibrate card on the web page: walks the bench steps with Pass and Fail buttons (replaces the planned `test` console command) | team | later | build guide section 09, "Planned" |
 | 7 | Enclosure for the controller board | owner | later | `docs/08_open_items.md`, Rev D candidates |
 | 8 | Static IP address (DHCP only today) | team | later, only if the router moves it | `docs/08_open_items.md`, known limits |
+| 9 | Spider position strip on the page: home, drop end, line end and the spider by the motor's count, labelled as such (owner 2026-10-14: "later") | team | later | `docs/audit_webui_horizon.md` approach 4 |

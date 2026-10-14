@@ -3,6 +3,8 @@
 #include <Preferences.h>
 
 Settings S;
+static Settings savedCopy;             // what flash holds, for the page's unsaved marks
+static uint32_t boots = 0;
 
 // Preferences (the ESP32 flash key store) is not safe to use from two tasks at
 // once, and the machine task bumps the drop count while the web page may be
@@ -75,11 +77,15 @@ void settingsBegin() {
   // that every bench move does, hold only until the next power cycle. The home guard in
   // machine.cpp still stops a power-up with the spider down on a fault instead of arming.
   S.armed = DEF_ARMED;
+  savedCopy = S;
+  boots = prefs.getULong("boots", 0) + 1;
+  prefs.putULong("boots", boots);
 }
 
 void settingsSave() {
   Guard g;
   for (size_t i = 0; i < N; i++) prefs.putInt(ROWS[i].key, *ROWS[i].ptr);
+  savedCopy = S;
 }
 
 bool settingsIsName(const String &name) {
@@ -123,6 +129,30 @@ String settingsJson() {
   return j;
 }
 
+String settingsStockJson() {
+  String j;
+  for (size_t i = 0; i < N; i++) {
+    if (i) j += ",";
+    j += "\"" + String(ROWS[i].name) + "\":" + String(ROWS[i].def);
+  }
+  return j;
+}
+
+// Each row's pointer is into S; the same offset into savedCopy is the saved value.
+static int savedValue(size_t i) {
+  return *(const int *)((const char *)&savedCopy + ((const char *)ROWS[i].ptr - (const char *)&S));
+}
+
+String settingsUnsavedJson() {
+  String j;
+  for (size_t i = 0; i < N; i++) {
+    if (*ROWS[i].ptr == savedValue(i)) continue;
+    if (j.length()) j += ",";
+    j += "\"" + String(ROWS[i].name) + "\"";
+  }
+  return j;
+}
+
 String wifiSavedSsid() { Guard g; return prefs.getString("ssid", ""); }
 String wifiSavedPass() { Guard g; return prefs.getString("pass", ""); }
 void wifiSave(const String &ssid, const String &pass) {
@@ -147,3 +177,8 @@ void homeSave(bool home) {
 
 uint32_t dropCount()     { Guard g; return prefs.getULong("drops", 0); }
 void     dropCountBump() { Guard g; prefs.putULong("drops", prefs.getULong("drops", 0) + 1); }
+
+uint32_t bootCount() { return boots; }
+
+size_t cyclesLoad(void *buf, size_t max) { Guard g; return prefs.getBytes("cycles", buf, max); }
+void   cyclesSave(const void *buf, size_t n) { Guard g; prefs.putBytes("cycles", buf, n); }

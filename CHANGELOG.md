@@ -4,6 +4,10 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ## 2026-10-14
 
+### Added
+- Web page, from the owner's audit rulings (`docs/audit_webui_horizon.md`): every button's reply shows in a strip where it was pressed (a refusal in red), a bar pinned to the bottom of the screen shows the state and the newest log line, a Last cycles card keeps the last 20 cycles through a power cut with a chip for how each rewind ended (`/api/cycles`), changed settings get an amber edge and one Save bar at the top until saved (a dot marks a value that differs from factory), Set drop length here asks first and names the number it will replace, and every card but Status folds from its heading with the browser remembering which are open. BUILT (`pio run` SUCCESS), seen working against a mock of the board's API in a browser, not flashed.
+- Stop or Off during a teach or a bring-it-home run now ends that run; before, the flag stayed set and the next plain rewind would have finished it (a stopped teach would then have set the drop length). BUILT, not flashed.
+
 ### Changed
 - Every power-up arms on its own; armed is no longer a saved setting, and disarm (including the disarm every bench move does) holds only until the next power cycle. The home guard still stops a power-up with the spider down on a fault. FLASHED, VERIFIED on the restart after the flash (owner: it must come up armed after a power cut).
 - The board can keep a fixed network address: page Network card, Fixed address, or console `ip <address>` and `restart`. Set to 192.168.1.138 after the router moved the board to .135 overnight. FLASHED, VERIFIED: boot log `[wifi] fixed address 192.168.1.138, router 192.168.1.1`.

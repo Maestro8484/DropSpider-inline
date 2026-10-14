@@ -59,9 +59,25 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  a{color:#a995ff}
  canvas{display:block;width:100%;background:#0b0a0e;border:1px solid var(--line);border-radius:8px}
  .key{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+ .row small{display:block;color:var(--dim);font-size:12px;font-weight:400}
+ .reply{display:none;margin:0 0 8px;padding:8px 10px;border-radius:8px;background:rgba(122,92,255,.14);color:var(--ink);font-size:13px;white-space:pre-wrap}
+ .reply.on{display:block} .reply.bad{background:rgba(226,96,79,.18);color:var(--bad)}
+ #bar{position:fixed;left:0;right:0;bottom:0;background:#0b0a0e;border-top:1px solid var(--line);padding:8px 16px;font-size:13px;display:flex;gap:12px;align-items:baseline;z-index:5}
+ #bar b{white-space:nowrap} #bar span{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+ #bar.ok b{color:var(--go)} #bar.wa b{color:var(--warn)} #bar.no b{color:var(--bad)}
+ body{padding-bottom:60px}
+ #savebar{display:none;position:sticky;top:8px;z-index:6;background:#3a2e12;border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;margin-bottom:14px;align-items:center;gap:10px;font-size:14px}
+ #savebar.on{display:flex} #savebar span{flex:1} #savebar button{background:var(--warn);color:#1a1200;padding:8px 14px}
+ label.dirty input,label.dirty select{border-color:var(--warn);box-shadow:0 0 0 2px rgba(232,180,74,.35)}
+ label.off>span:first-child::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--dim);margin-right:6px;vertical-align:middle}
+ .card>h2{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+ .card.fold>*:not(h2){display:none} .card.fold>h2{margin:0}
+ .tg{font-weight:400;text-transform:none;letter-spacing:0;color:#a995ff;font-size:12px}
 </style></head><body>
 <h1>DropSpider</h1>
 <div class="sub" id="where">&nbsp;</div>
+
+<div id="savebar"><span id="savetxt"></span><button onclick="c('save')">Save settings</button></div>
 
 <div class="card">
  <div class="state" id="state">...</div>
@@ -72,6 +88,13 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="row"><span>Last drop, measured by the rewind</span><b id="meas">-</b></div>
  <div class="row"><span>Limit switch</span><b id="lsw">-</b></div>
  <div class="row"><span>Running for</span><b id="up">-</b></div>
+</div>
+
+<div class="card">
+ <h2>Last cycles</h2>
+ <div id="cyc"><div class="sub">none yet</div></div>
+ <div class="sub" id="cycsum" style="margin-top:8px"></div>
+ <div class="sub">The last 20, newest first, kept through a power cut. "Home, switch first try" is the normal ending; "on the second, slow try" means the stopper missed the flap once and the retry caught it; "count only" means the limit switch is off in settings; "stopped" needs a look.</div>
 </div>
 
 <div class="card">
@@ -103,8 +126,8 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <label><span>Keeps a person for<small>s after it last saw them. Shorter = the doorway clears sooner</small></span><input type="number" id="rdelay" min="0" max="600" onchange="c('radar delay '+this.value)"></label>
  <div class="g" style="margin-top:8px">
   <button onclick="if(confirm('The sensor learns the empty room: 10 s for you to leave its view, then 30 s of listening. Keep everyone and the dog out of its view until the countdown ends. Start?'))c('radar calib 10 30')">Learn the empty room</button>
-  <button class="p" onclick="c('save')">Save settings</button>
  </div>
+ <div class="sub">The trigger rule settings above are the board's: a changed one gets an amber edge and the Save bar at the top of the page until saved. The sensor's own knobs are kept in the sensor itself.</div>
  <div class="sub" id="rcheck" style="margin-top:8px"></div>
  <h3>Last 60 seconds</h3>
  <canvas id="tl"></canvas>
@@ -151,7 +174,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
   <button onclick="c('rewind')">Rewind</button><button onclick="c('lock')">Lock</button><button onclick="c('rel')">Release</button>
  </div>
  <div class="g">
-  <button onclick="c('teach')">Set drop length here</button>
+  <button onclick="teachAsk()">Set drop length here</button>
  </div>
  <div class="sub">Set drop length here: lower the spider with -1 turn and -1/8 to where a drop should stop, then press this. It winds up to the switch, counts the turns, and saves that as the drop distance. Bring it home (or the limit switch pressed 3 times fast by hand): from anywhere, lowers 1/2 turn, winds slowly to the switch, clears the fault and re-arms; the drop distance is not changed.</div>
  <div class="sub">+ is the rewind direction. A rewind locks by itself once it reaches the switch. The motor stays powered after a jog or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
@@ -161,9 +184,9 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <h2>Settings</h2>
  <div id="sets"></div>
  <div class="g" style="margin-top:10px">
-  <button class="p" onclick="c('save')">Save settings</button>
   <button onclick="if(confirm('Load factory values? (not saved until Save)')){built=0;c('defaults')}">Factory values</button>
  </div>
+ <div class="sub">A value takes effect as you change it. A changed value has an amber edge until it is saved from the Save bar at the top of the page; unsaved values are lost at a power cut. A dot before a name means it differs from the factory value.</div>
 </div>
 
 <div class="card">
@@ -187,6 +210,8 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="sub">User admin, password from secrets.ini. The motor and servo switch off before the update starts.</div>
 </div>
 
+<div id="bar"><b id="bstate">...</b><span id="blog"></span></div>
+
 <script>
 const SETS=[
  ["setlock","Finger lock angle","degrees"],["setrel","Finger release angle","degrees"],
@@ -200,8 +225,21 @@ const SETS=[
  ["dropdec","Drop stop rate","steps/s&sup2;, 10000 to 200000. Keep low: the motor has to stop the spider"],
  ["relms","Finger travel before the drop","ms, 100 to 600"]];
 let st=null,armed=false,built=0,since=0;
-function c(cmd){cmd=(cmd||'').trim();if(!cmd)return;fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(tick)}
+// ---- the answer appears where the button was pressed (owner 2026-10-14): a strip under
+// the button row (or the setting) shows the command's reply, then the log lines that
+// follow for 8 s. A refusal stays 10 s, anything else 6 s.
+const rp={el:null,at:0,hold:0};
+function strip(t){if(!t)return null;const host=t.closest('.g,label,.card');if(!host)return null;
+ let s=host.classList.contains('card')?host.querySelector(':scope>.reply'):host.nextElementSibling&&host.nextElementSibling.classList.contains('reply')?host.nextElementSibling:null;
+ if(!s){s=document.createElement('div');s.className='reply';if(host.classList.contains('card'))host.appendChild(s);else host.insertAdjacentElement('afterend',s)}return s}
+function showReply(el,text){if(!el||!text)return;const bad=/^refused|^\[fault|^unknown/.test(text);el.textContent=text;el.classList.toggle('bad',bad);el.classList.add('on');rp.el=el;rp.at=performance.now();rp.hold=bad?10000:6000}
+setInterval(()=>{if(rp.el&&performance.now()-rp.at>rp.hold){rp.el.classList.remove('on');rp.el=null}},500);
+function c(cmd){cmd=(cmd||'').trim();if(!cmd)return;const ev=window.event,el=strip(ev&&ev.target&&ev.target.closest?ev.target:null);
+ fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(r=>r.text()).then(t=>{
+  const lines=t.split('\n').filter(l=>l&&!l.startsWith('> '));showReply(el,lines.length?lines[0]:'sent: '+cmd)}).catch(()=>showReply(el,'the board did not answer')).then(tick)}
 function nudge(d){if(!st)return;c('servo '+Math.max(0,Math.min(180,st.servoDeg+d)))}
+function teachAsk(){if(!st)return;if(confirm('Set the drop length to where the spider hangs now? It winds up to the switch, counts the turns, and SAVES that count as the drop distance (now '+st.settings.dropmm+' mm). To bring it home without changing the drop distance, use Bring it home instead.'))c('teach')}
+function lbl(k){const f=document.getElementById('f_'+k);const s=f&&f.closest('label')&&f.closest('label').querySelector('span');return s&&s.firstChild?s.firstChild.textContent.trim():k}
 function rrange(){const A=document.getElementById('rclose'),B=document.getElementById('rfar');if(A.value===''||B.value==='')return;delete A.dataset.touched;delete B.dataset.touched;c('radar range '+A.value+' '+B.value)}
 function wifi(){const s=document.getElementById('ssid').value,p=document.getElementById('pass').value,ip=document.getElementById('ip').value.trim();
  fetch('/api/wifi',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ssid='+encodeURIComponent(s)+'&pass='+encodeURIComponent(p)+'&ip='+encodeURIComponent(ip)}).then(()=>alert('Saved. Restarting.'))}
@@ -228,11 +266,35 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  if(s.driverOn)h+=chip('motor powered','wa');
  if(s.fault)h+=chip(s.fault+(s.faultRun>1?' ('+s.faultRun+' in a row)':''),'no');
  document.getElementById('chips').innerHTML=h;
- if(s.log&&s.log.length){const L=document.getElementById('log');const atEnd=L.scrollTop+L.clientHeight>=L.scrollHeight-4;L.textContent+=s.log.join('\n')+'\n';if(atEnd)L.scrollTop=L.scrollHeight}
+ if(s.log&&s.log.length){const L=document.getElementById('log');const atEnd=L.scrollTop+L.clientHeight>=L.scrollHeight-4;L.textContent+=s.log.join('\n')+'\n';if(atEnd)L.scrollTop=L.scrollHeight;
+  const fresh=s.log.filter(l=>!l.startsWith('> '));if(fresh.length){lastLine=fresh[fresh.length-1];if(rp.el&&performance.now()-rp.at<8000)showReply(rp.el,lastLine)}}
  since=s.next;
  if(!built)build(s.settings);
  for(const k in s.settings){const f=document.getElementById('f_'+k);if(!f||document.activeElement===f)continue;if(f.type==='checkbox')f.checked=!!s.settings[k];else f.value=s.settings[k]}
+ const un=s.unsaved||[];for(const k in s.settings){const f=document.getElementById('f_'+k),l=f&&f.closest('label');if(!l)continue;l.classList.toggle('dirty',un.includes(k));l.classList.toggle('off',s.stock&&s.stock[k]!==undefined&&s.stock[k]!==s.settings[k])}
+ document.getElementById('savebar').classList.toggle('on',un.length>0);
+ if(un.length)document.getElementById('savetxt').textContent='Not saved (lost at a power cut): '+un.map(lbl).join(', ');
+ const bar=document.getElementById('bar');bar.className=s.fault?'no':s.busy?'wa':(s.state==='ready'&&armed)?'ok':'';
+ document.getElementById('bstate').textContent=s.state+(s.state==='ready'?(armed?', armed':', not armed'):'');document.getElementById('blog').textContent=lastLine;
+ if(s.cyc!==cycSeq){cycSeq=s.cyc;cycles()}
 }).catch(()=>{})}
+let lastLine='',cycSeq=-1;
+function cycles(){fetch('/api/cycles').then(r=>r.json()).then(d=>{
+ const E=['home, switch first try','home on the second, slow try','count only, no switch','stopped on a fault','stopped by hand'],C=['ok','wa','wa','no','no'],K=['drop','bring it home','set drop length'];
+ let h='',n=[0,0,0,0,0];
+ for(const x of d.cycles){if(x.boot===d.boot)n[x.end]++;const ago=x.boot===d.boot?ms(Math.max(0,d.uptime-x.up)*1000)+' ago':'before a power cut';
+  const what=x.kind?K[x.kind]:'drop '+x.n+', fired by '+x.trig;
+  const det=x.kind?ago:x.told+' mm told'+(x.meas?', '+x.meas+' mm back':'')+(x.land?', '+(x.land/1000).toFixed(2)+' s to land':'')+'; '+ago;
+  h+='<div class="row"><span>'+what+'<small>'+det+'</small></span>'+chip(E[x.end]||'?',C[x.end]||'wa')+'</div>'}
+ document.getElementById('cyc').innerHTML=h||'<div class="sub">none yet</div>';
+ document.getElementById('cycsum').textContent=d.cycles.length?'This power-up: '+n[0]+' home first try, '+n[1]+' on the retry, '+n[2]+' count only, '+(n[3]+n[4])+' stopped.':''}).catch(()=>{})}
+// ---- cards fold, and the browser remembers which (owner 2026-10-14): Status, Last cycles and Run open by default
+const FOLDED={'Radar':1,'Bench: finger servo':1,'Bench: motor':1,'Settings':1,'Console':1,'Network':1,'Firmware':1};
+document.querySelectorAll('.card>h2').forEach(h=>{const card=h.parentElement,name=h.textContent.trim(),key='fold:'+name;let f=FOLDED[name]?1:0;
+ try{const v=localStorage.getItem(key);if(v!==null)f=+v}catch(e){}
+ const t=document.createElement('span');t.className='tg';h.appendChild(t);
+ const set=v=>{card.classList.toggle('fold',!!v);t.textContent=v?'show':'hide';try{localStorage.setItem(key,v?'1':'0')}catch(e){}};
+ set(f);h.onclick=()=>set(!card.classList.contains('fold'))});
 tick();setInterval(tick,800);
 
 // ---- radar view: /api/radar about 8 times a second, drawn every animation frame
@@ -380,6 +442,9 @@ static void sendStatus() {
   j += ",\"faultRun\":" + String(m.faultRun);
   j += ",\"uptime\":" + String(millis());
   j += ",\"settings\":{" + settingsJson() + "}";
+  j += ",\"stock\":{" + settingsStockJson() + "}";
+  j += ",\"unsaved\":[" + settingsUnsavedJson() + "]";
+  j += ",\"cyc\":" + String(cyclesSeq());
   j += ",\"log\":[" + log + "],\"next\":" + String(next);
   j += "}";
   server.send(200, "application/json", j);
@@ -441,6 +506,8 @@ void webBegin() {
                ",\"closes\":" + String(m.limitCloses) + ",\"busy\":" + String(m.busy) + ",\"inv\":" + String(S.radarInv) + "}";
     server.send(200, "application/json", j);
   });
+
+  server.on("/api/cycles", HTTP_GET, []() { server.send(200, "application/json", cyclesJson()); });
 
   server.on("/api/cmd", HTTP_POST, []() {
     String out;

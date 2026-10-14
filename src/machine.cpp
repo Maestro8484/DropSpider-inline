@@ -214,6 +214,56 @@ static bool rewindRetried = false;
 static long rewindCarry = 0;
 static long slowAt = 0;                 // steps into a rewind where it drops to FEED_RPM; 0 = never
 
+// The last cycles, for the page (owner 2026-10-14). recKind is set where the rewind
+// decides how it ended, because startLock's seat move clears cutByLimit, and the
+// record is written once the lock has finished (never during a move).
+static CycleRec cycles[CYCLES_KEPT];
+static int cycN = 0;                    // records held
+static uint32_t cycSeq = 0;             // bumps at every record
+static int recKind = -1;                // -1 = nothing to record at the end of this lock
+static uint8_t recEnding = 0;
+
+static void cyclesStore() {
+  uint8_t blob[4 + sizeof cycles];
+  memcpy(blob, &cycN, 4);
+  memcpy(blob + 4, cycles, sizeof cycles);
+  cyclesSave(blob, sizeof blob);
+}
+
+static void recordCycle(uint8_t kind, uint8_t ending) {
+  if (cycN == CYCLES_KEPT) memmove(cycles, cycles + 1, sizeof(CycleRec) * (CYCLES_KEPT - 1));
+  else cycN++;
+  CycleRec &r = cycles[cycN - 1];
+  r.n = kind == 0 ? drops : 0;
+  r.upSec = millis() / 1000;
+  r.boot = (uint16_t)bootCount();
+  r.kind = kind;
+  r.trigger = (uint8_t)lastTrigger;
+  r.ending = ending;
+  r.home = limitHome() || homeFlag;
+  r.toldMm = (uint16_t)S.dropMm;
+  r.measMm = (uint16_t)(ending == 0 || ending == 1 ? measuredDrop : 0);
+  r.landMs = (uint16_t)min(landMs, (uint32_t)65535);
+  cycSeq++;
+  cyclesStore();
+}
+
+uint32_t cyclesSeq() { return cycSeq; }
+
+String cyclesJson() {
+  String j = "{\"boot\":" + String(bootCount()) + ",\"uptime\":" + String(millis() / 1000) + ",\"seq\":" + String(cycSeq) + ",\"cycles\":[";
+  for (int i = cycN - 1; i >= 0; i--) {
+    const CycleRec &r = cycles[i];
+    if (i != cycN - 1) j += ",";
+    j += "{\"n\":" + String(r.n) + ",\"up\":" + String(r.upSec) + ",\"boot\":" + String(r.boot) +
+         ",\"kind\":" + String(r.kind) + ",\"trig\":\"" + triggerName((TriggerSource)r.trigger) + "\"" +
+         ",\"end\":" + String(r.ending) + ",\"home\":" + String(r.home) + ",\"told\":" + String(r.toldMm) +
+         ",\"meas\":" + String(r.measMm) + ",\"land\":" + String(r.landMs) + "}";
+  }
+  j += "]}";
+  return j;
+}
+
 static void applyDir() {
   if (appliedDir != S.rewindDir) {
     stepper->setDirectionPin(PIN_DIR, S.rewindDir == 1);
@@ -589,6 +639,12 @@ static void handleReq(const Req &r) {
     haltMotor();
     bool wasCycle = cycle;
     if (isBusy()) homeLost();                 // stopped part way: nobody knows where the spider is
+    if (isBusy() && (wasCycle || teaching || rehoming)) recordCycle(wasCycle ? 0 : teaching ? 2 : 1, 4);
+    // A teach or rehome stopped part way is over: otherwise the next plain rewind
+    // would finish it (and a stopped teach would set the drop length).
+    if (teaching) { teaching = false; S.armed = teachWasArmed; }
+    if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; }
+    recKind = -1;
     cycle = false;
     faultNow = false;
     if (r.a == ACT_OFF) { driverOff(); servoOff(); }
@@ -796,7 +852,9 @@ static void step() {
       // and the bead clear of the flap. Owner rule 2026-10-06: the motor never loses
       // power before the finger is holding, and the spider never hangs on the motor
       // alone (it ran the whole line every time it did).
+      recKind = cycle ? 0 : rehoming ? 1 : teaching ? 2 : -1;
       if (finishRewind()) {
+        recEnding = 3;
         if (teaching) { teaching = false; logf("[teach] the switch never closed, so nothing was measured; drop distance kept at %d mm", S.dropMm); }
         if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; logf("[rehome] the switch never closed: check the stopper meets the flap, and for a snag on the line"); }
         logf("[fault] full rewind without the switch: locking, then stopped. Send clear when it is fixed.");
@@ -804,11 +862,13 @@ static void step() {
         break;
       }
       if (cutByLimit) {
+        recEnding = rewindRetried ? 1 : 0;
         if (teaching) finishTeach();
         if (rehoming) finishRehome();
         startLock(cycle ? "drop" : "rewind (stopped by the switch, finger in, seated, motor off)", BACKOFF_STEPS);
         break;
       }
+      recEnding = 2;
       if (teaching) { teaching = false; S.armed = teachWasArmed; }
       if (rehoming) { rehoming = false; S.armed = rehomeWasArmed; }
       startLock(cycle ? "drop" : "rewind (finger in, seated, motor off)");
@@ -846,6 +906,7 @@ static void step() {
       logf("[lock] seated (let down %d mm). Limit switch %s%s", (int)(lockSeatSteps * mmPerStep()),
            !S.limitFitted ? "not fitted" : limitHome() ? "pressed" : "open",
            upByLimit ? "; spider home" : "; home not known (last rewind was not stopped by the switch)");
+      if (recKind >= 0) { recordCycle((uint8_t)recKind, recEnding); recKind = -1; }
       if (faultNow) {
         faultNow = false; cycle = false;
         logf("[fault] stopped: %s. Send clear when it is fixed, or press the limit switch 3 times to bring it home.", fault);
@@ -934,6 +995,14 @@ void machineBegin() {
 
   drops = dropCount();
   homeFlag = homeSaved();
+  {
+    uint8_t blob[4 + sizeof cycles];
+    if (cyclesLoad(blob, sizeof blob) == sizeof blob) {
+      memcpy(&cycN, blob, 4);
+      if (cycN < 0 || cycN > CYCLES_KEPT) cycN = 0;
+      memcpy(cycles, blob + 4, sizeof cycles);
+    }
+  }
   if (faultLogLoad().length()) logf("[boot] the log up to the last fault is kept: send lastlog (page: Last fault log)");
   limLast = limStable = [] { bool l = digitalRead(PIN_LIMIT) == LOW; return S.limitInverted ? !l : l; }();
   btnLast = btnStable = btnWas = digitalRead(PIN_BUTTON) == HIGH;

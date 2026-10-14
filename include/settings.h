@@ -32,6 +32,11 @@ String faultLogLoad();
 
 // A comma separated JSON fragment of every setting, for the web page.
 String settingsJson();
+// The same for the factory values, so the page can mark what differs from stock.
+String settingsStockJson();
+// A JSON array body of the names whose live value differs from what is saved in flash
+// (owner 2026-10-14: the page marks them and shows one Save bar while any exist).
+String settingsUnsavedJson();
 
 // Home network saved from the web page. Empty means use the one in secrets.ini.
 String wifiSavedSsid();
@@ -55,6 +60,14 @@ void homeSave(bool home);
 // Drop counter, kept through power cuts.
 uint32_t dropCount();
 void     dropCountBump();
+
+// Power-up counter, bumped once at every boot. The page uses it to say whether a
+// kept cycle record is from this power-up or an earlier one.
+uint32_t bootCount();
+
+// The last cycles (one record each, see machine.h), kept through power cuts.
+size_t cyclesLoad(void *buf, size_t max);
+void   cyclesSave(const void *buf, size_t n);
 
 // Parse a signed whole number strictly: "12", "-1600". Empty, "12x", "abc" fail.
 bool parseLong(const String &s, long &out);
