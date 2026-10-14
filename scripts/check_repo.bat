@@ -25,5 +25,7 @@ if /i "%WAY%"=="build" set "WAY=--build"
 if not "%WAY%"=="--build" set "WAY="
 
 "%PY%" tools\check_repo.py %WAY%
+set "RC=%errorlevel%"
 echo.
 if "%~1"=="" pause
+exit /b %RC%
