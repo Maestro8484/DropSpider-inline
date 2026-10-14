@@ -1,0 +1,11 @@
+{
+    // VS Code offers these when the folder is opened. PlatformIO IDE builds and
+    // flashes the firmware from platformio.ini; the two below clash with it.
+    "recommendations": [
+        "platformio.platformio-ide"
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.cpptools-extension-pack",
+        "pioarduino.pioarduino-ide"
+    ]
+}

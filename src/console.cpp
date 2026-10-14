@@ -82,8 +82,8 @@ String logJsonSince(uint32_t since, uint32_t &next) {
 
 static void printStatus() {
   MachineStatus m = machineStatus();
-  logf("state=%s armed=%d sensor=%d(%s) limit=%s (closed %lu times since power-up) home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
-       m.state, m.armed, m.sensor, m.viaRadar ? "radar" : "OUT pin",
+  logf("firmware %s | state=%s armed=%d sensor=%d(%s) limit=%s (closed %lu times since power-up) home=%s driver=%s servo=%s@%d | rewind steps=%ld last=%ld%s drops=%lu%s%s",
+       FW_VERSION, m.state, m.armed, m.sensor, m.viaRadar ? "radar" : "OUT pin",
        m.limitFitted ? (m.limitRaw ? "pressed" : "open") : (m.limitRaw ? "not-fitted(pressed)" : "not-fitted(open)"),
        (unsigned long)m.limitCloses,
        m.home ? "yes" : "unknown",

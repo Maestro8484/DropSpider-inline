@@ -84,6 +84,9 @@ goto :ok
 :ok
 echo.
 echo Update done. The board restarts and is back on the network in about 30 seconds.
+echo Waiting for it, then asking which firmware it reports...
+timeout /t 30 /nobreak >nul
+"%PY%" tools\board_version.py dropspider.local
 if "%~1"=="" pause
 exit /b 0
 

@@ -26,7 +26,7 @@ void setup() {
   settingsBegin();
   machineBegin();            // own task from here on; never rewinds at boot
   radarBegin();              // C4002 on UART2; asks it to report 1.5 s later
-  logf("\nDropSpider Mechanism A Rev C.1 ready. Type help.");
+  logf("\nDropSpider Mechanism A Rev C.1 ready, firmware %s. Type help.", FW_VERSION);
   webBegin();                // may take up to 15 s to join WiFi; the machine is already live
   logf("%s", webWhereAmI().c_str());
   consoleRun("status");

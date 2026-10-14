@@ -35,6 +35,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
+| `stl/*.3mf` | The owner's own Bambu Studio projects (plate layout, his print settings), kept beside the STLs for his use. A session never writes, regenerates or commits a .3mf; the deliverable of any CAD change is the STL |
 
 ## The coordinate frame (every doc uses it)
 

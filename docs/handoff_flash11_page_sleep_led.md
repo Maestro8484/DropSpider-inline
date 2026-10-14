@@ -6,7 +6,7 @@ Work order: put today's three builds on the board in one flash and watch each on
 
 ## Before you start (checks to run now, not recorded facts)
 
-- `git log --oneline -4` lists the three builds: web page refinements, sleep by 5 presses, asleep LED. If any is missing, `CHANGELOG.md` says where it stands.
+- `git log --oneline -4` lists the three builds: web page refinements, sleep by 5 presses, asleep LED. If any is missing, `CHANGELOG.md` says which are built.
 - `pio run` is SUCCESS on the current tree.
 - The board answers `http://192.168.1.138/api/status`; if its reply has no `cyc` key it still runs flash 10 and this handoff applies in full. If it has one, read `docs/commissioning_log.md` for which steps below are already logged.
 - Another session live in the repo: `.git/claude-sessions/` lists it. Stage files by name only.
@@ -21,8 +21,8 @@ Work order: put today's three builds on the board in one flash and watch each on
 ## The work, in order
 
 1. **Read the board:** `/api/status`. Flash only from ready, home, motor off, no fault, nothing moving. Note drops, dropmm, armed.
-2. **Flash over WiFi:** `scripts\update_firmware.bat` option 1 (or `pio run -e ota -t upload`). Log the row with the commit hash flashed.
-3. **Back after the restart:** `/api/status` now carries `cyc`, `unsaved`, `stock`; `/api/cycles` answers; armed 1 (every power-up arms); home 1. Settings unchanged from step 1 (reflashing never wipes them). The owner sees the blue LED solid.
+2. **Tag, then flash over WiFi:** `git status` shows no firmware edits (src, include, platformio.ini); `git tag -a fw-11 -m "flash 11: page refinements, sleep by 5 presses, asleep LED, firmware version stamp"` on HEAD; `python tools/fw_version.py --show` prints `fw-11`. Then `scripts\update_firmware.bat` option 1 (or `pio run -e ota -t upload`). If the flash fails and the code changes, delete the tag (`git tag -d fw-11`) and tag the new commit. Log the row with `fw-11` and the commit hash.
+3. **Back after the restart:** the batch file's own check (`tools/board_version.py`) says MATCH and the board reports `fw-11`; `/api/status` carries `fw`, `cyc`, `unsaved`, `stock`; `/api/cycles` answers; armed 1 (every power-up arms); home 1. Settings unchanged from step 1 (reflashing never wipes them). The owner sees the blue LED solid.
 4. **Page on the owner's phone:** he opens `http://dropspider.local`. He answers in one line: Status, Last cycles and Run open, the rest folded, a bar along the bottom. Last cycles says "none yet" until the first cycle on this build.
 5. **Reply strip:** the session sends nothing; the owner presses Stop on the page and reads the strip under the Run buttons (`[done] stop: everything halted ...`). That disarms the device; the session sends `arm` and reads it back.
 6. **Sleep by 5 presses (owner at the device):** nothing moving, he presses the limit switch lever 5 times within 4 s and lets go. 1.2 s later the log says `[switch] pressed 5 times: asleep, not armed ...`, the page chip reads "not armed (asleep)", and the blue LED gives one short flash every 2 s. He answers in one line what the LED does. Then 5 presses again: `awake, armed`, LED solid.

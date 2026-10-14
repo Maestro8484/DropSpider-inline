@@ -3,6 +3,14 @@
 // changed at runtime from the serial console or the web page and saved to flash.
 #pragma once
 
+// ---------- firmware version ----------
+// FW_VERSION comes from git at build time (tools/fw_version.py, run by the build_flags line in
+// platformio.ini): the last fw-N tag, plus commits past it and the commit hash, a star for
+// uncommitted firmware edits. Shown in the boot log, console status, /api/status and the page.
+#ifndef FW_VERSION
+#define FW_VERSION "unknown"
+#endif
+
 // ---------- board ----------
 // In use: 30-pin ESP32 DevKit V1 (ESP-WROOM-32, CP2102 USB). The 38-pin NodeMCU-32S
 // also works unchanged. PlatformIO board: nodemcu-32s (same chip, same pins).

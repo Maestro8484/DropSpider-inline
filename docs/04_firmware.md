@@ -40,6 +40,19 @@ The 30-pin DevKit V1 in use enters flash mode on its own, so VS Code's plain Upl
 
 Every network update switches the motor and servo off first. After any update the board restarts and, as always, does not rewind on its own.
 
+### Firmware version
+
+Every build carries a version read from git at build time (`tools/fw_version.py`, run by the `build_flags` line in `platformio.ini`). The board shows it in the boot log, in the first `status` line, as `fw` in `/api/status` and on the page's Status card. Reading it off the board is the only way to know what is loaded; the bench log's "flash N" count was kept by hand until flash 11.
+
+| Reads | Means |
+|---|---|
+| `fw-11` | exactly the commit tagged `fw-11`: the eleventh build that reached the board |
+| `fw-10+3.f6a9849` | three commits past `fw-10`, at commit f6a9849, nothing uncommitted. Not yet flashed as a numbered build |
+| `fw-10+3.f6a9849*` | the star: firmware files had uncommitted edits when it was built, so no commit reproduces it |
+| `unknown` | built without git (a zip download, not a clone) |
+
+The scheme: every build that goes onto the board gets a git tag `fw-N` on its commit, N continuing the bench log's flash count (`fw-9` is flash 9 at fdc47de, `fw-10` flash 10 at 7e61580). Tag first, then build and flash, so the board reports the clean name. After a WiFi update `scripts\update_firmware.bat` asks the board what it runs (`tools/board_version.py`) and says MATCH or DIFFERENT against this checkout. `python tools/fw_version.py --show` prints what the next build would be stamped.
+
 ## Network
 
 - Joins the home network in `secrets.ini`. The router hands out the address unless a fixed one is saved (page Network card, Fixed address, or console `ip 192.168.1.138`; `ip none` goes back to the router). The router is taken to be .1 of that address. Set 2026-10-14 to 192.168.1.138 after the router moved the board to .135 overnight. A router reservation for the board (MAC 3c:e9:0e:88:82:b8) is the cleaner road if another device ever lands on .138.

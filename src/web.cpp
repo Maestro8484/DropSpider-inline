@@ -88,6 +88,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="row"><span>Last drop, measured by the rewind</span><b id="meas">-</b></div>
  <div class="row"><span>Limit switch</span><b id="lsw">-</b></div>
  <div class="row"><span>Running for</span><b id="up">-</b></div>
+ <div class="row"><span>Firmware</span><b id="fw">-</b></div>
 </div>
 
 <div class="card">
@@ -257,6 +258,7 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  document.getElementById('rw').textContent=s.lastRewind?(s.lastRewind+' steps of '+s.rewindSteps+(s.lastRewindLimit?', stopped by the switch':'')):'none yet';
  document.getElementById('meas').textContent=s.measuredDrop?('about '+s.measuredDrop+' mm (set '+s.settings.dropmm+')'):'not yet';
  document.getElementById('up').textContent=ms(s.uptime);
+ document.getElementById('fw').textContent=s.fw||'-';
  document.getElementById('lsw').textContent=(s.limit?'closed':'open')+', closed '+s.limitCloses+' times since power-up';
  document.getElementById('sdeg').textContent=s.servoDeg+'°'+(s.servoOn?' holding':' (servo off)');
  document.getElementById('armb').textContent=armed?'Disarm':'Arm';
@@ -417,6 +419,7 @@ static void sendStatus() {
   String j = "{";
   j += "\"where\":\"" + jsonEscape(whereAmI) + "\"";
   j += ",\"ipSaved\":\"" + jsonEscape(ipSaved()) + "\"";
+  j += ",\"fw\":\"" FW_VERSION "\"";
   j += ",\"state\":\"" + String(m.state) + "\"";
   j += ",\"busy\":" + String(m.busy);
   j += ",\"armed\":" + String(m.armed);
