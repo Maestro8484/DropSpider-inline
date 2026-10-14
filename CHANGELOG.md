@@ -6,6 +6,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 
 ### Added
 - Web page, from the owner's audit rulings (`docs/audit_webui_horizon.md`): every button's reply shows in a strip where it was pressed (a refusal in red), a bar pinned to the bottom of the screen shows the state and the newest log line, a Last cycles card keeps the last 20 cycles through a power cut with a chip for how each rewind ended (`/api/cycles`), changed settings get an amber edge and one Save bar at the top until saved (a dot marks a value that differs from factory), Set drop length here asks first and names the number it will replace, and every card but Status folds from its heading with the browser remembering which are open. BUILT (`pio run` SUCCESS), seen working against a mock of the board's API in a browser, not flashed.
+- Sleep by hand: the limit switch pressed 5 times within 4 s while nothing moves puts the device to sleep (not armed, the radar ignored); 5 presses again, Arm on the page, `arm`, or a power cycle wakes it. 3 presses still bring it home; a run of presses is judged 1.2 s after the last one, so pressing on past 3 does not start a rehome (owner: "employ a 'sleep mode' by pressing the limit switch 5 times within 4 seconds"). BUILT, not flashed.
 - Stop or Off during a teach or a bring-it-home run now ends that run; before, the flag stayed set and the next plain rewind would have finished it (a stopped teach would then have set the drop length). BUILT, not flashed.
 
 ### Changed

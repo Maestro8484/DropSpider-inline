@@ -52,7 +52,7 @@ static_assert(PIN_LIMIT >= 32 && PIN_LIMIT <= 39, "limIsr reads the GPIO32-39 in
 static volatile bool limHit = false;          // closed at least once since the move started
 static volatile uint32_t limCloses = 0;       // closed edges seen by the interrupt, bounce included
 static uint32_t limPresses = 0;               // steady closures since power-up (what the page shows)
-static uint32_t pressAt[3] = {0, 0, 0};        // the last three closures at rest, for the 3-press teach
+static uint32_t pressFirst = 0, pressLast = 0; // a run of closures by hand at rest: 3 = bring it home, 5 = sleep or wake
 static int pressN = 0;
 static uint32_t limClosesAtStart = 0;
 static void IRAM_ATTR limIsr() {
@@ -335,7 +335,13 @@ static void readInputs() {
   if (now - limAt >= LIMIT_DEBOUNCE_MS && limStable != l) {
     limStable = l;
     if (l) limPresses++;
-    if (l) { if (atRest(state)) pressAt[pressN++ % 3] = now; else pressN = 0; }
+    if (l) {
+      if (!atRest(state)) pressN = 0;
+      else {
+        if (pressN == 0 || now - pressFirst > PRESS_WINDOW_MS) { pressN = 0; pressFirst = now; }
+        pressN++; pressLast = now;
+      }
+    }
     logf("[limit] switch %s", l ? "closed" : "open");
   }
 }
@@ -750,15 +756,19 @@ static void step() {
   uint32_t now = millis();
   bool pressed = buttonEdge();
 
-  // Rehome by hand: the limit switch pressed 3 times within TEACH_WINDOW_MS while at
-  // rest, then let go for TEACH_QUIET_MS (owner 2026-10-13: he pressed it 3 times to
-  // recover a spider left part way down; setting the drop length is the page's job).
-  if (pressN >= 3) {
-    uint32_t first = pressAt[(pressN - 3) % 3], last = pressAt[(pressN - 1) % 3];
-    if (!atRest(state) || now - last > TEACH_WINDOW_MS) pressN = 0;
-    else if (last - first <= TEACH_WINDOW_MS && !limStable && now - limAt >= TEACH_QUIET_MS) {
-      pressN = 0;
-      logf("[rehome] limit switch pressed 3 times");
+  // The switch pressed by hand while at rest, judged PRESS_QUIET_MS after the last press:
+  // PRESS_SLEEP or more = sleep (not armed, the radar ignored) or, if already asleep, wake;
+  // PRESS_REHOME or more = bring it home (owner 2026-10-13: he pressed it 3 times to recover
+  // a spider left part way down; setting the drop length is the page's job). Sleep holds
+  // until 5 presses again, Arm on the page, or a power cycle, since every power-up arms.
+  if (pressN > 0 && !atRest(state)) pressN = 0;
+  else if (pressN > 0 && !limStable && now - pressLast >= PRESS_QUIET_MS) {
+    int n = pressN; pressN = 0;
+    if (n >= PRESS_SLEEP) {
+      if (S.armed) { S.armed = 0; logf("[switch] pressed %d times: asleep, not armed. The radar is ignored until the switch is pressed %d times again, Arm on the page, or a power cycle", n, PRESS_SLEEP); }
+      else { S.armed = 1; logf("[switch] pressed %d times: awake, armed", n); }
+    } else if (n >= PRESS_REHOME) {
+      logf("[rehome] limit switch pressed %d times", n);
       handleReq(Req{ACT_REHOME, 0, TRIG_BUTTON});
     }
   }

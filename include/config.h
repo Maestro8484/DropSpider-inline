@@ -59,8 +59,14 @@
 #define LOCK_SEAT_MS        700    // servo keeps pushing while the spool settles onto a tooth
 #define TRIGGER_DEBOUNCE_MS 60     // sensor must stay HIGH this long
 #define CLEAR_BEFORE_REARM  2000   // sensor must read LOW this long before the next scare
-#define TEACH_WINDOW_MS     2500   // the limit switch pressed 3 times within this, at rest = measure the drop (owner 2026-10-12)
-#define TEACH_QUIET_MS      600    // and then left alone this long before the motor moves
+// A run of limit switch presses by hand, at rest: PRESS_REHOME presses = bring it home
+// (owner 2026-10-13), PRESS_SLEEP presses = sleep (not armed) or wake (owner 2026-10-14:
+// "sleep mode by pressing the limit switch 5 times within 4 seconds"). The run is
+// judged PRESS_QUIET_MS after the last press, so pressing on past 3 never starts a rehome.
+#define PRESS_WINDOW_MS     4000   // all presses of one run fall within this of the first
+#define PRESS_QUIET_MS      1200   // then left alone this long before anything happens
+#define PRESS_REHOME        3
+#define PRESS_SLEEP         5
 // Homing the way a CNC machine does it (GRBL: seek fast, then feed slowly onto the switch)
 #define FEED_RPM            80     // the last part of every rewind after a drop, and the whole of a reset wind
 #define FEED_ZONE_TURNS     2.25f  // a rewind after a drop slows to FEED_RPM this far before the end of its count

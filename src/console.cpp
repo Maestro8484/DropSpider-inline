@@ -105,7 +105,7 @@ static const char *const HELP[] = {
   "  lock            finger in, seat move onto a tooth, then driver off",
   "  rewind          rewind (finger out first); at the limit switch it eases off 1/8 turn and locks",
   "  teach           spider hanging where a drop should stop: wind up to the switch, count it, save it as dropmm (page: Set drop length here)",
-  "  rehome          bring it home from anywhere: lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm (same as 3 fast presses of the switch)",
+  "  rehome          bring it home from anywhere: lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm (same as 3 fast presses of the switch; 5 presses within 4 s = sleep or wake)",
   "  lastlog         the log lines up to the last fault, kept through a power cut",
   "  jog <steps>     signed microsteps, 1600 = one turn, + = rewind direction; finger out first; driver stays on",
   "  stop            halt everything now, leave the motor as it is",

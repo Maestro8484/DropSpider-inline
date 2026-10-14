@@ -176,7 +176,7 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="g">
   <button onclick="teachAsk()">Set drop length here</button>
  </div>
- <div class="sub">Set drop length here: lower the spider with -1 turn and -1/8 to where a drop should stop, then press this. It winds up to the switch, counts the turns, and saves that as the drop distance. Bring it home (or the limit switch pressed 3 times fast by hand): from anywhere, lowers 1/2 turn, winds slowly to the switch, clears the fault and re-arms; the drop distance is not changed.</div>
+ <div class="sub">Set drop length here: lower the spider with -1 turn and -1/8 to where a drop should stop, then press this. It winds up to the switch, counts the turns, and saves that as the drop distance. Bring it home (or the limit switch pressed 3 times fast by hand): from anywhere, lowers 1/2 turn, winds slowly to the switch, clears the fault and re-arms; the drop distance is not changed. The switch pressed 5 times within 4 s puts it to sleep (not armed, the radar ignored); 5 presses again, Arm, or a power cycle wakes it.</div>
  <div class="sub">+ is the rewind direction. A rewind locks by itself once it reaches the switch. The motor stays powered after a jog or release until Lock or Off. Release winds the spool up 1/12 turn while the finger swings out, then holds the spider on the motor.</div>
 </div>
 
@@ -260,7 +260,7 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  document.getElementById('lsw').textContent=(s.limit?'closed':'open')+', closed '+s.limitCloses+' times since power-up';
  document.getElementById('sdeg').textContent=s.servoDeg+'°'+(s.servoOn?' holding':' (servo off)');
  document.getElementById('armb').textContent=armed?'Disarm':'Arm';
- let h=armed?chip('armed','ok'):chip('not armed','wa');
+ let h=armed?chip('armed','ok'):chip('not armed (asleep): Arm, 5 presses of the switch, or a power cycle arms it','wa');
  h+=s.limitFitted?(s.limit?chip('spider home (switch pressed)','ok'):s.home?chip('spider home (seated on the finger)','ok'):chip('switch open, spider not home','wa')):chip('limit switch off in settings'+(s.limit?', reads pressed':', reads open'),'wa');
  h+=s.viaRadar?(s.sensor?chip('radar rule passing: would fire','no'):chip('radar watching, rule not met','ok')):(s.sensor?chip('OUT pin (GPIO33): someone there','wa'):chip('OUT pin (GPIO33): clear','ok'));
  if(s.driverOn)h+=chip('motor powered','wa');
