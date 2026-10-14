@@ -131,6 +131,9 @@ void wifiSave(const String &ssid, const String &pass) {
   prefs.putString("pass", pass);
 }
 
+String ipSaved() { Guard g; return prefs.getString("ip", ""); }
+void ipSave(const String &ip) { Guard g; prefs.putString("ip", ip); }
+
 int dropMmMax() { return S.lineMm - (int)SPOOL_TO_EYELET_MM - DROP_KNOT_MARGIN_MM; }
 
 void faultLogSave(const String &text) { Guard g; prefs.putString("lastlog", text.length() > 3900 ? text.substring(text.length() - 3900) : text); }

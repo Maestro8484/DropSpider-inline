@@ -38,6 +38,11 @@ String wifiSavedSsid();
 String wifiSavedPass();
 void   wifiSave(const String &ssid, const String &pass);
 
+// Fixed network address saved from the page or the console (owner 2026-10-14, after the
+// router moved the board from .138 to .135 overnight). Empty means the router picks.
+String ipSaved();
+void   ipSave(const String &ip);
+
 // Longest drop the line allows: stops DROP_KNOT_MARGIN_MM short of the barrel knot.
 int dropMmMax();
 

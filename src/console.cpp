@@ -116,7 +116,8 @@ static const char *const HELP[] = {
   "  dropmm <mm>     how far the spider drops (100 to line - 70)",
   "  droprpm <n>     drop top speed, 100 to 900 | relms <ms> finger travel before the drop, 100 to 600",
   "  dropacc <n> | dropdec <n>   drop start and stop rates, microsteps/s^2 (100000 is about 1 g)",
-  "  wifi            show network state | radar   what the C4002 sees now and whether it would fire | radar probe   find its wire",
+  "  wifi            show network state | ip <address>   fixed network address, saved; ip none = the router picks; restart   restart the board",
+  "  radar   what the C4002 sees now and whether it would fire | radar probe   find its wire",
   "  radar range [closest farthest]  the sensor's own detect range, cm (set closest past the hanging spider) | radar version",
   "  radar out <1|2|3>  what its OUT pin goes high on: 1 motion, 2 presence, 3 either | radar reset   its factory settings",
   "  radar raw       the last 96 bytes heard from the sensor, as hex | radar baud   find its speed; set it back to 115200 if it moved",
@@ -196,6 +197,15 @@ void consoleRun(const String &raw, String *capture) {
     else motion(cmd == "jog" ? ACT_JOG : ACT_SERVO, arg, src);
   }
   else if (cmd == "wifi")     logf("%s", webWhereAmI().c_str());
+  else if (cmd == "ip") {
+    if (!argS.length()) { String f = ipSaved(); logf(f.length() ? "fixed address %s (restart to use a change)" : "no fixed address: the router picks", f.c_str()); }
+    else if (argS == "none") { ipSave(""); logf("fixed address cleared: the router picks after the next restart"); }
+    else { IPAddress a; if (!a.fromString(argS)) logf("refused: not an address, e.g. ip 192.168.1.138"); else { ipSave(argS); logf("fixed address %s saved: send restart to use it", argS.c_str()); } }
+  }
+  else if (cmd == "restart") {
+    if (machineStatus().busy) logf("refused: a move is running");
+    else { logf("restarting"); delay(200); machineSafeStop(); ESP.restart(); }
+  }
   else if (cmd == "radar")    {
     String sub = argS, rest; int sp2 = argS.indexOf(' ');
     if (sp2 >= 0) { sub = argS.substring(0, sp2); rest = argS.substring(sp2 + 1); rest.trim(); }

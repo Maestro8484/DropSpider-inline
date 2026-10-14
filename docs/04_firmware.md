@@ -42,7 +42,7 @@ Every network update switches the motor and servo off first. After any update th
 
 ## Network
 
-- Joins the home network in `secrets.ini` by DHCP (the router hands out the address). Static address: not yet.
+- Joins the home network in `secrets.ini`. The router hands out the address unless a fixed one is saved (page Network card, Fixed address, or console `ip 192.168.1.138`; `ip none` goes back to the router). The router is taken to be .1 of that address. Set 2026-10-14 to 192.168.1.138 after the router moved the board to .135 overnight. A router reservation for the board (MAC 3c:e9:0e:88:82:b8) is the cleaner road if another device ever lands on .138.
 - A different network saved from the web page's Network card wins over `secrets.ini`. Save it empty to go back.
 - If it cannot join in 15 s it makes its own network `DropSpider-setup` (password `dropspider`), page at `192.168.4.1`.
 - Page at `http://dropspider.local` or at the address printed on the USB console at start-up (`wifi` command prints it again).

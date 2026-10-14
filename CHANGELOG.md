@@ -2,11 +2,18 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-14
+
+### Changed
+- Every power-up arms on its own; armed is no longer a saved setting, and disarm (including the disarm every bench move does) holds only until the next power cycle. The home guard still stops a power-up with the spider down on a fault. FLASHED, VERIFIED on the restart after the flash (owner: it must come up armed after a power cut).
+- The board can keep a fixed network address: page Network card, Fixed address, or console `ip <address>` and `restart`. Set to 192.168.1.138 after the router moved the board to .135 overnight. FLASHED, VERIFIED: boot log `[wifi] fixed address 192.168.1.138, router 192.168.1.1`.
+- Console `restart` restarts the board (refused while a move runs).
+
 ## 2026-10-13
 
 ### Changed
-- Pressing the limit switch 3 times fast now brings the spider home from anywhere (lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm) instead of setting the drop length; setting the length stays on the page button. BUILT, not flashed.
-- Rewinds after a drop finish at 80 rpm over their last 2 1/4 turns, and a rewind that misses the switch gets one slow second try before the fault. BUILT, not flashed.
+- Pressing the limit switch 3 times fast now brings the spider home from anywhere (lower 1/2 turn, wind slowly to the switch, clear the fault, re-arm) instead of setting the drop length; setting the length stays on the page button. FLASHED 2026-10-13, not yet exercised.
+- Rewinds after a drop finish at 80 rpm over their last 2 1/4 turns, and a rewind that misses the switch gets one slow second try before the fault. FLASHED 2026-10-13; the second try VERIFIED by the board 2026-10-14 (drop 139: first pass missed the switch, the slow try closed it). 41 radar drops overnight, no fault.
 - The owner's radar mount redesign is in the STL folder: `c4002_case_base_extended.stl` (19 mm longer pivot to case) and `c4002_case_Swivel_mount.stl` (swivels left and right); the old fork is `c4002_case_short_mount.stl`. Docs and the export name follow.
 
 ### Added

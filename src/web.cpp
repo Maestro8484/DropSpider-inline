@@ -176,8 +176,9 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <h2>Network</h2>
  <label>Network name<input id="ssid"></label>
  <label>Password<input type="password" id="pass"></label>
+ <label><span>Fixed address<small>empty = the router picks one (it moved the board from .138 to .135 overnight once)</small></span><input id="ip" placeholder="192.168.1.138"></label>
  <div class="g" style="margin-top:8px"><button onclick="wifi()">Save and restart</button></div>
- <div class="sub">Leave the name empty and save to go back to the network built into the firmware. If it cannot join, it makes its own network DropSpider-setup, page at 192.168.4.1.</div>
+ <div class="sub">Leave the name empty and save to go back to the network built into the firmware. If it cannot join, it makes its own network DropSpider-setup, page at 192.168.4.1. The fixed address takes effect at the restart; dropspider.local works either way.</div>
 </div>
 
 <div class="card">
@@ -202,8 +203,8 @@ let st=null,armed=false,built=0,since=0;
 function c(cmd){cmd=(cmd||'').trim();if(!cmd)return;fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(tick)}
 function nudge(d){if(!st)return;c('servo '+Math.max(0,Math.min(180,st.servoDeg+d)))}
 function rrange(){const A=document.getElementById('rclose'),B=document.getElementById('rfar');if(A.value===''||B.value==='')return;delete A.dataset.touched;delete B.dataset.touched;c('radar range '+A.value+' '+B.value)}
-function wifi(){const s=document.getElementById('ssid').value,p=document.getElementById('pass').value;
- fetch('/api/wifi',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ssid='+encodeURIComponent(s)+'&pass='+encodeURIComponent(p)}).then(()=>alert('Saved. Restarting.'))}
+function wifi(){const s=document.getElementById('ssid').value,p=document.getElementById('pass').value,ip=document.getElementById('ip').value.trim();
+ fetch('/api/wifi',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ssid='+encodeURIComponent(s)+'&pass='+encodeURIComponent(p)+'&ip='+encodeURIComponent(ip)}).then(()=>alert('Saved. Restarting.'))}
 function ms(v){if(v<1000)return v+' ms';const s=v/1000;return s<60?s.toFixed(1)+' s':s<3600?Math.floor(s/60)+' min '+Math.round(s%60)+' s':Math.floor(s/3600)+' h '+Math.floor(s%3600/60)+' min'}
 function chip(t,k){return '<span class="chip '+k+'">'+t+'</span>'}
 function build(s){let h='';for(const[k,l,hint]of SETS){h+='<label><span>'+l+'<small>'+hint+'</small></span><input type="number" id="f_'+k+'" value="'+s[k]+'" onchange="c(\''+k+' \'+this.value)"></label>'}
@@ -211,6 +212,7 @@ function build(s){let h='';for(const[k,l,hint]of SETS){h+='<label><span>'+l+'<sm
 function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  st=s;armed=!!s.armed;
  document.getElementById('where').textContent=s.where;
+ {const f=document.getElementById('ip');if(document.activeElement!==f)f.value=s.ipSaved||''}
  document.getElementById('state').textContent=s.state;
  document.getElementById('drops').textContent=s.drops;
  document.getElementById('trig').textContent=s.trigger+(s.triggerAgo?' ('+ms(s.triggerAgo)+' ago)':'');
@@ -352,6 +354,7 @@ static void sendStatus() {
   String log = logJsonSince(since, next);
   String j = "{";
   j += "\"where\":\"" + jsonEscape(whereAmI) + "\"";
+  j += ",\"ipSaved\":\"" + jsonEscape(ipSaved()) + "\"";
   j += ",\"state\":\"" + String(m.state) + "\"";
   j += ",\"busy\":" + String(m.busy);
   j += ",\"armed\":" + String(m.armed);
@@ -390,7 +393,16 @@ static void startNetwork() {
   if (ssid.length()) {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);
-    WiFi.begin(ssid.c_str(), pass.c_str());          // DHCP: the router picks the address
+    String fixed = ipSaved();                         // empty: DHCP, the router picks the address
+    IPAddress a;
+    if (fixed.length() && a.fromString(fixed)) {
+      IPAddress gw(a[0], a[1], a[2], 1);              // the router is .1 on a home network
+      WiFi.config(a, gw, IPAddress(255, 255, 255, 0), gw);
+      logf("[wifi] fixed address %s, router %s", fixed.c_str(), gw.toString().c_str());
+    } else if (fixed.length()) {
+      logf("[wifi] saved address '%s' is not an address, letting the router pick", fixed.c_str());
+    }
+    WiFi.begin(ssid.c_str(), pass.c_str());
     logf("[wifi] joining %s", ssid.c_str());
     uint32_t t0 = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - t0 < WIFI_JOIN_TIMEOUT_MS) delay(250);
@@ -438,6 +450,7 @@ void webBegin() {
 
   server.on("/api/wifi", HTTP_POST, []() {
     wifiSave(server.arg("ssid"), server.arg("pass"));
+    if (server.hasArg("ip")) ipSave(server.arg("ip"));
     server.send(200, "text/plain", "ok");
     logf("[wifi] new network saved, restarting");
     delay(300);
