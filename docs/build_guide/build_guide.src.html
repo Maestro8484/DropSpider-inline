@@ -96,16 +96,17 @@ a{color:var(--accent)}
 </style>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#solder">Soldering</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
+  <a href="#parts">Parts</a><a href="#pinout">Pinout</a><a href="#power">Power</a><a href="#connections">Connections</a><a href="#proto">Protoboard</a><a href="#solder">Soldering</a><a href="#firmware">Firmware</a><a href="#assembly">Assembly</a><a href="#bringup">Power-up</a><a href="#web">Web page</a><a href="#calibrate">Calibrate</a><a href="#live">Live sensors</a><a href="#place">Placement</a><a href="#arm">Arm</a>
 </nav>
 
 <main>
 <header class="top">
   <h1>DropSpider build guide, Rev C.1</h1>
-  <p class="dim">One page, top to bottom: wire the 30-pin ESP32 DevKit V1, assemble the device, power it up, then set it up and test it from its own web page. It covers the install you are building: the device turned over on two steel corner braces on the porch beam's inside face. The ceiling install is in doc 06 only. The repo docs (02, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
+  <p class="dim">One page, top to bottom: wire the 30-pin ESP32 DevKit V1, load the firmware, assemble the device, power it up, then set it up and test it from its own web page. It covers the install I'm building: the device turned over on two steel corner braces on the porch beam's inside face. The ceiling install is in doc 06 only. The docs in the docs folder (02, 04, 05, 06, 07, 09) are the source of truth; if this page disagrees, the doc wins.</p>
   <div class="legend">
-    <span><b class="chip ready">READY TODAY</b> works with the firmware on the board now</span>
-    <span><b class="chip t2">AFTER TASK 2</b> needs the C4002 radar wired and benched (its firmware is in, never run on a sensor)</span>
+    <span><b class="chip ready">WORKS</b> seen working on the board, on the bench</span>
+    <span><b class="chip t2">BENCH ONLY</b> works on the bench over my front door; the porch numbers aren't set yet</span>
+    <span><b class="chip plan">FLASH 11</b> built, goes onto the board with flash 11</span>
     <span><b class="chip plan">PLANNED</b> designed, not written yet</span>
   </div>
   <div class="legend">
@@ -113,7 +114,7 @@ a{color:var(--accent)}
     <span><b class="j">PLUG</b> dupont jumper or the part's own plug</span>
     <span><b class="j">SCREW</b> screw terminal</span>
   </div>
-  <div class="banner">The board runs the Rev C.1 firmware (flashed 2026-09-27): motor-led drop, release under load, seat move on lock. None of it has been watched working with the motor and the spool fitted yet (tests T1 to T8); run section 09 on the bench before anything goes overhead.</div>
+  <div class="banner">Where the board stands: it runs flash 10 (the firmware reports its version on the page's Status card from flash 11 on). About 190 drops on the bench so far, fired by the radar, each one winding home to the switch and locking. What's still owed is on the roadmap: the last radar walk tests, flash 11, and the porch.</div>
 </header>
 
 <!-- ============================================================ -->
@@ -126,7 +127,7 @@ a{color:var(--accent)}
         <li>30-pin ESP32 DevKit V1 (the 38-pin NodeMCU-32S works too, same GPIO numbers)</li>
         <li>TMC2209 driver on the expansion board</li>
         <li>NEMA 11 stepper motor, 4 wires</li>
-        <li>Micro servo (yours is an MG90, about 90 degrees of swing, checked 2026-09-27)</li>
+        <li>Micro servo (mine is an MG90, about 90 degrees of swing; an SG90 works too)</li>
         <li>KW12-3 roller micro switch</li>
         <li>DFRobot C4002 radar (SEN0691): five bare pins, five dupont jumpers or a 5-pin header</li>
         <li>MP1584EN mini buck module, fixed 5 V out</li>
@@ -152,7 +153,7 @@ a{color:var(--accent)}
         <li>Vise or clamp, CA glue (line knot only), blue threadlocker</li>
         <li>Drill with a 3.4 mm and a 7 mm (or 1/4 in) bit: five holes in the base</li>
         <li>Hot glue gun: expansion board and buck onto the pad, nothing else</li>
-        <li>A phone or PC on the same WiFi as the board</li>
+        <li>A PC with VS Code and the PlatformIO extension (section 05c), a USB cable for the board, and a phone or PC on the same WiFi as the board</li>
       </ul>
     </div>
   </div>
@@ -363,7 +364,7 @@ a{color:var(--accent)}
       <tr><td>Nothing else</td><td>-</td><td>switch and radar need no resistors; servo capacitor and logic buffer only if a test fails (2 free rail holes kept for the capacitor)</td></tr>
     </tbody>
   </table></div>
-  <p class="dim">Check before soldering: drop the ESP32's header pins into the board. They must land in columns 3 and 13, 10 holes apart. That spacing is read off your photo, not measured; if your pins land 9 holes apart, use columns 3 and 12 and move the right-hand pins one column in.</p>
+  <p class="dim">Check before soldering: drop the ESP32's header pins into the board. They must land in columns 3 and 13, 10 holes apart. That spacing is read off a photo of my board, not measured; if your pins land 9 holes apart, use columns 3 and 12 and move the right-hand pins one column in.</p>
 </section>
 
 <!-- ============================================================ -->
@@ -381,27 +382,41 @@ a{color:var(--accent)}
 </section>
 
 <!-- ============================================================ -->
+<section id="firmware">
+  <h2><span class="n">05c</span>Load the firmware, from a fresh PC</h2>
+  <p class="dim">Do this with the bare ESP32 on the USB cable, before it goes into its sockets. Nothing else needs to be wired. Windows is what I use; PlatformIO runs the same on a Mac or Linux, with the one .bat file replaced by the Upload button in VS Code.</p>
+  <ol class="steps">
+    <li><div><h3>Install VS Code and PlatformIO</h3><p>Install VS Code (code.visualstudio.com). Open it, Extensions (the four squares on the left bar), search <b>PlatformIO IDE</b>, Install. It downloads its own Python and the ESP32 compiler the first time it builds, so the first build takes 5 to 10 minutes; every build after that takes about a minute.</p></div></li>
+    <li><div><h3>Get the files</h3><p>github.com/Maestro8484/DropSpider-inline, the green Code button. <b>Download ZIP</b> and unzip it anywhere, or <code>git clone</code> it if you use git. A ZIP has no git history, so the firmware from it reports its version as <code>unknown</code>; a git copy reports the real stamp. Either runs the same.</p></div></li>
+    <li><div><h3>Your WiFi</h3><p>In the folder, copy <code>secrets.ini.example</code> to <code>secrets.ini</code> (same folder) and open it in Notepad: your network name, your network password, and a password for firmware updates over WiFi. No quotes. This file never goes to GitHub.</p></div></li>
+    <li><div><h3>Flash it over USB <b class="chip ready">WORKS</b></h3><p>Plug the ESP32 in by USB. Double-click <code>scripts\update_firmware.bat</code>, type <b>2</b>, Enter. It builds the firmware and loads it; the 30-pin board goes into flash mode on its own. If the script says it can't put the board in flash mode (some boards don't), hold BOOT, tap EN, let go of BOOT, and it writes anyway. About two minutes the first time. The script uses COM13; if Windows gave your board another port, change the two COM13 lines in <code>platformio.ini</code> and the one in the .bat.</p></div></li>
+    <li><div><h3>Read the version back</h3><p>The board restarts, joins your WiFi, and its page comes up at <b class="mono">http://dropspider.local</b> (section 08). The Status card's <b>Firmware</b> row shows what it runs: <code>fw-11</code> means the eleventh build that went on my board, <code>fw-10+3.f6a9849</code> means three changes past the tenth, and a star on the end means it was built from edited files. The firmware never rewinds or drops on its own after a flash.</p></div></li>
+    <li><div><h3>Updates from then on, over WiFi <b class="chip ready">WORKS</b></h3><p>Same .bat, type <b>1</b>. No buttons, no cable; the motor and servo switch off first and the board restarts after. About 90 seconds. It retries up to three times, because the first try sometimes drops. When it's done it asks the board what it now runs and prints MATCH or DIFFERENT against the files on your PC. The page's Firmware card has an update page too, for a <code>firmware.bin</code> built elsewhere.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
 <section id="assembly">
   <h2><span class="n">06</span>Mechanical assembly</h2>
-  <p class="dim">Condensed from doc 05. Pictures are the CAD renders from the repo; new parts in each step are in full colour.</p>
+  <p class="dim">Condensed from doc 05. Pictures are the CAD drawings from the docs folder; new parts in each step are in full colour.</p>
   <figure class="shot"><img src="img:exploded" alt="Exploded view of every part along the rod"><figcaption>Everything on one 6 mm rod, motor to bearing: coupler, spacer A, ratchet disk, spool body with the HF0612 one-way bearing inside it, spacer B, 606ZZ ball bearing.</figcaption></figure>
   <figure class="shot"><img src="img:rod_section" alt="Every part on the rod cut in half, showing the HF0612 one-way bearing inside the spool"><figcaption>The same parts cut in half along the rod. The orange sleeve inside the spool is the <b>HF0612 one-way bearing</b>: flush with the spool flange, its last 2 mm sitting in the ratchet disk's center hole.</figcaption></figure>
   <ol class="steps">
     <li><div><h3>Press the one-way bearing into the spool</h3><p>The spool is Rev C.4: two printed parts and three M3x8 screws. <code>spool_onepiece</code> is the teeth, separator and barrel in one piece; <code>spool_cap</code> is the flat far wall, fitted in the next step. Press the <b>one-way bearing</b> (the clutch; the small 10 mm one with needle rollers, not the 606ZZ) into <code>spool_onepiece</code> from its <b>far face</b> (the flat end at the barrel, away from the teeth), with a vise or clamp, until it stops on the printed shoulder. The hole is one plain diameter, no lip; the screwed-on cap keeps the bearing in. Test on a spare rod: spins free one way, locks the other. Look from the teeth side (it faces the motor, so this is the view from behind the motor): free must be <b>clockwise</b>, locked counterclockwise. If not, press it out and flip it. This is the Rev C.1 fix.</p><p>What that gives you: turning <b>clockwise</b> (seen from behind the motor) the rod drives the spool. That is the winding direction, so the finger slides up each tooth's long curved face and clicks off the tip; no tooth is ever driven into the finger. Only the spider's weight, pulling <b>counterclockwise</b>, brings a steep face against the finger, and that is the hold.</p><figure class="shot"><img src="img:drive_direction" alt="Ratchet disk and finger seen from behind the motor, showing which way the rod drives the spool"></figure></div></li>
-    <li><div><h3>Line, then the cap</h3><p>The line is <b>bonded nylon upholstery thread, size 69 (Tex 70), black</b> (0.29 mm, 11 lb, your pick 2026-10-04): limp, so it lies flat on the barrel; the 3 lb fishing line it replaces sprang loose wraps off. Anchor it <b>before the cap goes on</b>, because the cap closes the far ends of the spoke windows. The 1.2 mm line hole is printed in, mid-barrel. Push the thread in from outside, fish it out of the window's open end, tie it round a 10 mm stub of 1.75 mm filament (a double overhand), and pull it back so the stub lies across the hole inside the window. A drop of CA on the knot. The stub cannot pull through the hole, so the line cannot slip round the barrel even if the spider runs the line out.</p><p>Then <code>spool_cap</code>: its three lugs into the three spoke windows (a snug drop-in; a file stroke on a lug's side if one will not go), which lines its holes up over the pilots, then <b>3x M3x8</b> through it into the body, snug. It must sit flat with no gap at the barrel's edge anywhere round (a gap is where the thread would wedge): if there is one, back off, scrape the hole edges, tighten again. Wind clockwise (seen from behind the motor) under light hand tension, the first turn over the line's tail: about 1.5 m of spare first (about 10 turns), then the working line. No elastic, no braid: the thread's own stretch is the shock absorber.</p></div></li>
+    <li><div><h3>Line, then the cap</h3><p>The line is <b>bonded nylon upholstery thread, size 69 (Tex 70), black</b> (0.29 mm, 11 lb, about 22 percent stretch): limp, so it lies flat on the barrel; the 3 lb fishing line it replaces sprang loose wraps off. Anchor it <b>before the cap goes on</b>, because the cap closes the far ends of the spoke windows. The 1.2 mm line hole is printed in, mid-barrel. Push the thread in from outside, fish it out of the window's open end, tie it round a 10 mm stub of 1.75 mm filament (a double overhand), and pull it back so the stub lies across the hole inside the window. A drop of CA on the knot. The stub cannot pull through the hole, so the line cannot slip round the barrel even if the spider runs the line out.</p><p>Then <code>spool_cap</code>: its three lugs into the three spoke windows (a snug drop-in; a file stroke on a lug's side if one will not go), which lines its holes up over the pilots, then <b>3x M3x8</b> through it into the body, snug. It must sit flat with no gap at the barrel's edge anywhere round (a gap is where the thread would wedge): if there is one, back off, scrape the hole edges, tighten again. Wind clockwise (seen from behind the motor) under light hand tension, the first turn over the line's tail: about 1.5 m of spare first (about 10 turns), then the working line. No elastic, no braid: the thread's own stretch is the shock absorber.</p></div></li>
     <li><div><h3>Ball bearing and motor</h3><p>606ZZ ball bearing (the 17 mm one) into the end plate. The seat is drawn 17.0 mm from 2026-09-27 (it was 16.8, which would not take the bearing even heated); the print comes out 0.1 to 0.2 small, which is the press. On a bracket printed before then, sand the seat with rolled sandpaper until the bearing presses in. If the bearing ends up loose (heating it in can soften the seat), fit <code>bearing_retainer</code> on the end plate's outside face: drill two 2.5 mm pilots through the end plate using the retainer's holes as the guide, then 2x M3 x 6 to 8. The rod runs on through its 12 mm hole, about 14 to 17 mm past it; that is expected. Motor on the outside of the motor plate, 4x M2.5x6, wires toward the base.</p><figure class="shot"><img src="img:step1" alt="Step 1 render"></figure></div></li>
     <li><div><h3>Coupler</h3><p>5 mm side onto the motor shaft until it stops, blue threadlocker, tighten. 6 mm side loose.</p><figure class="shot"><img src="img:step2" alt="Step 2 render"></figure></div></li>
-    <li><div><h3>Measure, then stack</h3><p>Motor plate outer face to the coupler's free end: 30 mm is the design. With the one-piece spool, <code>spacer_A_nose_7_5mm</code> goes next to the coupler, nose toward the spool, instead of spacer A and its shims. Hold it, the spool (teeth toward the motor, cap toward the 606ZZ) and <code>spacer_B_50mm</code> with its shims in line in the frame. <b>Your build, Rev C.4, against the C.3 one-piece stack:</b> motor side unchanged; on the 606ZZ side take <b>one <code>shim_2mm</code> out</b> (spacer B and its shims now fill 51.25 mm, was 53.0), which leaves 0.25 mm of play, under the 0.5 allowed. If the stopgap is on (the old <code>spool_shield</code> disc and a 2 mm shift shim), both come out. Then check the teeth still sit between the finger's faces.</p><figure class="shot"><img src="img:step3" alt="Step 3 render"></figure></div></li>
+    <li><div><h3>Measure, then stack</h3><p>Motor plate outer face to the coupler's free end: 30 mm is the design. With the one-piece spool, <code>spacer_A_nose_7_5mm</code> goes next to the coupler, nose toward the spool, instead of spacer A and its shims. Hold it, the spool (teeth toward the motor, cap toward the 606ZZ) and <code>spacer_B_50mm</code> with its shims in line in the frame. <b>My build, Rev C.4, against the earlier C.3 one-piece stack:</b> motor side unchanged; on the 606ZZ side take <b>one <code>shim_2mm</code> out</b> (spacer B and its shims now fill 51.25 mm, was 53.0), which leaves 0.25 mm of play, under the 0.5 allowed. A fresh build just stacks spacer B and adds shims until the end play is under 0.5 mm. Then check the teeth still sit between the finger's faces.</p><figure class="shot"><img src="img:step3" alt="Step 3 render"></figure></div></li>
     <li><div><h3>Rod in</h3><p>From outside the 606ZZ plate, through everything into the coupler until it bottoms; turn the spool its free way as the rod enters the needles. Threadlocker, tighten. Check: spool free clockwise seen from behind the motor, counterclockwise drags the motor. End play no more than 0.5 mm.</p><figure class="shot"><img src="img:step4" alt="Step 4 render"></figure></div></li>
     <li><div><h3>Servo and finger</h3><p>Servo into the tower pocket, spline toward the spool, two tab screws. No horn: the finger presses straight onto the spline later, at 90 degrees, during calibration (section 09), and the horn screw holds it.</p><figure class="shot"><img src="img:step5" alt="Step 5 render"></figure><figure class="shot"><img src="img:lock_detail" alt="Lock detail section"><figcaption>Locked: finger level in the teeth, the tooth pushes it up onto the ledge, not into the servo.</figcaption></figure></div></li>
-    <li><div><h3>Printed parts for this install</h3><p><code>fairlead_base</code> and <code>fairlead_flap_inv</code> (fairlead v2, 2026-09-28: the switch sits above the flap, the flap is the lowest point; the older <code>fairlead_flap</code> has no tab and does not fit), <code>ld2450_fork_screw</code>, <code>c4002_case_base</code> and <code>c4002_case_lid</code> (the radar case; <code>ld2450_cradle</code> was for the parked LD2450). <code>fairlead_body</code> is the ceiling install's and is not used.</p></div></li>
-    <li><div><h3>Holes in the base</h3><p>A bracket printed from <code>bracket.stl</code> dated 2026-09-28 or later has all five holes printed in: the 7 mm line pass-through and four 3.4 mm screw holes. Skip this step. Only on an older print: print <code>cad/bracket_footprint_inverted.svg</code> at 100% (its 100 mm bar must measure 100), lay it on the base's flat outer face, printed side up, lined up with the base's outline, and drill through the blue crosses. The dashed outlines show where the fairlead block and the radar fork will sit; the block sits beside the long cutout under the spool, not over it. Five holes: <b>7 mm</b> for the line (a 1/4 in bit is close enough), <b>3.4 mm x2</b> for the fairlead block (the pair nearest the spool on the servo side), <b>3.4 mm x2</b> for the radar fork (at the pad end). Sand the 7 mm hole smooth inside and on both edges: the line runs through it.</p><p><b>Every print, new or old (2026-10-01):</b> your build has the servo end at the beam, so the radar moves to the pad end. Drill <b>2x 3.4 mm at the pad end, 8 mm in from the base's end, 38.5 and 72.5 mm from the motor end</b> (the template marks them). The printed radar holes at the servo end stay empty.</p></div></li>
+    <li><div><h3>Printed parts for this install</h3><p><code>fairlead_base</code> and <code>fairlead_flap_inv</code> (fairlead v2: the switch sits above the flap, the flap is the lowest point; the older <code>fairlead_flap</code> has no tab and does not fit), and the radar mount: <code>c4002_case_base_extended</code> (the case, with a 19 mm longer arm to its pivot) on <code>c4002_case_Swivel_mount</code> (tilts and swivels left and right), with <code>c4002_case_lid</code>. Those two are my own redesign from 2026-10-13; the earlier fixed-tilt set, <code>c4002_case_base</code> on <code>c4002_case_short_mount</code>, still fits the same holes if you'd rather. <code>fairlead_body</code> is the ceiling install's and is not used; <code>ld2450_cradle</code> was for the parked LD2450.</p></div></li>
+    <li><div><h3>Holes in the base</h3><p>A bracket printed from the current <code>bracket.stl</code> has all five holes printed in: the 7 mm line pass-through and four 3.4 mm screw holes. Skip this step. Only on an older print: print <code>cad/bracket_footprint_inverted.svg</code> at 100% (its 100 mm bar must measure 100), lay it on the base's flat outer face, printed side up, lined up with the base's outline, and drill through the blue crosses. The dashed outlines show where the fairlead block and the radar mount will sit; the block sits beside the long cutout under the spool, not over it. Five holes: <b>7 mm</b> for the line (a 1/4 in bit is close enough), <b>3.4 mm x2</b> for the fairlead block (the pair nearest the spool on the servo side), <b>3.4 mm x2</b> for the radar mount (at the pad end). Sand the 7 mm hole smooth inside and on both edges: the line runs through it.</p><p><b>Every print, new or old:</b> my build has the servo end at the beam, so the radar goes at the pad end. Drill <b>2x 3.4 mm at the pad end, 8 mm in from the base's end, 38.5 and 72.5 mm from the motor end</b> (the template marks them). The printed radar holes at the servo end stay empty.</p></div></li>
     <li><div><h3>Switch and flap onto the block</h3><p>Solder the switch wires first. Clear the block's bore with a 3 mm drill by hand. KW12-3 on the block's outer side (away from the rod), <b>lever and roller down, legs up</b>: 2x M2 x 12 screws through the switch, threading straight into the plastic (no nuts), snug. Flap on an M2 bolt, 20 mm, in from the rod side through the knuckle and threaded into the hinge boss, not clamped; its tab goes under the roller. At rest the flap hangs a little nose-down and the roller sits clear of the tab. Lift the flap's free end by hand: it touches the roller, clicks, then stops flat against the block.</p></div></li>
     <li><div><h3>Block onto the base</h3><p>Flat face of the block against the base's outer face, its bore under the 7 mm hole. 2x <b>M3 x 12</b> from inside the base (heads on the device side), cutting their own thread into the block. Snug, not tight: the thread is plastic. Look down through the 7 mm hole: you must see straight through the bore. No glue.</p><figure class="shot"><img src="img:inverted_fairlead" alt="Fairlead block under the base seen from below: flap, bead, switch and the two screws"></figure></div></li>
-    <li><div><h3>Thread the line</h3><p>Wind the line clockwise seen from behind the motor, and lead it off the spool's <b>servo side</b>, down through the 7 mm hole and the block's bore, then slide it into the flap's slot from the flap's free end. Below: 8 mm bead, swivel, spider, brought to about <b>30 g</b> (weight added inside the 13 g foam spider, so the wraps lie at about twice the tension; under 60 g until the bench says more).</p><p>Optional, before threading, no print: a 4 mm PTFE tube (the 3D printer kind, 2 mm bore) pushed down from inside the base through the 7 mm hole until it wedges in the block's tapered mouth, tip <b>11 mm above the base's inner face</b> and no higher (higher, it hits the spinning cap). Thread the line through it. If it walks or wobbles, <code>fairlead_base_ptfe</code> holds it: doc 05 steps 24a and 24b, doc 09.</p></div></li>
-    <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to bead, line straight but not pulled: that number is <b>Line length</b> on the web page.</p></div></li>
-    <li><div><h3>Check by hand</h3><p>Pull the bead up against the flap: the flap swings toward the base, the switch clicks, the flap stops flat against the block. That is "spider home". Let go: the flap drops back to its rest stop and the switch opens.</p></div></li>
-    <li><div><h3>Radar mount</h3><p>No glue. <code>ld2450_fork_screw</code> under the base at the <b>pad end</b> (the end away from the beam), on the two new holes, ears hanging down: 2x M3 x 10 up through the fork and the base, nuts inside; the two nuts sit inside the base 8 mm from its end, under the board's edge: keep that strip clear, or lift the board on foam tape 4 mm thick. The radar goes in <code>c4002_case_base</code> with <code>c4002_case_lid</code>: wire the C4002's five pins first, then lay it in the base <b>gold antenna squares down</b> (you see both through the floor opening), <b>pins toward the knuckle</b>, the wires out through the 15 mm opening beside the knuckle. Snap the lid on: its four posts hold the board, no screws. Put the case's round knuckle between the fork's ears and push an M3 bolt (25 to 30 mm) through, nut on the far side, snug enough to hold an angle. The radar looks along the base toward the beam (the servo end): the case's <b>floor opening faces the beam</b>, the lid faces away from it. Tilt 50 degrees down to start; set it on site (section 11).</p></div></li>
+    <li><div><h3>Thread the line</h3><p>Wind the line clockwise seen from behind the motor, and lead it off the spool's <b>servo side</b>, down through the 7 mm hole and the block's bore, then slide it into the flap's slot from the flap's free end. Below: the stopper (an 8 mm hard plastic bead), swivel, spider, brought to about <b>30 g</b> (weight added inside the 13 g foam spider, so the wraps lie at about twice the tension; under 60 g until the bench says more).</p><p>Optional, before threading, no print: a 4 mm PTFE tube (the 3D printer kind, 2 mm bore) pushed down from inside the base through the 7 mm hole until it wedges in the block's tapered mouth, tip <b>11 mm above the base's inner face</b> and no higher (higher, it hits the spinning cap). Thread the line through it. If it walks or wobbles, <code>fairlead_base_ptfe</code> holds it: doc 05 steps 24a and 24b, doc 09.</p></div></li>
+    <li><div><h3>Measure the line</h3><p>Unwind fully. Barrel knot to stopper, line straight but not pulled: that number is <b>Line length</b> on the web page.</p></div></li>
+    <li><div><h3>Check by hand</h3><p>Pull the stopper up against the flap: the flap swings toward the base, the switch clicks, the flap stops flat against the block. That is "spider home". Let go: the flap drops back to its rest stop and the switch opens.</p></div></li>
+    <li><div><h3>Radar mount</h3><p>No glue. <code>c4002_case_Swivel_mount</code> under the base at the <b>pad end</b> (the end away from the beam), on the two new holes, ears hanging down: 2x M3 x 10 up through the mount and the base, nuts inside; the two nuts sit inside the base 8 mm from its end, under the board's edge: keep that strip clear, or lift the board on foam tape 4 mm thick. The radar goes in <code>c4002_case_base_extended</code> with <code>c4002_case_lid</code>: wire the C4002's five pins first, then lay it in the case <b>gold antenna squares down</b> (you see both through the floor opening), <b>pins toward the knuckle</b>, the wires out through the 15 mm opening beside the knuckle. Snap the lid on: its four posts hold the board, no screws. Put the case's round knuckle between the mount's ears and push an M3 bolt (25 to 30 mm) through, nut on the far side, snug enough to hold an angle; the mount's own pivot lets it swing left and right the same way. The radar looks along the base toward the beam (the servo end): the case's <b>floor opening faces the beam</b>, the lid faces away from it. Tilt 50 degrees down to start; set it on site (section 11).</p></div></li>
     <li><div><h3>Controller on the pad</h3><p>The pad is the flat area at the motor-plate end (x -88 to -36), on the device side of the base, now facing up. The protoboard with the ESP32 on it, foam tape or zip ties through the x = -80 holes. The expansion board and the buck hot-glued beside it, clear of the spool. Switch and radar leads run round the base's pad end (the servo end is against the beam) and back to the board, about 15 cm and 10 cm, tied to the base so the spool cannot catch them.</p></div></li>
   </ol>
 </section>
@@ -412,7 +427,7 @@ a{color:var(--accent)}
   <ol class="steps">
     <li><div><h3>Buck alone</h3><p>12 V on, nothing on the 5 V side. Meter reads 4.95 to 5.05 V (fixed 5 V module, nothing to adjust).</p></div></li>
     <li><div><h3>Driver current</h3><p>Motor unplugged, 12 V on. Meter from the pot's metal top to GND: turn to <b>0.85 V</b> (that is 0.6 A). Factory setting is about 1.2 V, too high for this motor.</p></div></li>
-    <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The blue LED is solid when armed and ready, and blinks fast when it has stopped on a fault. The finger servo swings to its lock angle once at start-up: keep fingers clear.</p></div></li>
+    <li><div><h3>Everything but the motor</h3><p>Power off. Plug in the ESP32, servo, switch, radar. 12 V on. The finger servo swings to its lock angle once at start-up: keep fingers clear. The blue LED tells you the state: <b>solid</b> armed and ready; <b>fast blink</b> stopped on a fault, or the spider isn't home; <b>slow blink</b> moving; <b>off</b> armed but waiting for the doorway to clear; <b>one short flash every 2 s</b> asleep, not armed (flash 11). Every power-up arms on its own, so the first person to walk toward it gets the spider.</p></div></li>
     <li><div><h3>Motor last</h3><p>Power off, plug in the motor, power on. Never plug or unplug the motor with 12 V on.</p></div></li>
   </ol>
 </section>
@@ -420,43 +435,50 @@ a{color:var(--accent)}
 <!-- ============================================================ -->
 <section id="web">
   <h2><span class="n">08</span>The web page is the control panel</h2>
-  <p>The board serves its own page. On a phone or PC on the same WiFi, open <b class="mono">http://dropspider.local</b>. If that name does not resolve (some Android phones), use the address the board got from the router: type <code>wifi</code> in the Console, or look at the top line of the page (on 2026-09-25 the new board got <b class="mono">192.168.1.138</b>; the router may change it). If the board cannot join the WiFi within 15 s it makes its own network, <b>DropSpider-setup</b> (password <code>dropspider</code>), and the page is at <b class="mono">192.168.4.1</b>.</p>
-  <p>Every button sends a text command, and the Console card shows everything the board says, so the page and the USB console always agree. The page refreshes itself a little faster than once a second. <b class="chip ready">READY TODAY</b></p>
+  <p>The board serves its own page. On a phone or PC on the same WiFi, open <b class="mono">http://dropspider.local</b>. If that name does not resolve (some Android phones), use the address the board got from the router: type <code>wifi</code> in the Console, or read it off the USB console at start-up. The Network card can save a fixed address so it never moves (mine is <b class="mono">192.168.1.138</b>). If the board cannot join the WiFi within 15 s it makes its own network, <b>DropSpider-setup</b> (password <code>dropspider</code>), and the page is at <b class="mono">192.168.4.1</b>.</p>
+  <p>Every button sends a text command, and the Console card shows everything the board says, so the page and the USB console always agree. The page refreshes itself a little faster than once a second. <b class="chip ready">WORKS</b></p>
+  <p>Flash 11 adds the hands-on side <b class="chip plan">FLASH 11</b>: a button's reply shows in a strip right where you pressed it (a refusal in red), a bar pinned to the bottom of the screen always shows the state and the newest log line, a changed setting gets an amber edge and a Save bar at the top until you save it, Set drop length here asks first, and every card but Status folds from its heading, with the browser remembering which are open.</p>
   <div class="ui" aria-label="Mockup of the board's web page">
     <div class="c"><div class="h">Status</div><div class="st">ready</div>
-      <div><span class="ch ok">armed</span><span class="ch wa">switch open, spider not home</span><span class="ch ok">radar: clear</span></div>
-      <div class="r"><span>Drops so far</span><b>0</b></div><div class="r"><span>Last fired by</span><b>-</b></div><div class="r"><span>Last rewind</span><b>-</b></div><div class="r"><span>Last drop, measured by the rewind</span><b>-</b></div><div class="r"><span>Running for</span><b>2 min 14 s</b></div></div>
-    <div class="c"><div class="h">Run</div><div class="b"><i class="p">Drop it now</i><i>Disarm</i><i class="d">Stop</i><i>Motor and servo off</i><i>Clear fault</i></div></div>
+      <div><span class="ch ok">armed</span><span class="ch ok">spider home</span><span class="ch ok">radar: nobody</span></div>
+      <div class="r"><span>Drops so far</span><b>191</b></div><div class="r"><span>Last fired by</span><b>radar</b></div><div class="r"><span>Last rewind</span><b>stopped by the switch</b></div><div class="r"><span>Last drop, measured by the rewind</span><b>612 mm</b></div><div class="r"><span>Limit switch</span><b>open, 10 closures</b></div><div class="r"><span>Running for</span><b>5 h 24 min</b></div><div class="r"><span>Firmware</span><b>fw-11</b></div></div>
+    <div class="c"><div class="h">Last cycles</div><div class="r"><span>191 radar, 607 told, 612 back, 1.6 s</span><b>home, switch first try</b></div><div class="r"><span>190 radar, 607 told, 609 back, 1.7 s</span><b>home, switch first try</b></div><div class="r"><span>139 radar, 860 told, 1277 back, 2.3 s</span><b>home, second slow try</b></div></div>
+    <div class="c"><div class="h">Radar</div><div><span class="ch ok">talking, 10/s</span><span class="ch ok">nobody</span><span class="ch wa">OUT pin low</span></div><div class="r"><span>Moving person</span><b>-</b></div><div class="r"><span>Walking speed that fires</span><b>30 cm/s</b></div><div class="r"><span>Fire distance</span><b>200 cm</b></div><div class="r"><span>Clear distance</span><b>150 cm</b></div><div class="r"><span>Learn the empty room</span><b>Run</b></div></div>
+    <div class="c"><div class="h">Run</div><div class="b"><i class="p">Drop it now</i><i>Disarm</i><i class="d">Stop</i><i>Motor and servo off</i><i>Clear and re-arm</i></div></div>
     <div class="c"><div class="h">Bench: finger servo</div><div class="big">85 deg holding</div><div class="b"><i>-5 deg</i><i>-1 deg</i><i>+1 deg</i><i>+5 deg</i><i>Go to lock angle</i><i>Go to release angle</i><i>Store as lock</i><i>Store as release</i></div></div>
-    <div class="c"><div class="h">Bench: motor</div><div class="b"><i>-1 turn</i><i>-1/8</i><i>+1/8</i><i>+1 turn</i><i>Rewind</i><i>Lock</i><i>Release</i></div></div>
-    <div class="c"><div class="h">Settings</div><div class="r"><span>Finger lock angle</span><b>85</b></div><div class="r"><span>Line length</span><b>636</b></div><div class="r"><span>Limit switch fitted</span><b>1</b></div><div class="b"><i class="p">Save settings</i><i>Factory values</i></div></div>
-    <div class="c"><div class="h">Console</div><pre>&gt; jog 200
-[jog] ran 200 steps
-[done] jog (motor stays on)
-&gt; off
-[done] off: motor and servo off</pre></div>
-    <div class="c"><div class="h">Network</div><div class="r"><span>Network name, password</span><b>Save and restart</b></div></div>
+    <div class="c"><div class="h">Bench: motor</div><div class="b"><i>-1 turn</i><i>-1/8</i><i>+1/8</i><i>+1 turn</i><i>Rewind</i><i>Lock</i><i>Release</i><i>Bring it home</i><i>Set drop length here</i></div></div>
+    <div class="c"><div class="h">Settings</div><div class="r"><span>Finger lock angle</span><b>85</b></div><div class="r"><span>Line length</span><b>1410</b></div><div class="r"><span>Drop distance</span><b>607</b></div><div class="r"><span>Drop speed</span><b>600 rpm</b></div><div class="r"><span>Limit switch fitted</span><b>1</b></div><div class="b"><i class="p">Save settings</i><i>Factory values</i></div></div>
+    <div class="c"><div class="h">Console</div><pre>&gt; drop
+[release] finger out, unload 133 steps
+[drop] ran 6282 steps (616 mm) in 656 ms
+[rewind] stopped by the limit switch
+[lock] seated, spider home</pre></div>
+    <div class="c"><div class="h">Network</div><div class="r"><span>Network name, password</span><b>Save and restart</b></div><div class="r"><span>Fixed address</span><b>192.168.1.138</b></div></div>
     <div class="c"><div class="h">Firmware</div><div class="r"><span>Update over the network</span><b>Open the update page</b></div></div>
   </div>
-  <p class="dim">What the chips mean: <b>armed</b> means a radar signal may fire it. Until the C4002 is wired the radar chip reads clear (GPIO33 has nothing on it) and only <b>Drop it now</b> or the BOOT button fire it. With it wired, the chip says whether the trigger comes from the radar's serial link or its OUT pin. <b>Motor powered</b> appears whenever the driver is on. <b>Spider home</b> is the limit switch. A red chip is a fault, with its reason; three in a row and it stops until you press Clear fault.</p>
+  <p class="dim">What the chips mean: <b>armed</b> means the radar may fire it; every power-up arms on its own, and any bench move disarms until you press Arm. The radar chip says whether the trigger is the radar's serial link or, if the link goes quiet, its OUT pin on GPIO33. <b>Motor powered</b> appears whenever the driver is on. <b>Spider home</b> is the limit switch, or the board remembering the last rewind ended on it. A red chip is a fault, with its reason; press <b>Clear and re-arm</b> once it's fixed. The Last cycles card keeps the last 20 cycles through a power cut: "home, switch first try" is normal; "second slow try" means the stopper missed the flap once and the retry caught it; "stopped" needs a look.</p>
 </section>
 
 <!-- ============================================================ -->
 <section id="calibrate">
   <h2><span class="n">09</span>Calibrate from the web page, in this order</h2>
-  <p class="dim">Bench first: device base-down on the table, slid out over the edge until the fairlead block and the radar under the base hang free, held or clamped, so the line can drop about 0.7 m to the floor. Any bench move disarms the radar on purpose; step 10 re-arms it. Record each result in the commissioning log.</p>
+  <p class="dim">Bench first: device base-down on the table, slid out over the edge until the fairlead block and the radar under the base hang free, held or clamped, so the line can drop about 0.7 m to the floor. Any bench move disarms the radar on purpose; step 10 re-arms it. Write each result in the bench log (docs/commissioning_log.md), failures too.</p>
   <ol class="steps">
-    <li><div><h3>Page loads <b class="chip ready">READY TODAY</b></h3><p>State reads "ready" or "waiting for the doorway to clear". The Console card shows the start-up lines.</p></div></li>
-    <li><div><h3>Limit switch reads right <b class="chip ready">READY TODAY</b></h3><p>Lift the fairlead flap by hand and let go, watching the status chip change between "reads pressed" and "reads open". If it is backwards, type <code>liminv 1</code> in the Console. Then set <b>Limit switch fitted</b> to 1 and press <b>Save settings</b>.</p></div></li>
-    <li><div><h3>Motor turns cleanly <b class="chip ready">READY TODAY</b></h3><p>Hands and line clear. Bench: motor, <b>+1 turn</b> then <b>-1 turn</b>. One smooth turn each way. Stutters or buzzes: this is the logic-level check (open item V1); see doc 02.</p></div></li>
-    <li><div><h3>Finger angles <b class="chip ready">READY TODAY</b></h3><p>Set 2026-09-27 and saved: lock 85, release 50 (finger on the spline, ratchet not yet on the rod). Recheck with the ratchet in place: <b>Go to lock angle</b>, the finger must sit level in the teeth; <b>Go to release angle</b>, it must be clear of them. If not, nudge, <b>Store as lock</b> or <b>Store as release</b>, <b>Save settings</b>.</p></div></li>
-    <li><div><h3>Rewind direction <b class="chip ready">READY TODAY</b></h3><p>Spider hanging. <b>+1/8</b>: the spool should wind the line up. If the motor turns but the spool slips, set <b>Rewind direction</b> to the other value and try again. If neither way winds, the HF0612 one-way bearing is still in the Rev C direction: flip it (assembly step 1).</p></div></li>
-    <li><div><h3>Line length <b class="chip ready">READY TODAY</b></h3><p>First set <b>Drop distance</b> to no more than the line minus 102 mm (636 line: 534), or the page refuses the new line: the factory drop, 620, only fits the old 720 line. Then enter the measured number in <b>Line length</b>, <b>Save settings</b>.</p></div></li>
-    <li><div><h3>Release under load, drop, rewind, lock <b class="chip ready">READY TODAY</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. Not yet run with the motor and spool fitted. Its settings: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). Tests T1 to T8.</p></div></li>
-    <li><div><h3>Five full drops <b class="chip ready">READY TODAY</b></h3><p>All complete, no tangles, finger always relocks. After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
-    <li><div><h3>Radar live view <b class="chip t2">AFTER TASK 2</b></h3><p>See section 10. Walk toward the door, away, and across; confirm it fires only walking in.</p></div></li>
-    <li><div><h3>Arm and save <b class="chip ready">READY TODAY</b></h3><p>Press <b>Arm</b>, then <b>Save settings</b> so it stays armed after a power cut.</p></div></li>
+    <li><div><h3>Page loads <b class="chip ready">WORKS</b></h3><p>State reads "ready" or "waiting for the doorway to clear". The Console card shows the start-up lines.</p></div></li>
+    <li><div><h3>Limit switch reads right <b class="chip ready">WORKS</b></h3><p>Lift the fairlead flap by hand and let go, watching the status chip change between "reads pressed" and "reads open". If it is backwards, type <code>liminv 1</code> in the Console. Then set <b>Limit switch fitted</b> to 1 and press <b>Save settings</b>. The switch is what homes the spool on every rewind, so it has to be on before the device is armed.</p></div></li>
+    <li><div><h3>Motor turns cleanly <b class="chip ready">WORKS</b></h3><p>Hands and line clear. Bench: motor, <b>+1 turn</b> then <b>-1 turn</b>. One smooth turn each way. Stutters or buzzes: check the driver's logic supply, the expansion board's V row fed from the ESP32's 3V3 pin (doc 02); mine was unconnected for the first two weeks and the motor let go on every downward move.</p></div></li>
+    <li><div><h3>Finger angles <b class="chip ready">WORKS</b></h3><p>Mine: lock 85, release 30. With the ratchet in place: <b>Go to lock angle</b>, the finger must sit level in the teeth; <b>Go to release angle</b>, it must be clear of them. If not, nudge, <b>Store as lock</b> or <b>Store as release</b>, <b>Save settings</b>.</p></div></li>
+    <li><div><h3>Rewind direction <b class="chip ready">WORKS</b></h3><p>Spider hanging. <b>+1/8</b>: the spool should wind the line up. If the motor turns but the spool slips, set <b>Rewind direction</b> to the other value and try again. If neither way winds, the HF0612 one-way bearing is in backwards: flip it (assembly step 1).</p></div></li>
+    <li><div><h3>Line length <b class="chip ready">WORKS</b></h3><p>Enter the measured number (assembly step 13) in <b>Line length</b>, <b>Save settings</b>. A drop can never come closer than 30 mm to the barrel knot, so if the drop distance is more than the line allows, the drop is cut to fit and the log says so.</p></div></li>
+    <li><div><h3>Release under load, drop, rewind, lock <b class="chip ready">WORKS</b></h3><p>The Rev C.1 sequence: the motor winds the spool back 1/12 turn while the finger swings out, then runs the drop under power, then rewinds until the switch clicks, then eases the spool onto the finger. <b>Drop it now</b> runs one. Its settings: <b>drop distance</b> (<code>dropmm</code>), <b>drop speed</b> (<code>droprpm</code>; mine runs 600, 700 skipped steps), <b>speed-up</b> and <b>slow-down</b> rates (<code>dropacc</code>, <code>dropdec</code>), <b>finger release time</b> (<code>relms</code>). The rewind slows to 80 rpm for its last 2 1/4 turns, and if the switch doesn't click it lowers half a turn and tries once more, slowly, before it stops on a fault.</p></div></li>
+    <li><div><h3>Set the drop length where you want it <b class="chip ready">WORKS</b></h3><p>Easiest way: <b>Drop it now</b>, then <b>Stop</b> while it hangs, or <b>-1/8</b> and <b>+1/8</b> until the spider hangs where a drop should stop, then <b>Set drop length here</b>. It winds up to the switch, counts the steps and saves them as the drop distance. <b>Bring it home</b> (or the limit switch pressed 3 times within 4 s) winds it home from anywhere without changing the length.</p></div></li>
+    <li><div><h3>Five full drops <b class="chip ready">WORKS</b></h3><p>All complete, no tangles, finger always relocks, five rows on the Last cycles card ending "home, switch first try". After the lock the switch reads open: correct by design, the firmware remembers the spider is home from the last cycle.</p></div></li>
+    <li><div><h3>Radar live view <b class="chip t2">BENCH ONLY</b></h3><p>See section 10. Walk toward the door, away, and across; confirm it fires only walking in. Then press <b>Arm</b>. Every power-up arms on its own, so there's nothing to save; a bench move disarms it until you arm it again or power cycle.</p></div></li>
   </ol>
+  <div class="panel">
+    <h3>The limit switch is also a button</h3>
+    <p style="margin-top:6px">With nothing moving, press its lever by hand. <b>3 presses within 4 s</b>: bring it home (lower half a turn, wind slowly up to the switch, clear any fault, re-arm). <b class="chip ready">WORKS</b> <b>5 presses within 4 s</b>: sleep, so the radar is ignored and the LED gives one short flash every 2 s; 5 presses again, Arm on the page, or a power cycle wakes it. <b class="chip plan">FLASH 11</b> The presses are judged 1.2 s after the last one, so pressing on past 3 doesn't start a rehome.</p>
+  </div>
   <div class="panel">
     <h3>Planned: a Calibrate card that walks these steps <b class="chip plan">PLANNED</b></h3>
     <p style="margin-top:6px">One card on the page that shows the current step, what to do with your hands, a single button that runs the move, and Pass or Fail buttons. Results are written to the board's log so they can be copied into the commissioning log. This replaces the <code>test</code> console command on the backlog: same steps, but on the phone in your hand at the bench.</p>
@@ -469,60 +491,69 @@ a{color:var(--accent)}
   <div class="tw"><table>
     <thead><tr><th>Reading</th><th>Where on the page</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td>Limit switch pressed or open</td><td>Status chip, about once a second</td><td><b class="chip ready">READY TODAY</b></td></tr>
-      <tr><td>Finger servo angle and whether it is holding</td><td>Bench: finger servo</td><td><b class="chip ready">READY TODAY</b></td></tr>
-      <tr><td>Motor powered, last rewind steps, measured line length</td><td>Status card</td><td><b class="chip ready">READY TODAY</b></td></tr>
-      <tr><td>Every event the board logs</td><td>Console card</td><td><b class="chip ready">READY TODAY</b></td></tr>
-      <tr><td>Radar yes/no</td><td>Status chip: the radar rule over the serial link, or the C4002's OUT pin on GPIO33 if the link is quiet</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
-      <tr><td>C4002: moving person's distance, speed, direction, arrival time; still person's distance</td><td>Radar card, about 10 times a second</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
-      <tr><td>"Would fire now" lamp</td><td>Radar card</td><td><b class="chip t2">AFTER TASK 2</b></td></tr>
+      <tr><td>Limit switch pressed or open, and closures counted since power-up</td><td>Status card, about once a second</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>Finger servo angle and whether it is holding</td><td>Bench: finger servo</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>Motor powered, last rewind, drop measured back by the rewind</td><td>Status card</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>The last 20 cycles and how each ended, kept through a power cut</td><td>Last cycles card</td><td><b class="chip plan">FLASH 11</b></td></tr>
+      <tr><td>Every event the board logs; the log up to the last fault, kept through a power cut</td><td>Console card; Last fault log button</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>Radar talking or silent, who is in view, would fire, OUT pin</td><td>Radar card chips</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>C4002: the moving person's distance, speed and direction, the still person's distance, 10 times a second; a 60 s timeline</td><td>Radar card</td><td><b class="chip ready">WORKS</b></td></tr>
+      <tr><td>The trigger rule's knobs, beside what they set; the sensor's own range and sensitivity; learn the empty room</td><td>Radar card</td><td><b class="chip t2">BENCH ONLY</b></td></tr>
     </tbody>
   </table></div>
   <figure class="fig">
-  <svg viewBox="0 0 900 420" role="img" aria-label="Planned radar card: top-down map of the hallway with people as dots">
+  <svg viewBox="0 0 900 360" role="img" aria-label="The radar card: a distance strip from the sensor out to 3 m, with the fire zone, the clear line and the person walking in">
     <g font-family="IBM Plex Sans,system-ui,sans-serif" fill="var(--svg-ink)">
-      <rect x="10" y="10" width="560" height="400" rx="10" fill="#121016"/>
-      <text x="30" y="36" fill="#9a93a8" font-size="11" letter-spacing="1">RADAR, TOP VIEW OF THE HALLWAY (PLANNED)</text>
-      <!-- sensor and fov -->
-      <path d="M290 60 L60 330 A 330 330 0 0 0 520 330 Z" fill="rgba(122,92,255,.10)" stroke="#3a3548"/>
-      <rect x="275" y="52" width="30" height="10" fill="#7a5cff"/><text x="290" y="50" fill="#9a93a8" font-size="10" text-anchor="middle">C4002 on the device</text>
-      <!-- door window -->
-      <rect x="240" y="62" width="100" height="300" fill="rgba(74,196,122,.12)" stroke="#4ac47a" stroke-dasharray="5 4"/>
-      <text x="290" y="378" fill="#4ac47a" font-size="10" text-anchor="middle">door width window (doorwidth 1000 mm)</text>
-      <g stroke="#332e3d"><path d="M40 162 H540"/><path d="M40 262 H540"/><path d="M40 362 H540"/></g>
-      <g fill="#6f6880" font-size="10"><text x="44" y="158">1 m</text><text x="44" y="258">2 m</text><text x="44" y="358">3 m</text></g>
-      <!-- targets -->
-      <circle cx="300" cy="190" r="9" fill="#e8b44a"/><path d="M300 190 V150" stroke="#e8b44a" stroke-width="3"/><path d="M294 158 L300 148 L306 158" fill="#e8b44a"/>
-      <text x="314" y="194" fill="#ece9f2" font-size="11">person 1, walking in</text>
-      <circle cx="440" cy="300" r="9" fill="#9a93a8"/><path d="M440 300 H400" stroke="#9a93a8" stroke-width="3"/>
-      <text x="454" y="304" fill="#9a93a8" font-size="11">person 2, across</text>
+      <rect x="10" y="10" width="560" height="340" rx="10" fill="#121016"/>
+      <text x="30" y="36" fill="#9a93a8" font-size="11" letter-spacing="1">RADAR CARD, DISTANCE STRIP (EXAMPLE NUMBERS)</text>
+      <!-- strip -->
+      <rect x="40" y="110" width="500" height="44" rx="6" fill="#1d1a23" stroke="#332e3d"/>
+      <rect x="40" y="110" width="333" height="44" rx="6" fill="rgba(226,96,79,.22)"/>
+      <text x="206" y="100" fill="#e2604f" font-size="10" text-anchor="middle">fire zone: within 200 cm, walking in at 30 cm/s or more</text>
+      <path d="M290 104 V160" stroke="#4ac47a" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="290" y="176" fill="#4ac47a" font-size="10" text-anchor="middle">clear line, 150 cm</text>
+      <path d="M540 104 V160" stroke="#9a93a8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="540" y="176" fill="#9a93a8" font-size="10" text-anchor="middle">detect range, 300 cm</text>
+      <g fill="#6f6880" font-size="10"><text x="40" y="200">sensor</text><text x="206" y="200" text-anchor="middle">1 m</text><text x="373" y="200" text-anchor="middle">2 m</text><text x="540" y="200" text-anchor="end">3 m</text></g>
+      <!-- moving person with trail and arrow -->
+      <g fill="#e8b44a" opacity=".35"><circle cx="470" cy="132" r="6"/><circle cx="440" cy="132" r="7"/><circle cx="405" cy="132" r="8"/></g>
+      <circle cx="365" cy="132" r="10" fill="#e8b44a"/><path d="M352 132 H320" stroke="#e8b44a" stroke-width="3"/><path d="M328 124 L316 132 L328 140" fill="#e8b44a"/>
+      <text x="365" y="86" fill="#ece9f2" font-size="11" text-anchor="middle">moving person, 195 cm, 110 cm/s, approaching</text>
+      <!-- still person -->
+      <rect x="112" y="124" width="12" height="16" rx="2" fill="#9a93a8"/><text x="118" y="212" fill="#9a93a8" font-size="10" text-anchor="middle">still, 45 cm (the spider)</text>
       <!-- lamp -->
       <circle cx="505" cy="40" r="11" fill="#4ac47a"/><text x="490" y="44" fill="#ece9f2" font-size="11" text-anchor="end">would fire now</text>
+      <!-- timeline -->
+      <rect x="40" y="240" width="500" height="80" rx="6" fill="#1d1a23" stroke="#332e3d"/>
+      <text x="48" y="256" fill="#9a93a8" font-size="10">60 s timeline: nearest person, rule would fire, OUT pin, limit switch, motor</text>
+      <path d="M48 300 C120 298 160 262 220 268 S320 310 400 300 S500 270 532 266" stroke="#e8b44a" stroke-width="2" fill="none"/>
+      <rect x="214" y="306" width="60" height="6" fill="#4ac47a"/><rect x="214" y="306" width="6" height="6" fill="#7a5cff"/>
     </g>
     <g font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--svg-ink)">
-      <text x="600" y="40" font-family="IBM Plex Sans,sans-serif" font-weight="600">Readout, example values</text>
-      <text x="600" y="70" fill="var(--svg-dim)">#   X mm   Y mm   m/s   arrives</text>
-      <text x="600" y="94">1    +80   1280  -1.2    1070 ms</text>
-      <text x="600" y="118" fill="var(--svg-dim)">2  +1500   2380   0.0       none</text>
-      <text x="600" y="142" fill="var(--svg-dim)">3      -      -     -          -</text>
-      <text x="600" y="186" font-family="IBM Plex Sans,sans-serif">Fires when one person is inside the</text>
-      <text x="600" y="206" font-family="IBM Plex Sans,sans-serif">window, walking in faster than 0.3 m/s,</text>
-      <text x="600" y="226" font-family="IBM Plex Sans,sans-serif">and arriving within leadms (750 ms),</text>
-      <text x="600" y="246" font-family="IBM Plex Sans,sans-serif">for 2 readings in a row.</text>
-      <text x="600" y="290" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">Tune from the page: doorwidth,</text>
-      <text x="600" y="310" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">approach, leadms. Nothing is sent</text>
-      <text x="600" y="330" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">to the radar itself.</text>
+      <text x="600" y="40" font-family="IBM Plex Sans,sans-serif" font-weight="600">The rule, as it runs</text>
+      <text x="600" y="72" font-family="IBM Plex Sans,sans-serif">Armed and ready, two readings in a row</text>
+      <text x="600" y="92" font-family="IBM Plex Sans,sans-serif">of someone approaching at 30 cm/s or more</text>
+      <text x="600" y="112" font-family="IBM Plex Sans,sans-serif">(approach), and either within 200 cm</text>
+      <text x="600" y="132" font-family="IBM Plex Sans,sans-serif">(firecm) or, for a fast walker, arriving</text>
+      <text x="600" y="152" font-family="IBM Plex Sans,sans-serif">within 750 ms (leadms).</text>
+      <text x="600" y="190" font-family="IBM Plex Sans,sans-serif">Clear again when nobody reads within</text>
+      <text x="600" y="210" font-family="IBM Plex Sans,sans-serif">150 cm (clearcm), or after 1 s anyway</text>
+      <text x="600" y="230" font-family="IBM Plex Sans,sans-serif">(clearms). Then it re-arms.</text>
+      <text x="600" y="268" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">Distance is the straight line from the</text>
+      <text x="600" y="288" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">sensor to the person, so from 2 m up it</text>
+      <text x="600" y="308" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">never reads much under a foot. That's why</text>
+      <text x="600" y="328" font-family="IBM Plex Sans,sans-serif" fill="var(--svg-dim)">the rule is distance first, timing second.</text>
     </g>
   </svg>
-  <figcaption>Design for task 2, drawn with example numbers, not live data. The map only updates quickly while the card is open, so an idle page costs the board nothing.</figcaption>
+  <figcaption>Drawn from the card's layout in doc 04 with example numbers, not live data. The card only updates quickly while it is open, so an idle page costs the board nothing. The sensor's own knobs (range, sensitivity, how long it keeps a person) live in the sensor, so Set and Read are separate buttons for those.</figcaption>
   </figure>
 </section>
 
 <!-- ============================================================ -->
 <section id="place">
   <h2><span class="n">11</span>On the beam: braces and placement</h2>
-  <p class="dim">Your plan, approved 2026-09-27, doc 06. The device upside down, base at the bottom, sitting on the flat legs of two 6 in steel corner braces whose other leg stands up the beam's inside face. Checked in the CAD model; <b>not yet built or hung.</b></p>
-  <figure class="shot"><img src="img:inverted_install" alt="Device turned over on two corner braces on the beam's inside face, servo end at the beam, line out through the base, radar under the pad end"></figure>
+  <p class="dim">My plan, doc 06. The device upside down, base at the bottom, sitting on the flat legs of two 6 in steel corner braces whose other leg stands up the beam's inside face. Checked in the CAD model. Today it hangs over the inside of my front door for the bench; the porch is next.</p>
+  <figure class="shot"><img src="img:inverted_install" alt="Device turned over on two corner braces on the beam's inside face, servo end at the beam, line out through the base, radar under the pad end"><figcaption>Older drawing: it shows the parked LD2450 in its cradle and the Rev C.2 spool. The braces, the base, the fairlead block and the line are as built.</figcaption></figure>
   <div class="two">
     <div class="tw"><table>
       <thead><tr><th>Point (8 ft porch ceiling, beam 10 in deep)</th><th>Height</th></tr></thead>
@@ -530,16 +561,16 @@ a{color:var(--accent)}
         <tr><td>Porch ceiling</td><td>2440 mm (96 in)</td></tr>
         <tr><td>Bottom of the front beam</td><td>2184 mm (86 in)</td></tr>
         <tr><td>Device's base</td><td>about 2280 mm (160 below the ceiling)</td></tr>
-        <tr><td>Bead at home</td><td>about 2244 mm (196 below the ceiling)</td></tr>
+        <tr><td>Stopper at home</td><td>about 2244 mm (196 below the ceiling)</td></tr>
         <tr><td>Spider, retracted</td><td>hidden behind the beam only if it is 28 mm tall or less</td></tr>
         <tr><td>Spider at rest after the drop</td><td>1550 mm (61 in)</td></tr>
       </tbody>
     </table></div>
     <div class="panel">
       <ul class="tight">
-        <li><b>Braces</b>: yours to place and drill. Upright legs up the beam's inside face, tops about 8 mm under the ceiling; flat legs under the base. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; at the motor end also within 12 mm of the rod. Never within 20 mm of the rod at the 606ZZ end: the bearing plate stands there.</li>
-        <li>Rod parallel to the beam, the <b>servo end against the beam</b> (your build, 2026-10-01). The line falls 54 mm out from the beam's face, centred on the walkway. A spider wider than about 10 cm will brush the beam; yours is about 8 cm, about 14 mm to spare while it hangs still. Watch the first drops for it swinging into the beam.</li>
-        <li>C4002: under the base at the pad end, the far end from the beam, looking along the device toward the beam and down. Nothing on the device blocks its view, and its centre line passes under the beam (409 mm below the ceiling against the beam's 254; measured for the old cradle, the case hangs on the same pivot). Start at 50 degrees; if it fires late or fires on nothing, go to 55 or 60 (the case clears every part from 0 to 90 with its floor opening toward the beam). Check on the bench: walk toward it and the radar card's distance must fall.</li>
+        <li><b>Braces</b>: place them and drill the base for their bolts yourself. Upright legs up the beam's inside face, tops about 8 mm under the ceiling; flat legs under the base. A bolt through the base is clear between 24 and 55 mm from the rod's centre line on the servo side, at either end of the base; at the motor end also within 12 mm of the rod. Never within 20 mm of the rod at the 606ZZ end: the bearing plate stands there.</li>
+        <li>Rod parallel to the beam, the <b>servo end against the beam</b> (my build). The line falls 54 mm out from the beam's face, centred on the walkway. A spider wider than about 10 cm will brush the beam; mine is about 8 cm, about 14 mm to spare while it hangs still. Watch the first drops for it swinging into the beam.</li>
+        <li>C4002: under the base at the pad end, the far end from the beam, looking along the device toward the beam and down. Nothing on the device blocks its view, and its centre line passes under the beam (409 mm below the ceiling against the beam's 254; measured for the old cradle, the case hangs on the same pivot). Start at 50 degrees down. At 55 it sees about 2 ft 5 in behind itself, so someone walking out from behind it can fire it; a shallower tilt, toward 30, should stop that (worked out from its field of view, not yet tried on the bench), while a steeper one sees less of the beam. The swivel mount also turns it left or right to centre the walkway. Check on the bench: walk toward it and the radar card's distance must fall.</li>
         <li><b>Not through metal.</b> The radar sees through wood, drywall and plastic, but aluminum siding or trim blocks it completely, however thin. If the beam is clad in aluminum, the radar only sees people under the beam's bottom edge, and the metal can bounce back phantom targets. Tilt steeper.</li>
         <li>The spider hangs inside the radar's view. If the radar counts it as a person, the device would sit waiting for the doorway to clear after each scare; the first walk test shows it.</li>
         <li>12 V adapter stays at an outdoor-safe outlet; DC extension up the post. Keep the electronics out of blowing rain.</li>
@@ -549,7 +580,7 @@ a{color:var(--accent)}
   <div class="panel">
     <h3>Line length for your porch</h3>
     <p style="margin-top:6px" class="mono">line = (ceiling - 196) - (rest height + spider height + 30) + 72</p>
-    <p class="dim" style="margin-top:6px">All in mm. Example: (2440 - 196) - (1550 + 100 + 30) + 72 = 636. Tie it long, enter it as Line length, then shorten on site until the resting height is right. Order on the day: device finished on the bench (section 06), braces to the beam, device onto their flat legs, bolted through your holes.</p>
+    <p class="dim" style="margin-top:6px">All in mm. Example: (2440 - 196) - (1550 + 100 + 30) + 72 = 636. Tie it long, enter it as Line length, then shorten on site until the resting height is right, or just hang the spider where it should stop and press Set drop length here. Wind about 1.5 m of spare under the working line (two drops' worth) and enter only the working length. Order on the day: device finished on the bench (section 06), braces to the beam, device onto their flat legs, bolted through the holes you drilled.</p>
   </div>
 </section>
 
@@ -557,16 +588,17 @@ a{color:var(--accent)}
 <section id="arm">
   <h2><span class="n">12</span>On site, then arm</h2>
   <ol class="steps">
-    <li><div><h3>Five drops in place <b class="chip ready">READY TODAY</b></h3><p>Adjust Line length (and drop distance) until the spider stops at face height.</p></div></li>
-    <li><div><h3>Walk tests <b class="chip t2">AFTER TASK 2</b></h3><p>Walk in from 3 m: it fires and the spider arrives as you reach the doorway. Walk away, walk across, stand still: no drop.</p></div></li>
-    <li><div><h3>No double scare <b class="chip ready">READY TODAY</b></h3><p>After a scare, stand in the doorway: nothing until you leave and 20 s pass (Lockout after a scare).</p></div></li>
-    <li><div><h3>Before each night</h3><p>Check the knots, bead, flap and the line for nicks. Soft foam spider only, about 30 g, under 60 g until the bench says more. Press Disarm, or unplug, when small children are about to run through.</p></div></li>
+    <li><div><h3>Five drops in place <b class="chip ready">WORKS</b></h3><p>Hang the spider at face height and press Set drop length here, then Drop it now five times: five clean rows on the Last cycles card.</p></div></li>
+    <li><div><h3>Walk tests <b class="chip t2">BENCH ONLY</b></h3><p>Walk in from 3 m: it fires and the spider arrives as you reach the doorway. Walk away, walk across, stand still: no drop. If walking out from behind it fires it, tilt the radar shallower first, then a piece of foil behind the sensor. Porch numbers to start from, doc 06: detect range about 600 cm, clear distance 300, fire distance from a porch walk, then Learn the empty room again.</p></div></li>
+    <li><div><h3>No double scare <b class="chip ready">WORKS</b></h3><p>After a scare, stand in the doorway: nothing until the lockout passes and the doorway reads clear. From the factory the lockout is 20 s; mine is 0 with "re-arm anyway after" at 1 s, so it's ready about a second after the lock.</p></div></li>
+    <li><div><h3>Before each night</h3><p>Check the knots, the stopper, the flap and the line for nicks. Soft foam spider only, about 30 g, under 60 g until the bench says more. Press Disarm, or press the limit switch 5 times (flash 11), or unplug, when small children are about to run through.</p></div></li>
   </ol>
 </section>
 
 <footer>
   <div><b>How this was checked, 2026-09-25; inverted install, bearing seat, flap and aluminum note added 2026-09-27; separate power board removed, inverted fairlead steps and firmware status 2026-09-28; page turned over to the inverted install, web page picture matched to <code>src/web.cpp</code>, finger angles and servo from <code>docs/commissioning_log.md</code>, 2026-09-28.</b> Inverted install numbers from <code>python cad/inverted.py</code> (every check passes, radar cradle clear from 20 to 90 degrees; servo end at the beam and radar at the pad end from the owner's photo, 2026-10-01). Radar and metal: Hi-Link's LD2450 manual and install guides, plus the skin depth of aluminum at 24 GHz. Pin numbers read from the firmware (<code>include/config.h</code>) and doc 02. 30-pin header order from the Last Minute Engineers ESP32 DevKit pinout, checked against the pin names in doc 02. C4002 pin order (VIN GND RX TX OUT) from DFRobot's board photo, 2026-10-10; its current is not published. Assembly, placement and heights from docs 05, 06 and 09; inverted heights, brace bolt zones and line formula from doc 06 and <code>cad/inverted.py</code>. Web page cards copied from <code>src/web.cpp</code>. Rev C.4 spool and cap, the stack numbers and the PTFE tube from <code>python cad/generate.py</code> and <code>python cad/inverted.py</code> output, 2026-10-04 (model checks only: nothing printed, fitted or benched); thread spec from WAWAK's listing. Board on COM13 read by esptool: ESP32-D0WD-V3, 4 MB flash; flashed by the standard USB upload and joins the home WiFi at 192.168.1.138.</div>
-  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25. <b>Not checked.</b> The servo has been watched moving and holding (2026-09-27); nothing else here has been watched working with the motor, switch or radar connected, and the inverted install has not been built. Everything marked AFTER TASK 2 or PLANNED does not exist on the board yet; the radar card is a design drawn with example numbers.</div>
+  <div>Pin names in the drawing checked against a photo of the board in use (30-pin DevKit V1, micro-USB, EN and BOOT buttons by the USB), 2026-09-25.</div>
+  <div><b>2026-10-14, the publish pass:</b> firmware loading (section 05c) from <code>docs/04_firmware.md</code>, <code>scripts\update_firmware.bat</code> and <code>platformio.ini</code>; the LED meanings from doc 02; the web page cards, the Last cycles endings, the switch presses and the radar rule from doc 04 and <code>src/web.cpp</code>; the drop count, settings and tilt notes from the bench log's 2026-10-13 and 2026-10-14 rows; the radar mount parts from the STL folder and the 2026-10-13 changelog. The radar card drawing is drawn from doc 04's description with example numbers, not a screenshot. <b>Not checked by me on the board:</b> everything marked FLASH 11 is built and not yet flashed; the inverted install hangs over the inside of my front door, not yet on the porch, so the porch heights and numbers in sections 11 and 12 are from the model and doc 06. The two CAD drawings on this page show the older radar cradle and spool.</div>
 </footer>
 </main>
 

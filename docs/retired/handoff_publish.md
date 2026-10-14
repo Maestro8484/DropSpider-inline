@@ -1,5 +1,7 @@
 # Handoff: make the repo publishable, in the owner's voice, touching no code
 
+**Retired 2026-10-14, done:** LICENSE in place, README and build guide in the owner's voice, doc map complete, BOM matched, `scripts\check_repo.bat` option 2 ALL PASS. Record: `CHANGELOG.md` 2026-10-14, `docs/commissioning_log.md`. The push to GitHub is the owner's own click.
+
 Work order: bring this repo to the state where a stranger can clone it, read it, print it, wire it, build the firmware and flash it from the build guide alone, with the README and build guide written in the owner's voice. A docs-only session: it edits `README.md`, `docs/`, `cad/README.md`, `bom/`, a `LICENSE`, and nothing under `src/`, `include/`, `cad/*.py`, `tools/` or `scripts/`. If a check needs a code change, it writes one line in `docs/08_open_items.md` and moves on.
 
 **Ground truth:** the repo on disk wins over this file. Staleness check: `git log -1 --oneline` against `git log -1 --oneline -- docs/handoff_publish.md`; a different hash means work landed after this was written, read `CHANGELOG.md` for it.

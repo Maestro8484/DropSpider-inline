@@ -4,16 +4,12 @@ Work order: finish the bench of the DFRobot C4002 radar (SEN0691, 24 GHz) as the
 
 **Ground truth:** the repo on disk wins over this file, and the board wins over both. Staleness check: `git log -1 --oneline` against `git log -1 --oneline -- docs/handoff_sensor_bearings.md`; a different hash means commits landed after this was written, read `CHANGELOG.md` for them. Every bench result so far is in `docs/commissioning_log.md`, rows dated 2026-10-10.
 
-## State facts, recorded at the close of 2026-10-13 (each line says how it was read)
+## Before you start (checks to run now, not recorded facts)
 
-Staleness check: compare `git log -1 --oneline` with `git log -1 --oneline -- docs/handoff_sensor_bearings.md`; a different hash means work landed after this was written.
-
-- **Mount:** the device is over the inside of the front door, about 7.5 ft up (owner). Radar on the owner's new parts: `c4002_case_base_extended.stl` (19 mm longer pivot to case) on `c4002_case_Swivel_mount.stl` (swivels left and right as well as tilting). Being remounted and re-aimed by the owner at the close; tilt and swivel not yet known.
-- **On the board, FLASHED (f82b153), read from `/api/status`:** ready, home, no fault, disarmed (armed saved 0). dropmm 607 (the owner's own teach from the page, kept by him), droprpm 600 (700 skipped steps, log 2026-10-12), dropacc 80000, dropdec 60000, rearm 0, clearms 1000, firecm 200, clearcm 150, approach 30, radar detect range 0 to 300.
-- **VERIFIED:** a power-up with the spider down stops on a fault instead of arming; the C4002 at 10 frames a second; drops at 600 rpm without skipped steps; the page teach sets dropmm from the wound length.
-- **FLASHED, NOT yet exercised:** 3 presses of the limit switch = bring it home (lower 1/2 turn, wind at 80 rpm, clear the fault, re-arm); every rewind after a drop finishes at 80 rpm; one slow second try when a rewind misses the switch; `lastlog` (page: Last fault log) keeps the log up to a fault through a power cut.
-- **Open, not the sensor's:** rewinds that never close the switch (3 on record, 0 switch edges, spider at the top or part way). If one comes back, read `lastlog` before anything else.
-- **Timing, measured 2026-10-12:** trigger to end of drop about 1.7 s; the fall is about 0.7 s, the rest is the release (driver start 200 ms, finger wait 500 ms, a driver reset of about 220 ms because the unload hits the switch every time).
+- **Where the device hangs and how the radar is aimed:** ask the owner in one line. At the last bench it was over the inside of the front door, about 7.5 ft up, with the radar on his own parts, `c4002_case_base_extended.stl` (19 mm longer pivot to case) on `c4002_case_Swivel_mount.stl` (swivels left and right as well as tilting); the tilt and swivel he set are not written anywhere, so ask.
+- **Read the board before anything moves:** `/api/status` at `http://dropspider.local`. Expect ready, home, no fault, armed (every power-up arms on its own since flash 9). Read `fw` for the firmware on it: the flash 11 handoff (`docs/handoff_flash11_page_sleep_led.md`) may or may not have landed; `fw-11` means it has. Read dropmm, droprpm, firecm, clearcm, clearms, approach and the radar's detect range off the page, and compare with the last rows of `docs/commissioning_log.md`; the board wins.
+- **Rewinds that never close the switch:** check the Last cycles card for any cycle ending "stopped" or "on the second, slow try". If one is there, read `lastlog` (page: Last fault log) before anything else. Not the sensor's problem, but it stops the walk tests.
+- **Timing to expect:** trigger to the end of the drop about 1.7 s (the fall is about 0.7 s, the rest is the release). Measured 2026-10-12; read the latest number off the Last cycles card.
 - **Field of view page:** https://claude.ai/artifact/HBP7CQnUQara66fL5Zy2jv (computed: at 55 degrees down the radar sees about 2 ft 5 in behind itself; about 30 degrees down stops walk-out drops).
 
 ## Why the rule is proximity (so nobody re-litigates it)
@@ -43,13 +39,13 @@ The owner says he is watching the device and `status` shows busy 0, driverOn 0, 
 
 ## Tests (S1 to S5 in `docs/commissioning_log.md`, one row per attempt)
 
-| # | Test | Pass | Where it stands 2026-10-10 |
+| # | Test | Pass | Still to do (the rows so far are in the log, 2026-10-10 on) |
 |---|---|---|---|
-| S1 | Power the sensor, open the web radar card | `[radar] C4002 answers` and 18 data bytes in the log; the reading follows a walker | PASS (current draw dropped by the owner) |
-| S2 | Live readout walking toward, away from, and across the doorway; spider at rest, dropped, swinging | direction word checked on the tilted mount; spider at rest not reported | PASS for the walk and the spider at rest; swinging not done |
-| S3 | Walk in at normal pace, 10 times | fires every time; spider arrives as you reach the doorway | 2 of 10, both fired, both late at fire distance 120; now 200 |
-| S4 | Walk away, walk past across the hallway, stand still in the window | no trigger | not done |
-| S5 | Unplug the sensor's TX wire while armed | fault logged within 1 s; the OUT pin takes over | fallback seen on a sensor restart; the wire pull not done |
+| S1 | Power the sensor, open the web radar card | `[radar] C4002 answers` and 18 data bytes in the log; the reading follows a walker | nothing (the current draw was dropped by the owner) |
+| S2 | Live readout walking toward, away from, and across the doorway; spider at rest, dropped, swinging | direction word checked on the tilted mount; spider at rest not reported | the swinging spider |
+| S3 | Walk in at normal pace, 10 times | fires every time; spider arrives as you reach the doorway | 8 more walk-ins at fire distance 200 (the first 2, at 120, fired late) |
+| S4 | Walk away, walk past across the hallway, stand still in the window | no trigger | all of it |
+| S5 | Unplug the sensor's TX wire while armed | fault logged within 1 s; the OUT pin takes over | the wire pull (the fallback has only been seen on a sensor restart) |
 
 ## Done when
 

@@ -1,6 +1,6 @@
 # 09 - Fairlead and limit switch (Rev C.1)
 
-Replaces `line_guide.stl`. The bracket is unchanged and reused. Closes open item V10 (switch mount).
+Replaces the retired line guide (its code and STL are in `cad/retired/`). The bracket is unchanged and reused. Closes open item V10 (switch mount).
 Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and images with `tools\regen_cad.ps1`.
 
 ![Spider away](img/fairlead_rest.png)

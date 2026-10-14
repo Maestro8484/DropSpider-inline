@@ -1,0 +1,33 @@
+DropSpider, Mechanism A (in-line clutch spool). Copyright (c) 2026 Joe Schmidt.
+
+Two licenses, by what the file is.
+
+Firmware and tools: MIT License, text below. That covers src/, include/, platformio.ini, secrets.ini.example, tools/, scripts/, cad/*.py and docs/diagrams.py.
+
+Docs, pictures and printed parts: Creative Commons Attribution 4.0 International (CC BY 4.0). That covers README.md, CHANGELOG.md, ROADMAP.md, docs/, bom/, cad/stl/ and cad/*.svg. Use it, change it, print it, sell what you make from it. Credit Joe Schmidt and link to https://github.com/Maestro8484/DropSpider-inline. Full terms: https://creativecommons.org/licenses/by/4.0/
+
+One exception. The C4002 radar case (cad/c4002_case.py, cad/stl/c4002_case_base.stl, cad/stl/c4002_case_base_extended.stl, cad/stl/c4002_case_lid.stl) is drawn after "DFRobot C4002 mmWave enclosure" by user_643277529 on MakerWorld (https://makerworld.com/en/models/2826754), which is CC BY-NC-SA 4.0. Those files carry that license instead of the two above: credit the original, no commercial use, and share any changes under the same terms. The original download, unchanged, is in cad/ref/c4002_enclosure/ with its own LICENSE.txt. Full terms: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+----------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Joe Schmidt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

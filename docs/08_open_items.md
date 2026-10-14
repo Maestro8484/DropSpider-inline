@@ -34,7 +34,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 | V11 | Board joins the home network, page loads, network update works | step 3a, then one `scripts\update_firmware.bat` WiFi update | USB console `wifi`; own network DropSpider-setup at 192.168.4.1 |
 | V13 | Top drop speed and stopping ability of the NEMA 11 at 12 V, 0.6 A, with the real spider (estimate: about 500 rpm, stops 60 g or less cleanly) | T4, T5, T7 in `M1_fix_handoff.md` | lower `droprpm` / `dropdec`; lighter spider |
 | V14 | **Answered by the fairlead geometry:** after the lock seat the bead drops off the flap, so the switch reads OPEN at rest. Firmware must infer home from the last cycle (switch stop, then seat move), not from the boot reading | commissioning step 10; boot with the spider home | firmware rule, not hardware |
-| V15 | Trigger sensor. LD2450 parked 2026-10-07: three modules never reported a target (commissioning log, that day). A line-of-sight trigger on GPIO33 replaces it; which one is the owner's pick | the trigger fires a meter before the drop point and not on the swinging spider | PIR, step mat, or HC-SR04 ultrasonic; two in a row for direction |
+| V15 | Trigger sensor: the DFRobot C4002 as `sensor 4002` (the LD2450 was parked 2026-10-07: three modules never reported a target). On the bench since 2026-10-10 it talks, reads direction right and has fired about 190 drops over the inside of the front door. Still owed: the swinging spider (S2), ten clean walk-ins (S3), no false fires (S4), the wire pull (S5), then the porch numbers | S2 to S5 in `handoff_sensor_bearings.md`, one log row each | tilt and swivel first, then foil behind the sensor |
 | V16 | Printed fits on the owner's printer after the fit-check fixes: finger on the spline (5.0 drawn), spacers, ratchet over the HF0612 stub, flap on the M2 bolt, cradle grooves | test fit at assembly | open the hole with a drill by hand; adjust the drawn size in code |
 | V18 | Inverted install (doc 06 alternative, the owner's plan approved 2026-09-27): device turned over on two steel corner braces, `fairlead_base.stl` under the base, radar fork bolted under the servo end (`c4002_case_short_mount.stl`), five holes drilled in the base. CAD-checked 2026-09-27 (`python cad/inverted.py`: watertight, clears every part including a 52 x 75 x 30 board box, line path clear, flap and switch as doc 09, radar view not blocked by the device). **Not printed, not hung**; the braces and their holes are the owner's | build it, hang it on the bench, run commissioning steps 9 and 12, then walk test S3 (does the radar see the spider?) | radar tilt; the spider-in-view question is open |
 | V20 | Finger height on the real spline (was a second V18, renumbered 2026-09-27): plate must cover the ratchet disk by at least 5 mm (spline tip measured about 2 mm short of the ledge) | look edge-on at assembly step 14 | spacer A and shims move the disk |
@@ -57,6 +57,11 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 - No stall sensing; the expansion board hides the TMC2209 UART pin.
 - Static IP address not set yet; DHCP only.
 - One shared update password, from `secrets.ini`. Fine on a home network.
+
+## For a CAD or code session (found by the publish pass, 2026-10-14; docs could not fix these)
+
+- `docs/img/assembly_iso.png` and `docs/img/inverted_install.png` show the Rev C.2 ratchet spool, the parked LD2450 in its cradle and "6 lb line". The parts on the device are the Rev C.4 spool and cap and the C4002 in its case on the owner's swivel mount (his own Fusion files, so a render can only show a stand-in). Rerender with `cad/render.py` and `cad/inverted.py`, then `python tools/make_build_guide.py`. The README and the build guide say the drawings are older than the radar mount until then.
+- `cad/sensor_mount.py` still names the bolted fork `ld2450_fork_screw` in its functions and the keys `generate.py` uses for the checks; the STL it exports is `c4002_case_short_mount.stl`. Rename when that file is next open, so the code and the STL agree.
 
 ## Candidate Rev D items (not started)
 
