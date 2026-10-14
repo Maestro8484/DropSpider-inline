@@ -28,7 +28,6 @@ static const Row ROWS[] = {
   { "dir",     "dir",    &S.rewindDir,     0,    1,      DEF_REWIND_DIR },
   { "settle",  "settle", &S.settleMs,      0,    60000,  DEF_SETTLE_MS },
   { "rearm",   "rearm",  &S.rearmMs,       0,    600000, DEF_REARM_MS },
-  { "armed",   "armed",  &S.armed,         0,    1,      DEF_ARMED },
   { "limit",   "limFit", &S.limitFitted,   0,    1,      DEF_LIMIT_FITTED },
   { "liminv",  "limInv", &S.limitInverted, 0,    1,      DEF_LIMIT_INVERTED },
   { "dropmm",  "dropMm", &S.dropMm,        100,  2930,   DEF_DROP_MM },      // also <= dropMmMax()
@@ -63,6 +62,7 @@ bool parseLong(const String &s, long &out) {
 
 void settingsDefaults() {
   for (size_t i = 0; i < N; i++) *ROWS[i].ptr = ROWS[i].def;
+  S.armed = DEF_ARMED;
 }
 
 void settingsBegin() {
@@ -70,6 +70,11 @@ void settingsBegin() {
   Guard g;
   prefs.begin(STORE, false);
   for (size_t i = 0; i < N; i++) *ROWS[i].ptr = prefs.getInt(ROWS[i].key, ROWS[i].def);
+  // Armed is never saved: every power-up arms on its own (owner 2026-10-13: "it needs to
+  // default to being armed and ready even with power cycled"). disarm, and the disarm
+  // that every bench move does, hold only until the next power cycle. The home guard in
+  // machine.cpp still stops a power-up with the spider down on a fault instead of arming.
+  S.armed = DEF_ARMED;
 }
 
 void settingsSave() {

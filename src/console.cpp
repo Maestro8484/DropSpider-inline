@@ -177,8 +177,8 @@ void consoleRun(const String &raw, String *capture) {
 
   if      (cmd == "help")     printHelp();
   else if (cmd == "status")   printStatus();
-  else if (cmd == "arm")      { S.armed = 1; logf("armed (send save to keep it after power loss)"); }
-  else if (cmd == "disarm")   { S.armed = 0; logf("disarmed"); }
+  else if (cmd == "arm")      { S.armed = 1; logf("armed (every power-up arms on its own)"); }
+  else if (cmd == "disarm")   { S.armed = 0; logf("disarmed until the next power cycle"); }
   else if (cmd == "save")     { settingsSave(); logf("saved"); }
   else if (cmd == "defaults") { settingsDefaults(); logf("defaults loaded (not saved)"); printStatus(); }
   else if (cmd == "clear")    motion(ACT_CLEAR, 0, src);

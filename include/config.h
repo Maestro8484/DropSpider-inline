@@ -111,7 +111,7 @@
 #define DEF_REWIND_DIR      1      // flip (0/1) if rewind turns the wrong way
 #define DEF_SETTLE_MS       1500   // hang time at the bottom before rewind
 #define DEF_REARM_MS        20000  // lockout after each scare
-#define DEF_ARMED           1
+#define DEF_ARMED           1      // every power-up arms; armed is never saved (owner 2026-10-13)
 #define DEF_LIMIT_FITTED    0      // turn on once the limit switch is wired and reads right
 #define DEF_LIMIT_INVERTED  0      // flip if the switch reads backwards
 #define DEF_DROP_MM         (DEF_LINE_MM - 40 - 60)  // how far the spider travels

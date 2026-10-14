@@ -125,7 +125,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | Command | Does |
 |---|---|
 | `help`, `status` | list commands; show state, settings, sensor, limit switch, rewind steps |
-| `arm`, `disarm` | let the radar fire it, or ignore the radar |
+| `arm`, `disarm` | let the radar fire it, or ignore the radar. Every power-up arms on its own and armed is never saved (owner 2026-10-13); `disarm` holds until the next power cycle |
 | `drop` | full cycle now (works when disarmed): unload and release, powered drop, settle, rewind, lock |
 | `rel` | unload and release only (steps 1 to 3 of the drop): the motor winds up 1/12 turn while the finger swings out, then stays on holding the spider. `jog` lowers it; `off` lets it slide down on the motor's drag |
 | `rewind` | rewind only, then locks (finger in, seated, motor off); stops at the limit switch |
@@ -176,7 +176,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
 - **The motor never turns with the finger in** (owner 2026-10-01). `jog` and `rewind` swing the finger out first, with the 1/12 turn unload, unless it is already out; a drop releases before it unwinds. The one exception is the lock's seat move, which lets the spool down onto the finger on purpose.
-- Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done.
+- Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done, or cut the power: every power-up arms.
 - Motion commands are refused while a cycle runs; `stop` and `off` always work.
 - Each motion command ends with a `[done] ...` or `refused: ...` line. `tools/console.py` waits for it.
 
