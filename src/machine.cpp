@@ -971,13 +971,16 @@ static void step() {
       break;
   }
 
-  // LED (owner 2026-10-11): solid = armed and ready, fast blink = stopped on a fault
-  // or the spider not home (send clear, rewind, or teach), slow blink = working,
-  // off = not armed or waiting to re-arm
+  // Blue LED on GPIO2 (owner 2026-10-11, asleep pattern 2026-10-14): solid = armed and
+  // ready, fast blink = stopped on a fault or the spider not home (send clear, rewind,
+  // or teach), slow blink = working, one short flash every 2 s = asleep (not armed),
+  // off = armed but waiting to re-arm. The board's red LED is not on a pin the
+  // firmware drives.
   bool led = false;
   if (state == ST_FAULT || (atRest(state) && !homeKnown())) led = (now / 150) % 2;
   else if (state == ST_IDLE && S.armed) led = true;
   else if (isBusy())               led = (now / 500) % 2;
+  else if (atRest(state) && !S.armed) led = (now % 2000) < 120;
   digitalWrite(PIN_LED, led);
 }
 

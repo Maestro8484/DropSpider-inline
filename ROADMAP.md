@@ -4,6 +4,7 @@ Every piece of work still to do, in order. One line each; the handoff holds the 
 
 | # | Work | Whose | Status | Detail |
 |---|---|---|---|---|
+| 0 | Flash 11: page refinements, sleep by 5 presses, asleep LED; see each work on the board | session with the owner watching | next | `docs/handoff_flash11_page_sleep_led.md` |
 | 1 | Firmware: line between the spool and the flap is about 72 mm in the inverted install (fairlead v2) (firmware assumes 40); factory drop distance must fit the shorter line | team | next | `docs/handoff_task1_firmware.md` step 1 |
 | 2 | Bench tests T1 to T8 of the Rev C.1 motor-led drop, with the mechanism assembled | team with the owner | next, needs the mechanism built | `docs/handoff_task1_firmware.md` |
 | 3b | Build the inverted install: print `fairlead_base` and `fairlead_flap_inv` (fairlead v2), `ld2450_fork_screw`; drill the five base holes; braces and their holes | owner | any time; bench first | build guide sections 06 and 11, doc 06, open item V18 |
