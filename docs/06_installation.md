@@ -37,7 +37,7 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 ![Inverted install](img/inverted_install.png)
 
-The owner's plan, approved 2026-09-27: the device turned upside down, its flat base at the bottom, sitting on two steel corner braces screwed to the beam's inside face. The line leaves through a hole in the base. Every load (the device's weight, the line's pull) presses the printed parts down into the base and the base onto steel, instead of hanging the PLA from screws. CAD-checked, **not yet built or hung** (open item V18). Source `cad/inverted.py`; run it for the report.
+The owner's plan, approved 2026-09-27: the device turned upside down, its flat base at the bottom, sitting on two steel corner braces screwed to the beam's inside face. The line leaves through a hole in the base. Every load (the device's weight, the line's pull) presses the printed parts down into the base and the base onto steel, instead of hanging the PLA from screws. CAD-checked; built and running on the bench, hung over the inside of the front door since 2026-10-10 (about 190 drops); the porch and its braces are still ahead (open item V18). Source `cad/inverted.py`; run it for the report.
 
 **Turned end for end in the owner's build (photo 2026-10-01):** the **servo end** of the base sits at the beam, the pad (electronics) end away from it. The radar moves to the pad end so it still looks toward the beam. Everything below is for that build.
 
@@ -72,12 +72,10 @@ Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf.
 
 ## Sensor
 
-- Outdoors under a covered porch: keep the device and controller out of blowing rain; the LD2450 and the electronics are not waterproof.
-
-- **LD2450** (primary): on the device, in its tilting cradle under the servo end (`c4002_case_short_mount.stl` bolted with 2x M3, no glue; `ld2450_cradle.stl` on one M3 bolt), looking out from under the porch toward people walking in, standing upright. Set the tilt on site, starting at 20 degrees down (doc 03). Nothing to mount on the wall. Inverted install: the same parts bolted under the base's pad end, see above.
-- Its lead (4 wires, 1.25 mm plug at the sensor) runs about 10 cm across the device to the controller (inverted install: about 10 cm, round the base's pad end).
-- Setup per `03_sensor.md`: no calibration needed; optional app check for firmware version and tracking; leave the app's zones off.
-- LD2410C (fallback only): top center of the opening, hallway side, aimed about 45 degrees down; settings in `03_sensor.md`.
+- Outdoors under a covered porch: keep the device and controller out of blowing rain; the radar and the electronics are not waterproof.
+- **C4002 mmWave radar**: on the device, in its snap-lid case on the swivel mount, bolted under the base at the pad end (inverted install, above) or under the servo end (ceiling install), looking out from under the porch toward people walking in and down the walkway. Set the tilt and swivel on site, starting at 50 degrees down (doc 03). Nothing to mount on the wall.
+- Its lead (five dupont wires) runs about 10 cm round the base's pad end to the board.
+- Setup per `03_sensor.md`: at the porch, set the detect range and range step from the page, then Learn the empty room once with nobody in view. The trigger numbers (fire distance, clear distance) come from a porch walk.
 
 ## Power
 

@@ -18,7 +18,7 @@ Board: 30-pin ESP32 DevKit V1, ESP-WROOM-32 module, CP2102 USB chip, PlatformIO 
 D27, D26, D25 sit side by side on the ESP32 header in the same order as the expansion board's DIR, STEP, EN columns, so one 3-wire ribbon goes across straight (changed 2026-10-01; before then STEP was GPIO25, DIR 26, EN 27).
 | GPIO13 | SG90 orange | out | Not GPIO14: 14 pulses during boot and twitches the finger |
 | GPIO33 | C4002 OUT | in | HIGH = someone there. Firmware adds a pull-down. Carries the trigger if the serial link goes silent, or always with `sensor 2410` (any active-high sensor) |
-| GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = bead lifting the flap. Firmware adds a pull-up |
+| GPIO32 | KW12-3 limit switch NO leg (COM to GND) | in | In the fairlead (doc 09). Pressed = the stopper lifting the flap. Firmware adds a pull-up |
 | GPIO16 (RX2) | C4002 TX | in | Primary trigger, UART2 at 115200 baud |
 | GPIO17 (TX2) | C4002 RX | out | Primary trigger: the firmware asks for a report every 0.1 s at boot |
 | GPIO0 | on-board BOOT button | in | Press = manual test drop. Not on the 30-pin header; nothing to wire |
@@ -59,13 +59,13 @@ STEPPERONLINE NEMA 11, 11HS12-0674S (0.67 A, 5.6 ohm per coil): black (A+) + gre
 
 ## Limit switch wiring (KW12-3 in the fairlead)
 
-The KW12-3 roller switch is built into the fairlead (doc 09). On rewind the stop bead lifts a hinged flap, the flap's tail presses the roller, and the firmware stops the motor the moment it closes.
+The KW12-3 roller switch is built into the fairlead (doc 09). On rewind the stopper on the line lifts a hinged flap, the flap's tail presses the roller, and the firmware stops the motor the moment it closes.
 
 Bare switch, three legs: **COM to GND, NO to GPIO32, NC unused.** No power wire. On the switch in hand, from the lever's hinge end the legs are COM, NO, NC (read off the part 2026-09-25). Meter check: the leg that beeps to one other leg at rest and to the third with the lever held is COM.
 
 Open = HIGH, pressed = LOW with the firmware's pull-up. Check with the web page by lifting the flap by hand; if it reads backwards, `liminv 1`. Then `limit 1` turns it on. Keep the lead away from the motor wires, or twist its signal and ground together. Inverted install (doc 06): the switch and the radar sit under the base and the board on top, so their leads run round the base's far (servo) end, about 15 cm for the switch and 25 cm for the radar, tied clear of the spool.
 
-By design the switch reads **open** at rest after the lock seat (doc 09, V14): the seat move lets the bead drop off the flap.
+By design the switch reads **open** at rest after the lock seat (doc 09, V14): the seat move lets the stopper drop off the flap.
 
 ## Sensor wiring
 

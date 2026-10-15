@@ -8,7 +8,10 @@ The name `dropspider-tiltspool` is saved for Mechanism B (a servo tilts the spoo
 
 ![The device turned over on two corner braces on the porch beam, line out through the base](docs/img/inverted_install.png)
 
-The drawing shows the Rev C.4 spool and the C4002 in its case on the code's fork; my own swivel mount (doc 02, doc 06) is a Fusion file, so the fork stands in for it.
+The drawing shows the Rev C.4 spool and the C4002 in its case on the code's fork; my own swivel mount (doc 02, doc 06) is a Fusion file, so the fork stands in for it. Photos and a video of the real thing dropping are coming.
+
+<!-- video and photos go here: a link to the clip and two or three pictures of the device on the porch -->
+
 
 ## How it works
 
@@ -27,7 +30,7 @@ Each file has one job. A **handoff** is work still to do, written so someone can
 | `docs/build_guide/build_guide.html` | **start here to build one:** one page, wiring to arming, with pictures. `build_guide.src.html` is its source; `python tools\make_build_guide.py` rebuilds the page |
 | `docs/01_mechanical_design.md` | the design: parts on the rod, the lock, which way things turn, print settings |
 | `docs/02_electrical.md` | pin map, power, driver setup, the radar's wiring |
-| `docs/03_sensor.md` | the radar choice, placement, the trigger rule (the parked LD2450 is in there for the record) |
+| `docs/03_sensor.md` | the C4002 radar: why, where it sits, the trigger rule, its own settings (the parked LD2450 at the bottom, for the record) |
 | `docs/04_firmware.md` | what the firmware does, how to load it, every command, the web page, the firmware version |
 | `docs/05_assembly.md` | assembly step by step, with pictures |
 | `docs/06_installation.md` | the porch: heights, the braces, the line length, safety. Ceiling install first, the inverted install (the one I'm building) below it |

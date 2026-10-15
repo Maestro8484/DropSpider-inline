@@ -1,6 +1,6 @@
 # cad/ - how the parts and pictures are made
 
-Read this before changing any printed part or any picture in `docs/img`. It is the working memory for CAD in this repo.
+Read this before changing any printed part or any picture in `docs/img`. It is the working memory for CAD in this project.
 
 ## The short version
 
@@ -27,7 +27,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 |---|---|
 | `generate.py` | Every part except the fairlead unit: bracket, spool (Rev C.4 `spool_onepiece` and its flat far wall `spool_cap`; the older body, ratchet disk and shield), finger, spacers, shims. The `PARTS` table maps file names to functions. `assembly()` places every part in its installed position |
 | `fairlead.py` | Fairlead body, hinged flap, KW12-3 switch model, hinge math. Run it on its own for the flap travel report |
-| `sensor_mount.py` | LD2450 radar mount: the fork's ears and the cradle and `c4002_case_short_mount`, the bolted fork (2x M3, no glue; named `ld2450_fork_screw` until 2026-10-14), the only radar fork, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
+| `sensor_mount.py` | The radar fork and the parked LD2450's cradle: the fork's ears and `c4002_case_short_mount`, the bolted fork (2x M3, no glue; named `ld2450_fork_screw` until 2026-10-14), the only radar fork, cradle tilting on one M3 bolt. Run it on its own for its fit report: clear of every part at every tilt from 0 to 50 degrees |
 | `c4002_case.py` | C4002 radar case on the same fork, drawn from scratch after a MakerWorld enclosure's layout (CC BY-NC-SA, credit and the original download in `ref/c4002_enclosure/`): inside 22.75 x 31.5, body 10 tall, board on two buttons and a far ledge held by four lid posts (no screws), a 20.8 mm square opening in the floor under the antenna (no PLA in front of it), snap lid, knuckle and 15 mm wire opening on the same end, prints flat with no supports. Exports `c4002_case_base.stl` and `c4002_case_lid.stl` with `--export` (only if changed), picture `docs/img/c4002_case.png` with `--picture`. Run on its own for its report: lid and board fit, overhangs, and fork clearance at every tilt 0 to 90 degrees with the antenna toward the floor (toward the lid, the lid's corner meets the fork from 35 to 70 degrees) |
 | `inverted.py` | Inverted install (doc 06 alternative, approved 2026-09-27): the device turned over on two steel corner braces. `bracket_inverted()` (the 3 drilled holes), `fairlead_base()` (doc 09's unit as a block under the base, exported as `fairlead_base.stl`; `fairlead_base(ptfe=True)` is `fairlead_base_ptfe.stl`, the same block with a straight bore for the optional PTFE guide tube), the radar turned over under the servo end, brace stand-ins, a board box, `assembly_inverted()`, `porch()` and `view_inv()` (pictures with the floor down). Run it on its own for its report: watertight, face flat, clash (braces and board box included), radar view, line path, spool clearance, flap stops and roller push, screw heads, loads, heights |
 | `retired/` | Obsolete parts and their code: `line_guide`, the glued `ld2450_fork`, the wall-install drafts (`wall_hinge.py` with hinge_plate, hinge_clip, tie_bar, strut; `wall_mount.py`, the braced shelf). Kept for reference, not run, not printed |
@@ -35,7 +35,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
-| `stl/*.3mf` | The owner's own Bambu Studio projects (plate layout, his print settings), kept beside the STLs for his use. A session never writes, regenerates or commits a .3mf; the deliverable of any CAD change is the STL |
+| `stl/*.3mf` | The owner's own Bambu Studio projects (plate layout, his print settings), kept beside the STLs for his use. A session never writes, regenerates or saves a .3mf into git; the deliverable of any CAD change is the STL |
 
 ## The coordinate frame (every doc uses it)
 
@@ -98,4 +98,4 @@ Write a function in `render.py` that builds a list of `(mesh, color)` pairs from
 
 - Python 3.10 or later. `trimesh` path functions that need `rtree` (area of a cross-section) are avoided; install `rtree` if you add one.
 - Rendering is CPU only; big pictures take a minute or two.
-- The owner's chat session can edit these text files but cannot write STL or PNG files into the repo. After an owner CAD change, run `regen_cad.ps1` here.
+- The owner's chat session can edit these text files but cannot write STL or PNG files into the project folder. After an owner CAD change, run `regen_cad.ps1` here.

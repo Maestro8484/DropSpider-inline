@@ -18,7 +18,7 @@ git log -1 --oneline -- docs/handoff_spider_runaway.md   # when this file was la
 1. Read the newest 2026-10-06 rows of `docs/commissioning_log.md`: every measurement behind this task is there.
 2. Read the board: `curl -s http://dropspider.local/api/status` (192.168.1.137 if the name fails). Note `state`, `driverOn`, `servoDeg`, `position`, `fault`, and the `log` lines.
 3. Check the settings it reports: `line` 2200, `rpm` 240, `setrel` 30, `setlock` 85. They were set on purpose on 2026-10-06; do not change them without a reason.
-4. Open the summary page Joe reads: https://claude.ai/artifact/MMGPq3icuhv68BugqDNhHS ("DropSpider · Spider Runaway").
+4. Open the summary page Joe reads: https://claude.ai/artifact/MMGPq3icuhv68BugqDNhHS ("DropSpider - Spider Runaway").
 
 5. **The coupler's set screws were found a little loose and tightened by Joe on 2026-10-06, after every measurement in this file.** Re-tested the same day: with the screws tight, one `jog -200` (finger out, motor on) still let the spider fall the whole line. So the coupler is not the whole cause; it stays on the list only if a screw is still loose or not on a flat.
 

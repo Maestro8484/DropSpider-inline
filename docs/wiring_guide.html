@@ -9,7 +9,7 @@
 <!-- Made to paste into OneNote: open in a browser, Ctrl+A, Ctrl+C, paste. Inline styles only, no scripts. -->
 
 <h1 style="font-size:20pt;margin:0 0 4px 0;color:#3b2a6b">DropSpider Rev C.1: pinout and wiring guide</h1>
-<p style="margin:0 0 12px 0;color:#555555">30-pin ESP32 DevKit V1 (the 38-pin NodeMCU-32S uses the same GPIO numbers). Every electrical part, where each wire goes, and which parts you can leave out. Source of truth: docs/02_electrical.md in the repo; if they disagree, the repo wins.</p>
+<p style="margin:0 0 12px 0;color:#555555">30-pin ESP32 DevKit V1 (the 38-pin NodeMCU-32S uses the same GPIO numbers). Every electrical part, where each wire goes, and which parts you can leave out. Source of truth: docs/02_electrical.md in the docs folder; if they disagree, that doc wins.</p>
 
 <table style="border-collapse:collapse;margin:0 0 16px 0" cellpadding="6">
 <tr>
@@ -40,7 +40,7 @@
 <tr><td style="border:1px solid #cccccc"><b>GPIO32</b></td><td style="border:1px solid #cccccc">KW12-3 switch, NO leg</td><td style="border:1px solid #cccccc">spider home: stops the rewind</td><td style="border:1px solid #cccccc">pull-up is inside the chip; no resistor</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc"><b>GPIO33</b></td><td style="border:1px solid #cccccc">C4002 OUT</td><td style="border:1px solid #cccccc">backup trigger, yes/no: high while it sees someone</td><td style="border:1px solid #cccccc">wire it: takes over if the serial link (GPIO16/17) goes quiet for 1 s</td></tr>
 <tr><td style="border:1px solid #cccccc">GPIO0</td><td style="border:1px solid #cccccc">on-board BOOT button</td><td style="border:1px solid #cccccc">manual test drop; hold for USB flashing</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
-<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GPIO2</td><td style="border:1px solid #cccccc">on-board blue LED</td><td style="border:1px solid #cccccc">solid = armed and ready, fast blink = fault</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
+<tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">GPIO2</td><td style="border:1px solid #cccccc">on-board blue LED</td><td style="border:1px solid #cccccc">solid = armed and ready, fast blink = fault or spider not home, slow blink = moving, one short flash every 2 s = asleep, off = armed but waiting to re-arm</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
 <tr><td style="border:1px solid #cccccc">EN</td><td style="border:1px solid #cccccc">on-board button marked EN</td><td style="border:1px solid #cccccc">restart</td><td style="border:1px solid #cccccc">nothing to wire</td></tr>
 </table>
 
@@ -103,7 +103,7 @@
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">RX</td><td style="border:1px solid #cccccc">GPIO17 (TX2): the firmware asks the sensor to report over this wire at boot, so it is needed</td></tr>
 <tr><td style="border:1px solid #cccccc">OUT</td><td style="border:1px solid #cccccc">GPIO33: the backup trigger, high while it sees someone. The firmware has a pull-down on it</td></tr>
 <tr style="background:#f6f4fb"><td style="border:1px solid #cccccc">Pins</td><td style="border:1px solid #cccccc">five bare 2.54 mm holes along one short edge, printed VIN GND RX TX OUT; no cable comes with it: five dupont jumpers, or a 5-pin header soldered in</td></tr>
-<tr><td style="border:1px solid #cccccc">Mount</td><td style="border:1px solid #cccccc"><code>c4002_case_base</code> and <code>c4002_case_lid</code> on the radar fork under the base; gold antenna squares down, seen through the floor opening; pins toward the knuckle, wires out the 15 mm opening</td></tr>
+<tr><td style="border:1px solid #cccccc">Mount</td><td style="border:1px solid #cccccc"><code>c4002_case_base_extended</code> and <code>c4002_case_lid</code> on the swivel mount under the base (or <code>c4002_case_base</code> on the fixed-tilt fork); gold antenna squares down, seen through the floor opening; pins toward the knuckle, wires out the 15 mm opening</td></tr>
 </table>
 
 <h2 style="font-size:15pt;color:#3b2a6b;border-bottom:2px solid #3b2a6b;padding-bottom:2px">4. Parts to leave out: over-engineering check</h2>

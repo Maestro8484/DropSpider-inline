@@ -1,61 +1,59 @@
 # 03 - Sensor
 
-Rev C.1. Decision date 2026-09-24. Details and sources in `handoff_sensor_bearings.md`.
+The trigger is a DFRobot Fermion C4002 (SEN0691), a 24 GHz mmWave radar that reports one moving person's distance and speed, with the direction they're going, about ten times a second, plus one still person's distance. It also has an OUT pin that goes high while it sees anyone. On the bench since 2026-10-10; it has fired about 190 drops. Wiring in doc 02, every setting in doc 04, the bench rows in `commissioning_log.md`.
 
-**Superseded 2026-10-07, updated 2026-10-08.** The LD2450 is parked (three modules never reported a target; record in `retired/handoff_sensor_ld2450.md`). The trigger is now a DFRobot radar that reports one moving person's range and signed speed over serial and has a presence OUT pin for the no-firmware fallback: the C4001 (SEN0609/SEN0610) the owner has on hand first, as `sensor 4001`, then the Fermion C4002 (SEN0691, ordered 2026-10-07, `sensor 4002`, which also reports a still person). Facts, wiring and the firmware's trigger rule: `handoff_sensor_bearings.md`, doc 02 sensor wiring, doc 04 settings `sensor`, `approach`, `leadms`. The table below is the 2026-09-24 comparison, kept for the record.
+## Why this one
 
-## Choice: HLK-LD2450 (primary), HLK-LD2410C (fallback), both already owned
-
-| | LD2450 (primary) | LD2410C (fallback) | PIR, e.g. AM312 (not owned) | Ultrasonic HC-SR04 (not owned) |
-|---|---|---|---|---|
-| What it reports | X and Y position and speed of up to 3 moving people, about 10 times a second | one yes/no presence line, plus distance over serial | yes/no when a warm body moves across its view | distance to whatever is straight ahead |
-| Can it tell approaching from leaving or passing | **yes** | no | no | only by watching distance shrink |
-| Can it time the drop to the person's arrival | **yes** (distance divided by speed) | no, fixed trigger distance | no | roughly |
-| Setup | none required; optional app for a live map and firmware update | range zones ("gates") set in the app | aim it | aim it, set one distance |
-| Wiring | 4 pins: 5 V, GND, TX, RX. **No OUT pin** | 5 pins incl. OUT | 3 pins | 4 pins, 5 V echo needs a resistor divider |
-| Connector | 4-pin, 1.25 mm pitch plug | 2.54 mm header | | |
-| Weakness | poor at people standing still (irrelevant here) | fires on anyone moving in range, both directions | pets, heat vents, passers-by | narrow beam, soft clothing |
-
-## Wiring
-
-| Sensor pin | ESP32 |
+| What it reports | Why it matters here |
 |---|---|
-| LD2450 5V | 5 V rail |
-| LD2450 GND | GND |
-| LD2450 TX | GPIO16 (UART2 RX) |
-| LD2450 RX | GPIO17 (UART2 TX) |
-| LD2410C OUT (fallback, may stay connected) | GPIO33 |
+| Distance to the moving person, straight line from the sensor | the drop fires at a set distance, so the spider lands as they reach the door |
+| Speed toward or away from the sensor, with a direction word | walking in fires it; walking out, walking past or standing still does not |
+| A still person's distance | tells the device the doorway is still busy, without being able to fire it |
+| OUT pin, high while anyone is in view | the backup trigger: if the serial link goes quiet for 1 s, the firmware fires from the pin until the frames come back |
 
-UART2 at 256000 baud, 8N1. Hardware UART only.
+Only one moving person at a time: two people walking in together read as one. Good enough for a porch.
 
-## Placement
+## Where it sits
 
-- **On the device**, in `ld2450_cradle.stl`, which tilts on one M3 bolt between the ears of `c4002_case_short_mount.stl`, bolted under the bracket's servo end (+x) with 2x M3: ceiling install, countersunk from the ceiling face, heads flush, nuts on the fork, holes drilled at x 68, z 45 and z 79; inverted install, see doc 06. No glue (owner 2026-09-27). Install (ruled by the owner 2026-09-26): under a **porch ceiling, behind the porch overhang's front beam**. People walk in from outside toward the porch, so the servo end, with the radar, points **out from under the porch** toward them. The beam hides the device from them.
-- **Orientation, from Hi-Link's manual (section 7, figure 6):** module standing upright, long edge vertical, **antenna side against the cradle's face plate** (two big windows, so it looks out mostly through air), **pin-header side open at the back**, header end at the bottom. The face plate faces out toward the approach. The cradle sets this. Its left-right reading (X) then runs across the walkway, its distance reading (Y) out along it. Confirm on the bench: walk left to right in front of it; X must change, Y stay steady. If Y changes instead, the board is in sideways.
-- **Tilt:** set on site, 0 to 50 degrees down, by loosening the M3 nut, swinging the cradle and tightening (every angle in that range is checked clear in `cad/sensor_mount.py`). For the owner's porch (beam 10 in deep, device 12 in behind it) start at 50 degrees: the beam blocks rays shallower than about 45 degrees (doc 06). The device holds it about 2.3 m up, over Hi-Link's recommended 1.5 to 2 m, so the tilt aims the beam at people 1 to 3 m away. The radar must also see out past the porch's front beam: that depends on the porch's ceiling height, the beam's depth and how far behind it the device hangs, not yet measured. Estimate, checked only by test S3 with the live readout. Y is then the slanted distance, a little longer than the floor distance; the arrival timing (`leadms`) absorbs that.
-- **Which way up:** the board slides up into the cradle's grooves from the open bottom end, antenna side toward the face plate, **header end last** so the headers end up at the bottom; it stops against the top block and a small zip tie round the cradle's bottom end holds it (no glue, owner 2026-09-27). Headers plus dupont plugs (24 mm deep) clear everything at every tilt from 30 to 60 degrees that way; at the top end they would hit the bracket above 40 degrees.
-- **Back of the sensor:** the manual warns it also sees a little through its back. The dropping spider hangs about 95 mm behind it (line at x = -25, radar near x = 70). The firmware lockout after a scare covers that; if the falling spider ever retriggers it, a piece of kitchen foil on the cradle's back plate (not touching the pins) cuts it down.
-- Keep ceiling fans and moving curtains out of its view; they show up as targets.
+- **On the device**, in its printed snap-lid case (`c4002_case_base_extended.stl` with `c4002_case_lid.stl`, my own longer-arm version of `cad/c4002_case.py`'s case) on `c4002_case_Swivel_mount.stl`, bolted under the base at the pad end. The case has an open floor under the two gold antenna squares, so no plastic sits in front of the antenna. The mount tilts on one M3 bolt and swivels left and right, so the radar can be aimed down the walkway from wherever the device hangs.
+- **Which way:** the floor opening (the antenna) faces the walkway, the lid faces away. On the inverted install that means it looks along the device toward the beam and down.
+- **Tilt:** start at 50 degrees down. At 55 it sees about 2 ft 5 in behind itself, so someone walking out from behind it can fire it; a shallower tilt, toward 30, should stop that (worked out from the field of view, not yet tried). Steeper sees less of the beam. A piece of kitchen foil behind the case (not touching the pins) is the next lever if walk-outs still fire it.
+- **Not through metal.** It sees through wood, drywall and plastic, but aluminum siding or trim blocks it completely, however thin. If the porch beam is clad in aluminum, the radar only sees people once they are under the beam's bottom edge, and the metal can bounce back phantom readings. Tilt steeper.
+- **The spider is in its view.** With nobody walking, the bench showed still readings at 27 to 30 cm and 86 to 87 cm (the spider at home, or the door frame); a still reading cannot fire or hold the re-arm. Whether the swinging spider ever reads as moving is test S2, not done yet.
+- Keep fans, moving curtains and screens out of its view; a screen at 2.2 m once held the doorway "busy" until the clear distance became a setting.
 
-## Trigger rule (firmware)
+## The trigger rule, as the firmware runs it
 
-Fire when any target:
-1. is inside the door width: |X| under `doorwidth`/2 (default 500 mm each side),
-2. is approaching: speed toward the sensor above `approach` (default 0.3 m/s; sign convention confirmed on the bench),
-3. will arrive soon: Y divided by speed under `leadms` (default 750 ms, about release plus drop time),
-4. for 2 frames in a row.
+Fire when, armed and ready, two readings in a row show someone **approaching** at `approach` cm/s or faster (30 from the factory) and either **within `firecm`** (200 on my mount; 120 from the factory) or, for a fast walker, **arriving within `leadms`** (750 ms). Distance first, timing second: from a 2 m overhead mount the straight-line distance never gets much under a foot and the speed toward the sensor fades to nothing as the person comes under it, so a time-to-arrival rule could not fire at a slow pace. Automatic doors and alarm sensors work the same way, a direction gate plus a distance zone.
 
-Re-arm: existing lockout, then no target inside the window for 2 s.
+Clear again, and re-armed, when nobody moving reads within `clearcm` (150 on my mount, 300 from the factory) for 2 s, or after `clearms` anyway (1 s on my mount; 30 s from the factory). A still reading never holds it.
 
-Why lead time instead of a fixed distance: a fast walker triggers earlier, a slow one later, so the spider lands at the doorway for both.
+If the direction word ever reads backwards on a mount, `radarinv 1` (the page's "Direction reads backwards" tick) swaps it. On the bench it reads right as built, so it stays 0.
 
-## One-time app check (HLKRadarTool, optional but recommended)
+## The sensor's own settings
 
-1. Power the LD2450 from 5 V only. Open HLKRadarTool within arm's length; its Bluetooth range is very short.
-2. Check the firmware version. Update in the app if older than V2.02.23090617 (the version ESPHome requires; a safe floor for any library).
-3. Walk toward the doorway and watch your dot. It should track smoothly through the door frame.
-4. **Leave the app's area detection / zones OFF.** The firmware does the window logic; zones inside the sensor would silently hide targets from it.
+These live in the sensor, not the board, so the Radar card has Set and Read buttons for them and they survive a board flash.
 
-## Fallback: LD2410C
+| Setting | Console | What |
+|---|---|---|
+| Detect range | `radar range` | closest and farthest, cm. Set the closest past the hanging spider if it ever reads it. Takes effect after the restart the command does |
+| Range step | `radar res` | 80 cm steps to 11.6 m, or 20 cm steps to 4.9 m. 20 for a porch walk; 80 if the walk starts beyond 4.9 m |
+| Sensitivity | `radar sens` | motion and presence, low, mid or high. Lower motion if a pet or the swinging spider fires it; lower presence if furniture holds the doorway busy |
+| Keep a person for | `radar delay` | ships at 15 s, which held the doorway busy; 2 s on the bench |
+| Learn the empty room | `radar calib` | the page's button: waits, then listens with nobody in view and sets its own thresholds. Do it once at each mount |
 
-Setting `sensor 2410` switches the trigger back to GPIO33. Its app setup (gates) is in git history of this file; summary: max moving gate 2, max static gate 1, no-one duration 1 s, aim down 45 degrees.
+Porch numbers to start from, doc 06: range step 80 cm if the walk starts beyond 4.9 m, detect range to about 600, clearcm 300, firecm from a porch walk, then learn the empty room again.
+
+## Bench tests S1 to S5
+
+In `handoff_sensor_bearings.md`, one row each in `commissioning_log.md`: S1 it talks (done), S2 walking toward, away and across plus the swinging spider (the spider swing still owed), S3 ten clean walk-ins (two done), S4 no false fires (owed), S5 the TX wire pulled while armed (owed).
+
+## What else can fire it
+
+`sensor 2410` makes the OUT pin on GPIO33 the only trigger, for any sensor with an active-high output: the C4002's own OUT, an LD2410C, a PIR, a step mat. No direction, no distance.
+
+## Parked, for the record
+
+- **HLK-LD2450**, the first choice (2026-09-24, for its X and Y tracking of up to three people): three modules answered every command and never reported a target, so it was parked 2026-10-07. The design and the record are in `retired/handoff_sensor_ld2450.md`; `ld2450_cradle.stl` was its mount.
+- **DFRobot C4001** (SEN0609 and SEN0610): on hand while the C4002 was on order; its three wiring answers are in doc 02. The firmware now speaks the C4002 only.
+- **HLK-LD2410C**: was the fallback on the OUT pin. Not needed, the C4002's own OUT pin is the backup.

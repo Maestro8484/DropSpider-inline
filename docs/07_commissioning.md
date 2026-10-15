@@ -18,10 +18,10 @@ Step numbers 1 to 14 are unchanged from Rev C so the open-items table still poin
 | 6 | With line wound and finger at lock, pull the spider down by hand | Spool does not turn; finger pressed onto the ledge, not bending the servo |
 | 7 | `rel` (Rev C.1: motor on, winds about 1/12 turn while the finger swings out), then `drop` | `rel`: finger clears the teeth with no servo buzz. `drop`: motor spins, spider falls fast and stops at the set height, short of the line's end (no bounce off the end) |
 | 8 | `rewind` | Spool winds the line up. If the motor turns but the spool does not (clutch slipping): `off`, `dir 0` (or 1) and repeat. If neither direction winds, the HF0612 is in the Rev C direction: flip it (05 step 3) |
-| 9 | Watch the end of `rewind` | With the switch on: the bead lifts the fairlead flap, the switch clicks, the motor stops at once, no buzz; console says "stopped by the limit switch". With the switch off: the flap bottoms on the fairlead, motor buzzes briefly (skipping), then stops |
+| 9 | Watch the end of `rewind` | With the switch on: the stopper lifts the fairlead flap, the switch clicks, the motor stops at once, no buzz; console says "stopped by the limit switch". With the switch off: the flap bottoms on the fairlead, motor buzzes briefly (skipping), then stops |
 | 10 | `lock` | Finger goes in, motor eases the spool down onto a tooth, motor goes off, spider drops no more than about 13 mm and stays. The flap drops back and the switch reads open: correct by design (doc 09, V14) |
 | 11 | `line <measured mm>`, `save`, then `drop` five times | All five complete, no tangles, finger always relocks. With the switch on, "Line length measured by the switch" on the page is within about 40 mm of `line` |
-| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. Radar tests S1 to S5 (C4001 first, then the C4002) in `handoff_sensor_bearings.md` |
+| 12 | `arm`, `save`. Walk toward the door from 3 m away, then walk away, then walk across the hallway | Fires only when walking toward the door, spider arriving as you reach the doorway. Radar tests S1 to S5 in `handoff_sensor_bearings.md` |
 | 13 | Stand still in front of it after a scare | No second scare until you leave and 20 s pass |
 | 14 | Hardware check after 20 cycles | Coupler set screws tight, no white stress marks on the finger or ledge, knot intact, flap swings freely on its pin, switch roller not bent, no groove worn in the fairlead bore |
 
@@ -44,7 +44,7 @@ Then mount per `06_installation.md` and repeat steps 11 to 13 in place, adjustin
 | Retriggers on people walking past or leaving | the radar's direction word is wrong for the mount, or the OUT pin fallback is carrying the trigger | check the direction word on the page while walking (S2); raise `approach`; `status` says radar or OUT pin; check `sensor 4002` and that the serial link is talking |
 | ESP32 resets when servo moves | 5 V dips | fit the 470 uF capacitor at the servo |
 | Rewind stops early, fault "tripped far too early" | line snagged, or switch noise from the motor wires | clear the snag; route the switch lead away from the motor wires |
-| Fault "ran without the limit switch tripping" | bead misses the flap, flap stuck, or switch unplugged | check the flap swings freely and the roller touches its tail (doc 09 step 4); check `status` shows the switch changing when the flap is lifted |
+| Fault "ran without the limit switch tripping" | the stopper misses the flap, flap stuck, or switch unplugged | check the flap swings freely and the roller touches its tail (doc 09 step 4); check `status` shows the switch changing when the flap is lifted |
 | Fault "still pressed after a drop" | switch reads backwards | `liminv` the other way, `save` |
 | `jog` refused, "limit switch is pressed" | spider already home, or switch reads backwards | check 3b |
 | Page will not load | board not on the network | USB console `wifi`; if it made its own network, join DropSpider-setup and use 192.168.4.1 |

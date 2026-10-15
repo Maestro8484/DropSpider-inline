@@ -4,7 +4,7 @@ What the code does, how to load it, and every command it takes.
 
 ## Where it lives
 
-Standard PlatformIO layout at the repo root. Board in use: 30-pin ESP32 DevKit V1 (PlatformIO board `nodemcu-32s`, same chip as the 38-pin NodeMCU-32S), Arduino framework, platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16).
+Standard PlatformIO layout at the top of the project folder. Board in use: 30-pin ESP32 DevKit V1 (PlatformIO board `nodemcu-32s`, same chip as the 38-pin NodeMCU-32S), Arduino framework, platform pinned to `espressif32@6.7.0` (Arduino core 2.0.16).
 
 | File | What |
 |---|---|
@@ -46,12 +46,12 @@ Every build carries a version read from git at build time (`tools/fw_version.py`
 
 | Reads | Means |
 |---|---|
-| `fw-11` | exactly the commit tagged `fw-11`: the eleventh build that reached the board |
-| `fw-10+3.f6a9849` | three commits past `fw-10`, at commit f6a9849, nothing uncommitted. Not yet flashed as a numbered build |
-| `fw-10+3.f6a9849*` | the star: firmware files had uncommitted edits when it was built, so no commit reproduces it |
+| `fw-11` | exactly the change tagged `fw-11`: the eleventh build that reached the board |
+| `fw-10+3.f6a9849` | three changes past `fw-10`, at change f6a9849, nothing unsaved in git. Not yet flashed as a numbered build |
+| `fw-10+3.f6a9849*` | the star: firmware files had edits not yet saved in git when it was built, so nothing in git reproduces it |
 | `unknown` | built without git (a zip download, not a clone) |
 
-The scheme: every build that goes onto the board gets a git tag `fw-N` on its commit, N continuing the bench log's flash count (`fw-9` is flash 9 at fdc47de, `fw-10` flash 10 at 7e61580). Tag first, then build and flash, so the board reports the clean name. After a WiFi update `scripts\update_firmware.bat` asks the board what it runs (`tools/board_version.py`) and says MATCH or DIFFERENT against this checkout. `python tools/fw_version.py --show` prints what the next build would be stamped.
+The scheme: every build that goes onto the board gets a git tag `fw-N` on its change, N continuing the bench log's flash count (`fw-9` is flash 9 at fdc47de, `fw-10` flash 10 at 7e61580). Tag first, then build and flash, so the board reports the clean name. After a WiFi update `scripts\update_firmware.bat` asks the board what it runs (`tools/board_version.py`) and says MATCH or DIFFERENT against this checkout. `python tools/fw_version.py --show` prints what the next build would be stamped.
 
 ## Network
 
@@ -111,22 +111,22 @@ Drop steps = dropmm / 0.098 mm + the steps the unload actually wound up. `dropmm
 
 ## Limit switch
 
-A 3-pin endstop at the eyelet, pressed by the stop bead when the spider arrives home. Wiring in `02_electrical.md`.
+A 3-pin endstop at the eyelet, pressed by the stopper on the line when the spider arrives home. Wiring in `02_electrical.md`.
 
 - Off until you turn it on (`limit 1`), so an unwired or backwards switch cannot stop a rewind early. Check it reads right first: the page shows "reads pressed" or "reads open"; press the lever by hand and watch. If backwards: `liminv 1`.
 - When on, it is a hard cut-off: any motor move in the rewind direction stops within 2 ms of the switch closing, in every state. An interrupt latches the first closure of any length, so a flap shaken by a stalled motor still stops it (2026-10-06: two rewinds wound on against the top with the switch never seen).
-- Every motor move ends in a lock: finger in, the spool let down onto a tooth, motor off. After the switch stops a rewind or a jog, the finger goes in first, the driver is switched off and on again with the finger in (a dead stop in the driver's quiet mode can leave it in a state it cannot leave on its own, TMC2209 datasheet p42; the owner found the motor nearly free with the driver "on" after one, 2026-10-06), then the seat move is the 1/8 turn back-off (about 20 mm) so the bead rests clear of the flap and the eyelet. A plain lock seats 1.2/12 turn. The spider never hangs on the motor alone: every time it did on 2026-10-06 it ran the whole line. If the switch cuts the release's unload short, the driver is reset there, at the top, before anything moves down. `rel` is the one move that leaves the finger out, held by the powered servo, for the jog that follows.
-- Switching the driver on from off: enable, one microstep up and back, then 200 ms still. The driver's standstill tuning needs the run current, and with the standstill current cut on (the expansion board's DIP 3 off) only a step pulse brings it back; the settle alone tuned at half current. A second rewind or up-jog straight after is refused: the bead flicks the flap as it passes, so from the top the switch is never seen. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
+- Every motor move ends in a lock: finger in, the spool let down onto a tooth, motor off. After the switch stops a rewind or a jog, the finger goes in first, the driver is switched off and on again with the finger in (a dead stop in the driver's quiet mode can leave it in a state it cannot leave on its own, TMC2209 datasheet p42; the owner found the motor nearly free with the driver "on" after one, 2026-10-06), then the seat move is the 1/8 turn back-off (about 20 mm) so the stopper rests clear of the flap and the eyelet. A plain lock seats 1.2/12 turn. The spider never hangs on the motor alone: every time it did on 2026-10-06 it ran the whole line. If the switch cuts the release's unload short, the driver is reset there, at the top, before anything moves down. `rel` is the one move that leaves the finger out, held by the powered servo, for the jog that follows.
+- Switching the driver on from off: enable, one microstep up and back, then 200 ms still. The driver's standstill tuning needs the run current, and with the standstill current cut on (the expansion board's DIP 3 off) only a step pulse brings it back; the settle alone tuned at half current. A second rewind or up-jog straight after is refused: the stopper flicks the flap as it passes, so from the top the switch is never seen. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
 - Faults it catches, each a strike (three in a row and it stops arming until `clear` or a BOOT press):
   - trips in under a quarter of the expected rewind: line snagged or broke;
-  - full rewind runs and it never trips: bead missed it, or it is unplugged. The spider is then pulled hard against the top, so this one does not wait for three: the motor backs down 1/8 turn, locks, and stops on the fault. Send `clear` when it is fixed. The motor never loses power before the finger is holding (owner 2026-10-06). Same for a switch still pressed after a drop;
+  - full rewind runs and it never trips: the stopper missed it, or it is unplugged. The spider is then pulled hard against the top, so this one does not wait for three: the motor backs down 1/8 turn, locks, and stops on the fault. Send `clear` when it is fixed. The motor never loses power before the finger is holding (owner 2026-10-06). Same for a switch still pressed after a drop;
   - still pressed right after a drop: wiring or `liminv` wrong. That rewind then runs on the step count alone.
 - Each cycle's rewind that ends on the switch reports how far the spider dropped, to check against `dropmm`.
 - Lost steps on the stop: if that rewind runs more than 20 mm past the drop (allowing one unload for the seat), the log says `lost steps?`. It means the spool got ahead of the motor at the stop and the line's stretch caught the spider. Not a fault on its own; lower `dropdec` or `droprpm` if it repeats.
 
 ### Home at boot (V14)
 
-After the lock seat the bead drops off the flap, so the switch reads open with the spider home. That is by design. The firmware remembers, in flash, that the last lock followed a rewind the switch stopped. At boot:
+After the lock seat the stopper drops off the flap, so the switch reads open with the spider home. That is by design. The firmware remembers, in flash, that the last lock followed a rewind the switch stopped. At boot:
 
 - switch pressed, or that memory says home: no message, ready;
 - switch open and that memory says home: log `switch open, spider home from the last lock`, ready;
@@ -158,7 +158,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `off` | motor and servo off |
 | `clear` | forget faults and re-arm the cycle; during the lockout or the wait for the doorway to clear, re-arm now (page button Clear and re-arm) |
 | `setlock <deg>`, `setrel <deg>` | store finger angles (0 to 180) |
-| `line <mm>` | line length from the barrel knot to the stop bead, line straight not pulled (100 to 3000). Refused if it would leave `dropmm` reaching the knot |
+| `line <mm>` | line length from the barrel knot to the stopper, line straight not pulled (100 to 3000). Refused if it would leave `dropmm` reaching the knot |
 | `dropmm <mm>` | how far the spider drops, 100 to `line` - 70, default 620 |
 | `droprpm <n>` | drop top speed, 100 to 900, default 500 |
 | `dropacc <n>` | drop start rate, microsteps/s^2, 20000 to 400000, default 120000 |
@@ -215,7 +215,7 @@ steps = ((line - 40 mm) / (pi x 50 mm) + 0.75 turn) x 200 x 8
 
 In a cycle the rewind is the drop's steps + 0.75 turn instead, if that is less: the spool is only down as far as the drop went.
 
-The 40 mm is line that stays between spool and eyelet. The 0.75 turn overshoot guarantees the bead reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
+The 40 mm is line that stays between spool and eyelet. The 0.75 turn overshoot guarantees the stopper reaches the eyelet. With the limit switch on, the rewind stops at the switch instead; without it, the motor slips (skips steps, a short buzz, harmless at 0.6 A) for the rest.
 
 Speed ramps up over 600 steps and down at the end of a counted move. A stop by the limit switch is instant, no ramp down.
 

@@ -16,7 +16,7 @@ A foam spider (about 13 g, brought to about 30 g with added weight) hangs on bon
 | Everything on one rod ("in-line") | Strength and simplicity: no gears, belts, or offset shafts. One part to align. |
 | Ratchet + servo finger for the hold | Zero power while armed, no hum, no heat. The load pushes the finger onto a printed ledge, not into the servo. |
 | Stepper, not a DC gearmotor | Fixed step count per move; the fairlead's limit switch marks home. |
-| Hard stop at the top = bead lifts a hinged flap under the fairlead, which presses a KW12-3 switch; the flap then bottoms on the fairlead (Rev C.1, doc 09) | Rewind length varies by up to half a turn after each drop (see "End of drop"), so a counted stop alone is not reliable. |
+| Hard stop at the top = the stopper lifts a hinged flap under the fairlead, which presses a KW12-3 switch; the flap then bottoms on the fairlead (Rev C.1, doc 09) | Rewind length varies by up to half a turn after each drop (see "End of drop"), so a counted stop alone is not reliable. |
 | Spool is one body plus a flat cap (Rev C.4) | Both print flat with zero supports and no screws; the separate cap gives a vertical far wall 7 mm tall, which a one-piece part could only print as a ramp. |
 
 ## Parts on the rod, motor to bearing (z = distance from the motor plate's outer face)
@@ -35,11 +35,11 @@ A foam spider (about 13 g, brought to about 30 g with added weight) hangs on bon
 
 **The one measurement that matters:** the ratchet disk must straddle the finger. Finger plate is z 35 to 42 (7 mm thick); disk is z 36 to 42. After the motor and coupler are on, measure from the motor plate's outer face to the coupler's free end. If it is not 30 mm, change spacer A by the difference using `shim_1mm` / `shim_2mm` (or reprint spacer A). The spool floats between spacer A and spacer B, so the stack must be snug, not tight.
 
-### Rev C.4 spool: one-piece body plus cap (`spool_onepiece.stl` and `spool_cap.stl`, designed 2026-10-04, REPO-ONLY)
+### Rev C.4 spool: one-piece body plus cap (`spool_onepiece.stl` and `spool_cap.stl`, designed 2026-10-04)
 
 ![Rev C.4 spool and cap](img/spool_c4.png)
 
-Replaces the three-part stack above, and the Rev C.3 one-piece, once printed and checked. Two printed parts, no screws, no glue: the body (teeth, separator and barrel in one piece, 14.25 mm long) and a flat cap that is the far wall (2.0 mm). Together 16.25 mm, z 32.5 to 48.75. Drawn with the shorter-hub finger (plate z 32.5 to 39.5). Status: checked in the model only; nothing printed, nothing benched.
+Replaces the three-part stack above and the Rev C.3 one-piece. Two printed parts, three screws, no glue: the body (teeth, separator and barrel in one piece, 14.25 mm long) and a flat cap that is the far wall (2.0 mm). Together 16.25 mm, z 32.5 to 48.75. Drawn with the shorter-hub finger (plate z 32.5 to 39.5). Printed and on the device: ten drops on 2026-10-07 with no line off the barrel (V22 closed), about 190 drops since.
 
 Why it changed (owner 2026-10-04): on the Rev C.3 one-piece the line came off the far (606ZZ) side, over its 2 mm far wall, which was a 45 degree ramp, and wound onto the rod and spacer. The line's feed point (where it leaves the spool toward the base hole, z 45) had landed on that ramp, 0.5 mm past the barrel. Rev C.4 centres the barrel on the feed point and makes the far wall a vertical cap 7 mm tall.
 
@@ -57,7 +57,7 @@ The cap (`spool_cap.stl`) locates on the body with three lugs, each the shape of
 
 Stack on the owner's build, as a change from the C.3 one-piece: motor side unchanged, `spacer_A_nose_7_5mm` alone (12 mm on the coupler, last 1 mm 8 mm across, nose to the spool; his 6 mm spacer A plus 4 mm shim, less 2.5 mm for the shorter-hub finger; 2.5 mm from the coupler's end at z 30 in the model). The nose bears on the spool's face close to the rod (hole 7.0, so a ring r 3.7 to 4.0, inside the bearing's 10 mm and backed by it through the 2.25 mm shoulder), the smallest rubbing radius in the stack while the spool freewheels. 606ZZ side: spacer B bears on the bearing's far end (z 46.64) through the cap's hole, so spacer B and its shims fill 53.36 mm: keep the C.3 stack as it is (53.0), no shim out, which leaves 0.36 mm of play, under the 0.5 allowed. If the 2026-10-04 stopgap is fitted (the old `spool_shield` disc on the far side plus a 2 mm shift shim), both come out. Check edge-on that the teeth sit across the finger.
 
-Checked in the model (`python cad/generate.py`, 2026-10-05): the cap's lugs drop into the windows and the cap sits on the body's far face with no overlap, the three screws pass its holes, the body is 100 percent full within 2 mm round each pilot, and the screw heads clear everything; the feed point lies on the barrel with 1.75 mm to spare each side; the finger clears the separator, barrel and cap with the spool slid 5 mm either way; the finger seats in a tooth gap (window 7.00 to 11.75 degrees); 2 mm swept clearance to the bracket, fairlead, servo and radar parts, all 0.0 overlap; spacer A's nose contact 7.8 mm2; a 10 mm filament stub across the line hole clears the body, the cap and the bearing, lying flat and tipped up to 9 degrees, and the cap closes the window's far end so the stub cannot leave it; the body prints ratchet face down with 0.00 mm2 steeper than 45 degrees. Not printed, not fitted, not benched.
+Checked in the model (`python cad/generate.py`, 2026-10-05): the cap's lugs drop into the windows and the cap sits on the body's far face with no overlap, the three screws pass its holes, the body is 100 percent full within 2 mm round each pilot, and the screw heads clear everything; the feed point lies on the barrel with 1.75 mm to spare each side; the finger clears the separator, barrel and cap with the spool slid 5 mm either way; the finger seats in a tooth gap (window 7.00 to 11.75 degrees); 2 mm swept clearance to the bracket, fairlead, servo and radar parts, all 0.0 overlap; spacer A's nose contact 7.8 mm2; a 10 mm filament stub across the line hole clears the body, the cap and the bearing, lying flat and tipped up to 9 degrees, and the cap closes the window's far end so the stub cannot leave it; the body prints ratchet face down with 0.00 mm2 steeper than 45 degrees.
 
 Why the cap and not something else: a wrap leaves a spool by climbing its wall. The firmware already stops the other causes: the one-way bearing caps the spool at the motor's speed (no over-run), the drop stops gently at 0.6 g so the spider stays hanging (`DEF_DROP_DEC 60000`), and it hangs 1.5 s before the rewind (`DEF_SETTLE_MS 1500`). What was left was a springy line laid loose at about 0.13 N and a short ramp of a wall; the cap and the thread below answer those two.
 
@@ -84,7 +84,7 @@ Held, not built (owner 2026-10-04), the next levers if the bench still shows wra
 
 ## Line and hard stop
 
-From the spool outward: **bonded nylon upholstery thread, size 69 (Tex 70), black** (0.29 mm, 11 lb, about 22 percent stretch, WAWAK's spec: https://www.wawak.com/Thread/Thread-By-Use/Upholstery-Heavy-Duty/nylon-bonded-thread-69-tex-70-6000-yds/; owner 2026-10-04), anchored inside the barrel with a filament stub and a drop of CA (doc 05 step 4); no elastic, no braid (owner's call 2026-09-26). Then through the fairlead (3.2 mm throat; inverted install, the base hole, the block's bore and the optional PTFE tube) and the flap's slot, then the **8 mm hard plastic bead** (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
+From the spool outward: **bonded nylon upholstery thread, size 69 (Tex 70), black** (0.29 mm, 11 lb, about 22 percent stretch, WAWAK's spec: https://www.wawak.com/Thread/Thread-By-Use/Upholstery-Heavy-Duty/nylon-bonded-thread-69-tex-70-6000-yds/; owner 2026-10-04), anchored inside the barrel with a filament stub and a drop of CA (doc 05 step 4); no elastic, no braid (owner's call 2026-09-26). Then through the fairlead (3.2 mm throat; inverted install, the base hole, the block's bore and the optional PTFE tube) and the flap's slot, then the **stopper**, an 8 mm hard plastic bead (lifts the flap at home; too big to pass the slot), then a small barrel swivel (stops the spider spinning the line into twists), then the spider.
 
 Why this thread: it is limp, with no coil memory, so it lies flat on the barrel whether slack or taut. The 3 lb nylon monofilament it replaces had coil memory and sprang loose wraps off the barrel. It is still nylon, so it stretches, and that stretch is the shock absorber. Polyester thread is the fallback for a prop left outdoors for months (about half the stretch). Braid and fluorocarbon stretch little and need the 150 mm elastic snubber back at the barrel; cotton, no. The spider is brought to about 30 g (weight added inside the 13 g spider, owner 2026-10-04) so the wraps lie at about twice the tension; keep it under 60 g until the bench says more.
 
@@ -94,9 +94,9 @@ The thread is no longer a fuse: at 11 lb it breaks near 49 N, where the old 2 to
 
 Rev C.1 note: the motor now stops the spider short of the knot on every normal drop, so this slam only happens if the motor loses its grip mid-drop. The line's own stretch is the backstop.
 
-The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line (braid), a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. With the thread (breaks near 49 N, stretch to break taken as 22 percent) and the 30 g spider falling the full 0.7 m (estimate, not measured): peak near 11 N, about 4x under its break, and the spider bounces. At 60 g, near 16 N (3x). The stiffer thread passes more of the pull to the device than the old mono did (3 lb mono with the 13 g spider peaked near 4.1 N). In normal running the hardest pull is the motor winding the bead against the stop, about 2.5 N (7 N cm on the 25 mm barrel). **Never swap in braid or fluorocarbon (both stretch little) without putting a 150 mm elastic snubber back at the barrel.**
+The spool is free, so nothing stops the spider until the line runs out. At that moment the knot swings to the bottom of the barrel and the pull goes straight into the rod. Without give in the line (braid), a 100 g spider falling 0.7 m produces a shock of order 100 N or more, enough to snap the knot, the PLA, or the ceiling anchors. With the thread (breaks near 49 N, stretch to break taken as 22 percent) and the 30 g spider falling the full 0.7 m (estimate, not measured): peak near 11 N, about 4x under its break, and the spider bounces. At 60 g, near 16 N (3x). The stiffer thread passes more of the pull to the device than the old mono did (3 lb mono with the 13 g spider peaked near 4.1 N). In normal running the hardest pull is the motor winding the stopper against the stop, about 2.5 N (7 N cm on the 25 mm barrel). **Never swap in braid or fluorocarbon (both stretch little) without putting a 150 mm elastic snubber back at the barrel.**
 
-The same swing means the knot can end up to half a turn either side of the bottom, which is why the rewind overshoots by 0.75 turn and relies on the bead stop.
+The same swing means the knot can end up to half a turn either side of the bottom, which is why the rewind overshoots by 0.75 turn and relies on the stopper.
 
 ## Materials and print settings
 
@@ -141,6 +141,6 @@ PLA for everything. Print the finger in PETG if any is loaded. 5 top and bottom 
 
 ## Limits of this revision
 
-- Ceiling mount only. Wall mount changes where the line exits and the fairlead does not fit.
+- Ceiling mount, or turned over on the beam (doc 06). A wall mount would change where the line exits; the fairlead does not fit one.
 - Spider: soft foam, nothing hard or pointed. The owner's weighs about 13 g, brought to about 30 g with added weight (owner 2026-10-04). Keep it under 60 g until the bench says more (the motor must also stop it at the end of the drop, Rev C.1).
 - Drop length set by line length, about 0.5 to 1.2 m.
