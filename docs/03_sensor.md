@@ -39,7 +39,7 @@ These live in the sensor, not the board, so the Radar card has Set and Read butt
 | Detect range | `radar range` | closest and farthest, cm. Set the closest past the hanging spider if it ever reads it. Takes effect after the restart the command does |
 | Range step | `radar res` | 80 cm steps to 11.6 m, or 20 cm steps to 4.9 m. 20 for a porch walk; 80 if the walk starts beyond 4.9 m |
 | Sensitivity | `radar sens` | motion and presence, low, mid or high. Lower motion if a pet or the swinging spider fires it; lower presence if furniture holds the doorway busy |
-| Keep a person for | `radar delay` | ships at 15 s, which held the doorway busy; 2 s on the bench |
+| Keep a person for | `radar delay` | 15 s from the factory, which held the doorway busy; 2 s on the bench |
 | Learn the empty room | `radar calib` | the page's button: waits, then listens with nobody in view and sets its own thresholds. Do it once at each mount |
 
 Porch numbers to start from, doc 06: range step 80 cm if the walk starts beyond 4.9 m, detect range to about 600, clearcm 300, firecm from a porch walk, then learn the empty room again.

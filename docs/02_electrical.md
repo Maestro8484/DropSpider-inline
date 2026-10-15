@@ -27,10 +27,10 @@ D27, D26, D25 sit side by side on the ESP32 header in the same order as the expa
 ## Driver: BIGTREETECH TMC2209 V1.3 on the A4988/DRV8825 expansion board
 
 - Plug the driver in with its **EN** pin on the expansion board's **EN** position. Backwards destroys it on power-up.
-- DIP switches 1, 2, 3 all **OFF**. On a TMC2209 that is 1/8 microstep (each STEP pulse moves 1/8 of a full step) and leaves the UART pin (the driver's serial setup line, unused here) alone. The board's switch numbers run backwards from the module's pins (owner's photo 2026-10-07): switch 1 sits under the module's RX pin (the A4988 MS3 position), switch 2 under MS2, switch 3 under MS1. Switch 1 ON ties RX to 5 V, which turns off the driver's standstill current cut (the runaway audit's fix 3). Switch 3 ON changes the microstep count and must stay OFF.
+- DIP switches 1, 2, 3 all **OFF**. On a TMC2209 that is 1/8 microstep (each STEP pulse moves 1/8 of a full step) and leaves the UART pin (the driver's serial setup line, unused here) alone. The board's switch numbers run backwards from the module's pins: switch 1 sits under the module's RX pin (the A4988 MS3 position), switch 2 under MS2, switch 3 under MS1. Switch 1 ON ties RX to 5 V, which turns off the driver's standstill current cut (the runaway audit's fix 3). Switch 3 ON changes the microstep count and must stay OFF.
 - Current: turn the driver's pot until the voltage from the pot's metal top to GND reads **0.85 V** (= 0.6 A, 90 percent of the motor's 0.67 A). Do this with 12 V on and the **motor unplugged**. Factory default is about 1.2 V, too high for this motor.
 - STEP/DIR/EN only. UART is not wired; the expansion board does not bring that pin out.
-- The expansion board's DIR, STEP and EN columns each have three pins, S, V, G. The ESP32 wire goes on **S** (signal). One wire from an ESP32 GND to any **G** (the G pins are all joined). **One wire from the ESP32's 3V3 pin to any V** (the V pins are the driver's logic supply input; corrected 2026-10-07, see below). Until that day the build left every V empty, and the driver's logic ran on leakage through its own signal pins.
+- The expansion board's DIR, STEP and EN columns each have three pins, S, V, G. The ESP32 wire goes on **S** (signal). One wire from an ESP32 GND to any **G** (the G pins are all joined). **One wire from the ESP32's 3V3 pin to any V** (the V pins are the driver's logic supply input; corrected 2026-10-07, see below). Until that day my wiring left every V empty, and the driver's logic ran on leakage through its own signal pins.
 
 ## Power
 
@@ -80,4 +80,4 @@ By design the switch reads **open** at rest after the lock seat (doc 09, V14): t
 
 **OUT pin only (`sensor 2410`):** any sensor with an active-high output on GPIO33: the C4002's OUT, an LD2410C, a PIR, a step mat. 3.3 V or 5 V output both read; the pin has the firmware's pull-down.
 
-**LD2450 (parked 2026-10-07):** 5 V, GND, TX to GPIO16, RX to GPIO17; red 5 V, black GND, yellow TX, green RX on the owner's cable. Three modules answered every command and never reported a target. The current firmware no longer speaks its protocol.
+**LD2450 (parked 2026-10-07):** 5 V, GND, TX to GPIO16, RX to GPIO17; red 5 V, black GND, yellow TX, green RX on my cable. Three modules answered every command and never reported a target. The current firmware no longer speaks its protocol.

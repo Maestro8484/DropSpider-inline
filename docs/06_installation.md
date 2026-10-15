@@ -4,7 +4,7 @@
 
 ## Where it goes
 
-Porch measured by the owner 2026-09-26: ceiling 8 ft, front beam hangs 10 in below it, device 12 in behind the beam.
+My porch, measured: ceiling 8 ft, front beam hangs 10 in below it, device 12 in behind the beam.
 
 - **On the porch ceiling, behind the front beam.** People walk in from outside, under the beam.
 - Spider line (the fairlead) **305 mm (12 in) behind the beam's back face**, centred on the walkway.
@@ -37,9 +37,9 @@ For the table above with a 100 mm spider: 2355 - 1680 + 45 = 720 mm. Tie it at 7
 
 ![Inverted install](img/inverted_install.png)
 
-The owner's plan, approved 2026-09-27: the device turned upside down, its flat base at the bottom, sitting on two steel corner braces screwed to the beam's inside face. The line leaves through a hole in the base. Every load (the device's weight, the line's pull) presses the printed parts down into the base and the base onto steel, instead of hanging the PLA from screws. CAD-checked; built and running on the bench, hung over the inside of the front door since 2026-10-10 (about 190 drops); the porch and its braces are still ahead (open item V18). Source `cad/inverted.py`; run it for the report.
+My plan: the device turned upside down, its flat base at the bottom, sitting on two steel corner braces screwed to the beam's inside face. The line leaves through a hole in the base. Every load (the device's weight, the line's pull) presses the printed parts down into the base and the base onto steel, instead of hanging the PLA from screws. CAD-checked; built and running on the bench, hung over the inside of the front door since 2026-10-10 (about 190 drops); the porch and its braces are still ahead (open item V18). Source `cad/inverted.py`; run it for the report.
 
-**Turned end for end in the owner's build (photo 2026-10-01):** the **servo end** of the base sits at the beam, the pad (electronics) end away from it. The radar moves to the pad end so it still looks toward the beam. Everything below is for that build.
+**Turned end for end on my build:** the **servo end** of the base sits at the beam, the pad (electronics) end away from it. The radar moves to the pad end so it still looks toward the beam. Everything below is for that build.
 
 **What changes on the device.** Nothing in the mechanism or the firmware: same spool, clutch, ratchet, finger, servo, same winding sense, same `dir`. The line simply leaves the barrel on the servo side instead of the pad side (doc 01, direction rule 1).
 
@@ -49,7 +49,7 @@ The owner's plan, approved 2026-09-27: the device turned upside down, its flat b
 | `fairlead_base.stl` (new, 18 cm3) | The fairlead, hard stop, rest stop and switch plate of doc 09 as one block under the base, at the line hole. Same flap (`fairlead_flap.stl`), same KW12-3, same hinge bolt. 2x M3 x 12 from inside the base (heads on the device side) into the block's 2.5 mm pilots. Replaces `fairlead_body.stl` for this install |
 | Radar | Stays on the device, no glue: `c4002_case_short_mount.stl` (the fork with a longer plate and two holes; same ears, so the same cradle and radar) bolted under the base at the pad end with 2x M3 x 10, nuts inside, looking along the device toward the beam (where people come from) and down at 50 degrees. The nuts sit 8 mm from the base's end, under the board's edge: keep that strip clear or lift the board on 4 mm foam tape |
 | Controller board | On the pad, the base's device side, now the end away from the beam, facing up. Room checked: a 52 x 75 x 30 mm box there clears every part |
-| Braces | **The owner's:** two steel corner braces, 6 in legs. The flat leg under the base, the other leg standing up the beam's face beside the device's servo end. He places them and drills the base for their bolts himself. **Where a bolt can go**, checked in the model: the base only runs full width between x -24 and x 75, so at its two ends (z 0 to 18 and z 93 to 110) there is no pad and the flat legs carry the base from the servo end (x 75) to x -24; past that they run on under nothing to their tips at x -73. A bolt through the base is clear of everything inside between **x 24 and x 55** at either end, and at the motor end also between x -12 and x 12. Never between x -20 and x 20 at the 606ZZ end: the bearing plate stands there. The pad's own holes at x -80 and x -56 are not over the braces. Drawn in the model at z 8 and z 106, clear of the fairlead block; nearer the middle they hit it |
+| Braces | **Mine:** two steel corner braces, 6 in legs. The flat leg under the base, the other leg standing up the beam's face beside the device's servo end. I place them and drill the base for their bolts myself. **Where a bolt can go**, checked in the model: the base only runs full width between x -24 and x 75, so at its two ends (z 0 to 18 and z 93 to 110) there is no pad and the flat legs carry the base from the servo end (x 75) to x -24; past that they run on under nothing to their tips at x -73. A bolt through the base is clear of everything inside between **x 24 and x 55** at either end, and at the motor end also between x -12 and x 12. Never between x -20 and x 20 at the 606ZZ end: the bearing plate stands there. The pad's own holes at x -80 and x -56 are not over the braces. Drawn in the model at z 8 and z 106, clear of the fairlead block; nearer the middle they hit it |
 
 **Heights**, from the model, with 6 in braces standing up the beam with their tops about 8 mm under the ceiling:
 
@@ -58,7 +58,7 @@ The owner's plan, approved 2026-09-27: the device turned upside down, its flat b
 | Base (the device's bottom face) | 160 mm |
 | Bead at home, against the flap | about 196 mm (fairlead v2, 2026-09-28; v1 179) |
 | Spider retracted, bottom | 196 + 30 (bead and swivel) + spider height. Hidden behind the 254 mm beam only for a spider up to about 28 mm tall |
-| Line | falls 54 mm from the beam's face (ceiling install: 305 mm). A spider wider than about 10 cm brushes the beam; the owner's is about 8 cm, so about 14 mm to spare while it hangs still (owner kept this layout 2026-10-01) |
+| Line | falls 54 mm from the beam's face (ceiling install: 305 mm). A spider wider than about 10 cm brushes the beam; mine is about 8 cm, so about 14 mm to spare while it hangs still (I kept this layout) |
 
 Line length (barrel knot to bead) = (ceiling - 196) - (target rest height + spider height + 30) + 72. The 72 mm is line from the spool to the flap in this layout (fairlead v2, doc 09). Tie it, enter `line`, then shorten on site, as for the ceiling install.
 
@@ -66,7 +66,7 @@ Line length (barrel knot to bead) = (ceiling - 196) - (target rest height + spid
 
 **Wires.** The switch and the radar now sit under the base and the board on top of it. Run both leads round the base's pad end (the servo end is against the beam) and back to the board: about 15 cm for the switch, about 10 cm for the radar (BOM N10 covers it). Tie them to the base so the spinning spool cannot catch them.
 
-**Order.** Bench: drill the five holes, screw the fairlead block on (doc 09, inverted install), bolt the radar fork under the pad end, board on the pad, leads round the pad end, line threaded down through the base hole. Ladder: braces to the beam, device onto their flat legs, bolted through the owner's holes. Then `07_commissioning.md` as usual.
+**Order.** Bench: drill the five holes, screw the fairlead block on (doc 09, inverted install), bolt the radar fork under the pad end, board on the pad, leads round the pad end, line threaded down through the base hole. Ladder: braces to the beam, device onto their flat legs, bolted through my holes. Then `07_commissioning.md` as usual.
 
 Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf. Their code and STLs are in `cad/retired/`, their handoff and picture in `docs/retired/`. Do not print them.
 
@@ -83,7 +83,7 @@ Retired 2026-09-28: the earlier hinge-and-strut wall draft and the braced shelf.
 
 ## Safety
 
-- Soft foam spider only (the owner's is about 13 g, brought to about 30 g with added weight): under 60 g until the bench says more, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
+- Soft foam spider only (mine is about 13 g, brought to about 30 g with added weight): under 60 g until the bench says more, no hard eyes or wire legs at face height. Legs wider than about 50 mm may touch the limit switch at the top; trim or angle them down.
 - Keep the drop clear of stairs, and of the swing of the door itself.
 - Bonded nylon thread, size 69 (doc 01), or polyester thread; braid or fluorocarbon only with the elastic snubber back. Check the knots, the bead, the flap, and the line for nicks before each night.
 - `disarm` (or unplug) when small children are expected to run through.

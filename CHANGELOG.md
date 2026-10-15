@@ -5,6 +5,7 @@ Finished work, newest first, one plain line each. Shape from Keep a Changelog (k
 ## 2026-10-14
 
 ### Changed
+- Reference docs 01 to 09 and `cad/README.md` now read in my own voice: "the owner", "his" and the dated owner tags are gone and the facts stand on their own, first person wherever I measured, printed, wired or ruled something, 117 passages across 10 files. Every number, part name, direction rule and date that names a print or a bench event is unchanged. `python tools/check_repo.py` ALL PASS.
 - Docs sweep after the publish pass: doc 03 rewritten for the C4002 as it is (why it, where it sits, the trigger rule, its own settings, the parked LD2450 and C4001 at the bottom for the record); doc 06's sensor section and the inverted install's status (built, on the bench over the front door, the porch ahead); doc 01's Rev C.4 status (printed and benched, no longer "model only"); the disc on the line is "the stopper" in docs 01, 02, 04, 05, 07 and 09 (owner's word); doc 05 names the swivel mount; the wiring page's LED row and mount line; "repo" and "commit" out of the reference docs. README has a marked slot for the photos and video the owner will provide (roadmap line 8b).
 
 ### Added

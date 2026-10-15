@@ -17,7 +17,7 @@ Standard PlatformIO layout at the top of the project folder. Board in use: 30-pi
 | `src/web.cpp` | WiFi, the web page, network firmware updates |
 | `src/settings.cpp` | tunables saved in flash |
 
-Libraries, both pinned in `platformio.ini`, both downloaded by PlatformIO on the first build:
+Libraries, both pinned in `platformio.ini`, both downloaded by PlatformIO the first time it compiles:
 
 | Library | Why this one |
 |---|---|
@@ -42,16 +42,16 @@ Every network update switches the motor and servo off first. After any update th
 
 ### Firmware version
 
-Every build carries a version read from git at build time (`tools/fw_version.py`, run by the `build_flags` line in `platformio.ini`). The board shows it in the boot log, in the first `status` line, as `fw` in `/api/status` and on the page's Status card. Reading it off the board is the only way to know what is loaded; the bench log's "flash N" count was kept by hand until flash 11.
+Every firmware the PC compiles carries a version read from git at that moment (`tools/fw_version.py`, run by the `build_flags` line in `platformio.ini`). The board shows it in the boot log, in the first `status` line, as `fw` in `/api/status` and on the page's Status card. Reading it off the board is the only way to know what is loaded; the bench log's "flash N" count was kept by hand until flash 11.
 
 | Reads | Means |
 |---|---|
-| `fw-11` | exactly the change tagged `fw-11`: the eleventh build that reached the board |
-| `fw-10+3.f6a9849` | three changes past `fw-10`, at change f6a9849, nothing unsaved in git. Not yet flashed as a numbered build |
+| `fw-11` | exactly the change tagged `fw-11`: the eleventh firmware that reached the board |
+| `fw-10+3.f6a9849` | three changes past `fw-10`, at change f6a9849, nothing unsaved in git. Not yet flashed under a number |
 | `fw-10+3.f6a9849*` | the star: firmware files had edits not yet saved in git when it was built, so nothing in git reproduces it |
 | `unknown` | built without git (a zip download, not a clone) |
 
-The scheme: every build that goes onto the board gets a git tag `fw-N` on its change, N continuing the bench log's flash count (`fw-9` is flash 9 at fdc47de, `fw-10` flash 10 at 7e61580). Tag first, then build and flash, so the board reports the clean name. After a WiFi update `scripts\update_firmware.bat` asks the board what it runs (`tools/board_version.py`) and says MATCH or DIFFERENT against this checkout. `python tools/fw_version.py --show` prints what the next build would be stamped.
+The scheme: every firmware that goes onto the board gets a git tag `fw-N` on its change, N continuing the bench log's flash count (`fw-9` is flash 9 at fdc47de, `fw-10` flash 10 at 7e61580). Tag first, then build and flash, so the board reports the clean name. After a WiFi update `scripts\update_firmware.bat` asks the board what it runs (`tools/board_version.py`) and says MATCH or DIFFERENT against this checkout. `python tools/fw_version.py --show` prints what the next firmware would be stamped.
 
 ## Network
 
@@ -64,7 +64,7 @@ The scheme: every build that goes onto the board gets a git tag `fw-N` on its ch
 
 The web page is the console on your phone or PC. Every button sends a console command, and the page's Console card shows everything the board prints, so the page and the USB console always agree.
 
-Since 2026-10-14 (owner's audit rulings) the page also answers where you pressed: the command's reply, and the log lines that follow it for 8 s, show in a strip under the button row or the setting you changed (a refusal stays 10 s, in red). A bar pinned to the bottom of the screen always shows the state and the newest log line. Every card except Status folds from its heading, and the browser remembers which are open; Status, Last cycles and Run start open, the rest folded. A setting changed on the page gets an amber edge, and a Save bar appears at the top of the page until Save settings is pressed (unsaved values are lost at a power cut); a dot before a setting's name means it differs from the factory value. The sensor's own knobs on the Radar card live in the sensor, so they get neither.
+The page also answers where you pressed: the command's reply, and the log lines that follow it for 8 s, show in a strip under the button row or the setting you changed (a refusal stays 10 s, in red). A bar pinned to the bottom of the screen always shows the state and the newest log line. Every card except Status folds from its heading, and the browser remembers which are open; Status, Last cycles and Run start open, the rest folded. A setting changed on the page gets an amber edge, and a Save bar appears at the top of the page until Save settings is pressed (unsaved values are lost at a power cut); a dot before a setting's name means it differs from the factory value. The sensor's own knobs on the Radar card live in the sensor, so they get neither.
 
 | Card | What is on it |
 |---|---|
@@ -115,11 +115,11 @@ A 3-pin endstop at the eyelet, pressed by the stopper on the line when the spide
 
 - Off until you turn it on (`limit 1`), so an unwired or backwards switch cannot stop a rewind early. Check it reads right first: the page shows "reads pressed" or "reads open"; press the lever by hand and watch. If backwards: `liminv 1`.
 - When on, it is a hard cut-off: any motor move in the rewind direction stops within 2 ms of the switch closing, in every state. An interrupt latches the first closure of any length, so a flap shaken by a stalled motor still stops it (2026-10-06: two rewinds wound on against the top with the switch never seen).
-- Every motor move ends in a lock: finger in, the spool let down onto a tooth, motor off. After the switch stops a rewind or a jog, the finger goes in first, the driver is switched off and on again with the finger in (a dead stop in the driver's quiet mode can leave it in a state it cannot leave on its own, TMC2209 datasheet p42; the owner found the motor nearly free with the driver "on" after one, 2026-10-06), then the seat move is the 1/8 turn back-off (about 20 mm) so the stopper rests clear of the flap and the eyelet. A plain lock seats 1.2/12 turn. The spider never hangs on the motor alone: every time it did on 2026-10-06 it ran the whole line. If the switch cuts the release's unload short, the driver is reset there, at the top, before anything moves down. `rel` is the one move that leaves the finger out, held by the powered servo, for the jog that follows.
+- Every motor move ends in a lock: finger in, the spool let down onto a tooth, motor off. After the switch stops a rewind or a jog, the finger goes in first, the driver is switched off and on again with the finger in (a dead stop in the driver's quiet mode can leave it in a state it cannot leave on its own, TMC2209 datasheet p42; I found the motor nearly free with the driver "on" after one, 2026-10-06), then the seat move is the 1/8 turn back-off (about 20 mm) so the stopper rests clear of the flap and the eyelet. A plain lock seats 1.2/12 turn. The spider never hangs on the motor alone: every time it did on 2026-10-06 it ran the whole line. If the switch cuts the release's unload short, the driver is reset there, at the top, before anything moves down. `rel` is the one move that leaves the finger out, held by the powered servo, for the jog that follows.
 - Switching the driver on from off: enable, one microstep up and back, then 200 ms still. The driver's standstill tuning needs the run current, and with the standstill current cut on (the expansion board's DIP 3 off) only a step pulse brings it back; the settle alone tuned at half current. A second rewind or up-jog straight after is refused: the stopper flicks the flap as it passes, so from the top the switch is never seen. That includes the 1/12 turn unload at the release; if the switch cuts it short, the log says `unload cut short by the limit switch`.
 - Faults it catches, each a strike (three in a row and it stops arming until `clear` or a BOOT press):
   - trips in under a quarter of the expected rewind: line snagged or broke;
-  - full rewind runs and it never trips: the stopper missed it, or it is unplugged. The spider is then pulled hard against the top, so this one does not wait for three: the motor backs down 1/8 turn, locks, and stops on the fault. Send `clear` when it is fixed. The motor never loses power before the finger is holding (owner 2026-10-06). Same for a switch still pressed after a drop;
+  - full rewind runs and it never trips: the stopper missed it, or it is unplugged. The spider is then pulled hard against the top, so this one does not wait for three: the motor backs down 1/8 turn, locks, and stops on the fault. Send `clear` when it is fixed. The motor never loses power before the finger is holding. Same for a switch still pressed after a drop;
   - still pressed right after a drop: wiring or `liminv` wrong. That rewind then runs on the step count alone.
 - Each cycle's rewind that ends on the switch reports how far the spider dropped, to check against `dropmm`.
 - Lost steps on the stop: if that rewind runs more than 20 mm past the drop (allowing one unload for the seat), the log says `lost steps?`. It means the spool got ahead of the motor at the stop and the line's stretch caught the spider. Not a fault on its own; lower `dropdec` or `droprpm` if it repeats.
@@ -141,13 +141,13 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | Command | Does |
 |---|---|
 | `help`, `status` | list commands; show state, settings, sensor, limit switch, rewind steps |
-| `arm`, `disarm` | let the radar fire it, or ignore the radar (the page calls not armed "asleep"). Every power-up arms on its own and armed is never saved (owner 2026-10-13); `disarm` holds until `arm`, 5 presses of the limit switch, or the next power cycle |
+| `arm`, `disarm` | let the radar fire it, or ignore the radar (the page calls not armed "asleep"). Every power-up arms on its own and armed is never saved; `disarm` holds until `arm`, 5 presses of the limit switch, or the next power cycle |
 | `drop` | full cycle now (works when disarmed): unload and release, powered drop, settle, rewind, lock |
 | `rel` | unload and release only (steps 1 to 3 of the drop): the motor winds up 1/12 turn while the finger swings out, then stays on holding the spider. `jog` lowers it; `off` lets it slide down on the motor's drag |
 | `rewind` | rewind only, then locks (finger in, seated, motor off); stops at the limit switch |
-| `teach` | the spider hanging where a drop should stop: finger out, wind up to the limit switch counting the steps, lock, and save that length as `dropmm` (and `line` grows if the drop would not fit). Page button Set drop length here. Refused when the spider is already at the top. Armed is put back as it was (owner 2026-10-12) |
-| `rehome` | bring it home from anywhere: finger out, lower 1/2 turn (so the stopper is surely below the flap), wind at 80 rpm up to the whole line length, lock; on the switch the fault is cleared and armed is put back. Same as the limit switch pressed 3 times at rest (see the next row), and the page button Bring it home. The drop distance is not changed (owner 2026-10-13) |
-| (switch presses) | the limit switch pressed by hand while nothing moves, all presses within 4 s of the first, judged 1.2 s after the last: 3 or 4 presses = bring it home; 5 or more = sleep (not armed, the radar ignored) or, if already asleep, wake and arm (owner 2026-10-14: "sleep mode by pressing the limit switch 5 times within 4 seconds"). Sleep is the same as `disarm`: it holds until 5 presses again, Arm on the page, `arm`, or a power cycle, since every power-up arms. The page's chip reads "not armed (asleep)" |
+| `teach` | the spider hanging where a drop should stop: finger out, wind up to the limit switch counting the steps, lock, and save that length as `dropmm` (and `line` grows if the drop would not fit). Page button Set drop length here. Refused when the spider is already at the top. Armed is put back as it was |
+| `rehome` | bring it home from anywhere: finger out, lower 1/2 turn (so the stopper is surely below the flap), wind at 80 rpm up to the whole line length, lock; on the switch the fault is cleared and armed is put back. Same as the limit switch pressed 3 times at rest (see the next row), and the page button Bring it home. The drop distance isn't changed |
+| (switch presses) | the limit switch pressed by hand while nothing moves, all presses within 4 s of the first, judged 1.2 s after the last: 3 or 4 presses = bring it home; 5 or more = sleep (not armed, the radar ignored) or, if already asleep, wake and arm. Sleep is the same as `disarm`: it holds until 5 presses again, Arm on the page, `arm`, or a power cycle, since every power-up arms. The page's chip reads "not armed (asleep)" |
 | `lastlog` | the 40 log lines up to the last fault, kept in flash through a power cut (page: Last fault log). Saved at every fault |
 | (rule) | every rewind after a drop runs at `rpm` most of the way and at 80 rpm for its last 2 1/4 turns, the way a CNC machine homes (fast seek, slow feed onto the switch). A rewind that runs its count without the switch closing lowers 1/2 turn, waits 1 s for the swing, and winds once more, 2 1/2 turns at 80 rpm, before it calls a fault (2026-10-13) |
 | (rule) | no drop starts unless the spider is home: switch pressed, or locked after a rewind the switch stopped. A power-up with the spider down stops on a fault (LED fast blink) instead of arming (2026-10-12) |
@@ -167,9 +167,9 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `sensor <4002/2410>` | 4002 (default): the C4002 over serial fires the drop, its OUT pin on GPIO33 takes over if the serial link is silent for 1 s. 2410: the OUT pin only (any active-high sensor: LD2410C, PIR, step mat) |
 | `approach <cm/s>` | the moving person must be coming closer at least this fast, 10 to 150, default 30 |
 | `leadms <ms>` | fire when the person's distance divided by speed is under this, 200 to 2000, default 750 |
-| `firecm <cm>` | fire when someone approaching at `approach` or faster is within this straight-line distance from the sensor, 0 to 1100, default 120; 0 = off. The owner's rule (2026-10-10, "less timed and more proximity-based"): on a 2 m overhead mount the lead-time rule could not fire at a slow pace. The page's card says where the person is when the spider lands at the current number |
+| `firecm <cm>` | fire when someone approaching at `approach` or faster is within this straight-line distance from the sensor, 0 to 1100, default 120; 0 = off. My rule, less timed and more proximity-based: on a 2 m overhead mount the lead-time rule couldn't fire at a slow pace. The page's card says where the person is when the spider lands at the current number |
 | `clearcm <cm>` | the doorway counts as clear, and the device re-arms, when nobody moving reads closer than this for 2 s, 50 to 1100, default 300. Was fixed at 300 until the office bench, where a screen at 2.2 m held it. Since 2026-10-11 a still reading never holds it: it cannot fire the rule, and on the bench one at 25 to 70 cm held the device 44 s |
-| `clearms <ms>` | re-arm anyway after waiting this long for the doorway to clear, 0 to 600000, default 30000; 0 = wait for clear. Safe because the rule still wants a fresh approach to fire (owner 2026-10-11: "a better self-resetting clear fault function") |
+| `clearms <ms>` | re-arm anyway after waiting this long for the doorway to clear, 0 to 600000, default 30000; 0 = wait for clear. Safe because the rule still wants a fresh approach to fire; a clear that resets itself |
 | `radarinv <0/1>` | 1 = the radar's direction word reads backwards on this mount: approaching and away are swapped before the rule. Bench 2026-10-10: the word is right as built (2 = approaching), so this stays 0; it is there for a mount that reads otherwise |
 | `rpm <n>` | rewind speed, 30 to 600, default 240 |
 | `dir <0/1>` | flip rewind direction |
@@ -181,8 +181,8 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `radar version` | ask the sensor its software and hardware version |
 | `radar range [closest farthest]` | read the sensor's own detect range, or set it, in cm, 0 to 1100, then restart the sensor so it takes (bench 2026-10-10: without the restart the old range stays). Kept in the sensor, rounded to its range step. Set the closest value past the hanging spider if it ever reads it (at rest it did not, 2026-10-10). Refused while a move is running |
 | `radar res [80/20]` | the sensor's range step (DFRobot "resolution mode"): 80 cm steps to 11.6 m, or 20 cm steps to 4.9 m. 20 lets a close cut-off land where it is set. Kept in the sensor |
-| `radar sens motion\|presence [low/mid/high]` | the sensor's own sensitivity for the moving reading and the still reading (DFRobot threshold groups). Lower motion if a pet or the swinging spider fires it, lower presence if furniture or a screen holds the doorway busy. Kept in the sensor; ships mid and mid |
-| `radar delay [s]` | how long the sensor keeps reporting a person after it last saw one (DFRobot "target disappear delay"). Ships at 15 s, which held the doorway busy; set to 2 on the bench. Kept in the sensor |
+| `radar sens motion\|presence [low/mid/high]` | the sensor's own sensitivity for the moving reading and the still reading (DFRobot threshold groups). Lower motion if a pet or the swinging spider fires it, lower presence if furniture or a screen holds the doorway busy. Kept in the sensor; mid and mid from the factory |
+| `radar delay [s]` | how long the sensor keeps reporting a person after it last saw one (DFRobot "target disappear delay"). 15 s from the factory, which held the doorway busy; set to 2 on the bench. Kept in the sensor |
 | `radar calib <delay s> <listen s>` | the sensor learns the empty room (DFRobot "environment calibration"): waits, then listens with nobody in view and sets its own per-step thresholds, which then show as sensitivity "custom". It counts down in the log every 5 s and on the page as a chip. The page's button does 10 s then 30 s |
 | `radar out [1/2/3]` | read or set what the OUT pin goes high on: 1 motion, 2 presence, 3 either. Kept in the sensor |
 | `radar reset` | the sensor's factory settings, then a restart; the firmware asks it to report again 1.5 s later. Refused while a move is running |
@@ -192,7 +192,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 | `save`, `defaults` | write settings to flash; reload factory values (not saved) |
 
 - Settings apply immediately; `save` keeps them through power loss. Bad values (out of range, not a whole number) are refused and nothing changes. `dir`, `rpm` and the drop settings are refused while the motor runs.
-- **The motor never turns with the finger in** (owner 2026-10-01). `jog` and `rewind` swing the finger out first, with the 1/12 turn unload, unless it is already out; a drop releases before it unwinds. The one exception is the lock's seat move, which lets the spool down onto the finger on purpose.
+- **The motor never turns with the finger in.** `jog` and `rewind` swing the finger out first, with the 1/12 turn unload, unless it is already out; a drop releases before it unwinds. The one exception is the lock's seat move, which lets the spool down onto the finger on purpose.
 - Any bench motion (`rel`, `lock`, `rewind`, `jog`, `servo`, `stop`, `off`) disarms the radar so nothing fires with hands in the frame. Send `arm` when done, or cut the power: every power-up arms.
 - Motion commands are refused while a cycle runs; `stop` and `off` always work.
 - Each motion command ends with a `[done] ...` or `refused: ...` line. `tools/console.py` waits for it.

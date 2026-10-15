@@ -1,6 +1,6 @@
 # 07 - Commissioning (bench first, then installed)
 
-Do every step on the bench, device base-down, spool hanging over the table edge so the line can drop about 0.7 m. Each step has a pass condition; do not go on until it passes. Record every result in `commissioning_log.md`.
+Do every step on the bench, device base-down, spool hanging over the table edge so the line can drop about 0.7 m. Each step has a pass condition; don't go on until it passes. Record every result in `commissioning_log.md`.
 
 Commands can be typed in three places, all equivalent: the web page's Console card (`http://dropspider.local`), the USB serial console at 115200, or `python tools/console.py COM13 <command>`. The web page's buttons send the same commands.
 

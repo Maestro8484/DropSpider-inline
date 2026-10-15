@@ -7,7 +7,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 ![Spider home](img/fairlead_home.png)
 ![Sub-assembly](img/fairlead_exploded.png)
 
-**Quantity: one fairlead body and one flap per build** (print a spare flap if you like).
+**Quantity: one fairlead body and one flap per device** (print a spare flap if you like).
 
 ## What it is
 
@@ -15,7 +15,7 @@ Source: `cad/fairlead.py`, pulled into `cad/generate.py`. Regenerate STLs and im
 |---|---|
 | `fairlead_body.stl` | Screws to the pad in the old line guide's spot (2x M3 countersunk from the ceiling side). Holds the fairlead, the hinge, the hard stop, the rest stop, and the switch plate |
 | Fairlead (in the body) | Smooth, flared bore the line runs through: 9 mm wide at the top (spool side), 3.2 mm at the narrowest, 6 mm at the bottom. No sharp edges for the line to saw on. Centered on the spool's line channel |
-| `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the stopper and swivel are tied. The prong on the switch side of the slot is 3.8 mm wide (was 1.2, too thin, owner 2026-09-27) |
+| `fairlead_flap.stl` | Hinged bumper below the fairlead. The line passes loosely through an open slot, so it can be slipped in after the stopper and swivel are tied. The prong on the switch side of the slot is 3.8 mm wide (was 1.2, too thin) |
 | KW12-3 roller switch | Screws to the switch plate. Its roller rests just under the flap's tail |
 | Hinge pin | M2 bolt, 16 to 20 mm: free in the flap, threads itself into the body |
 
@@ -45,16 +45,16 @@ One flap is needed; a second is a spare.
 3. Push the flap's knuckle into the gap below the fairlead and line up the holes. Drive an M2 bolt (16 to 20 mm) in from the flap's outer side: free through the flap (2.5 mm hole; drill it by hand if it drags), threading itself into the body. Stop before the head clamps the flap; it must swing down under its own weight.
 4. Flap level on its rest stop: slide the switch up in its slots until the roller just touches the flap tail, then back it off about 0.3 mm (a piece of paper's thickness). Tighten.
 5. Check by hand: lift the flap's free end. Click at about 2 mm; flap stops flat against the fairlead a moment later. Let go: it drops back, switch opens.
-6. Screw the body to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue (owner 2026-09-26). The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
+6. Screw the body to the pad: 2x **M3 countersunk (flat-head) screws, 8 to 10 mm**, put in from the ceiling side down through the x = -32 pad holes, heads flush with the ceiling face, cutting their own thread into the fairlead's rail (2.5 mm pilots). No glue. The pad holes need a 90 degree countersink so the heads sit flush: new bracket prints have it; on an already printed bracket, twist an 8 mm drill bit by hand in each of the two holes from the ceiling side until a screw head sits flush or just below.
 7. Thread the line from the spool down through the fairlead, then slide it into the flap's slot from the free end. Bead, swivel, spider below as before.
 
 ## Inverted install: `fairlead_base.stl` and `fairlead_flap_inv.stl` (v2, 2026-09-28)
 
 ![Fairlead v2](img/inverted_fairlead.png)
 
-Owner's edits the same day: the line bore widened (4.0 mm throat, was 3.2; mouths 7 mm at the base and 9 mm at the flap, each flare 6 mm long); the switch plate solid with two self-tapping M2 holes instead of slots and nuts; the rest pad shortened 1.25 mm, so the flap hangs at 9.5 degrees at rest (was 1.75) and the roller sits about 3 mm clear of the tab until the bead lifts it.
+My edits the same day: the line bore widened (4.0 mm throat, was 3.2; mouths 7 mm at the base and 9 mm at the flap, each flare 6 mm long); the switch plate solid with two self-tapping M2 holes instead of slots and nuts; the rest pad shortened 1.25 mm, so the flap hangs at 9.5 degrees at rest (was 1.75) and the roller sits about 3 mm clear of the tab until the bead lifts it.
 
-Owner's redesign ask, 2026-09-28: the switch faces outward, its legs and wires point up toward the spool instead of hanging under the flap, and the flap is the lowest point. So the switch now sits above the flap on the block's outer side, legs up, and its roller rests on a tab added to the flap's free-end side. The bead lifts the free end; the tab lifts the roller. Source `fairlead_base()` and `flap_inv_local()` in `cad/inverted.py`. Stacking the switch above the flap takes about 30 mm under the base, so the flap hangs 32 mm under it (v1: 15 mm, with the switch hanging to 43).
+What I asked for in the redesign: the switch faces outward, its legs and wires point up toward the spool instead of hanging under the flap, and the flap is the lowest point. So the switch now sits above the flap on the block's outer side, legs up, and its roller rests on a tab added to the flap's free-end side. The bead lifts the free end; the tab lifts the roller. Source `fairlead_base()` and `flap_inv_local()` in `cad/inverted.py`. Stacking the switch above the flap takes about 30 mm under the base, so the flap hangs 32 mm under it (v1: 15 mm, with the switch hanging to 43).
 
 Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap watertight; mounting face one plane; clear of every part (braces, radar, board box); line path clear through the base hole, the bore and the flap slot; hard stop 14.75 degrees; roller pushed 4.03 mm past touching (needs 3.4, same as v1); lowest points below the base: flap 37.3 at rest, block 32.7, switch 30.5; switch legs end 4.1 mm under the base; 2 mm clear of the spool; screw heads clear. Not printed or fitted yet.
 
@@ -69,7 +69,7 @@ Checked in the model 2026-09-28 (`python cad/inverted.py`): block and flap water
 | Line | From the spool's servo side down through the base hole, the bore, then the flap's slot |
 | Check | Lift the flap's free end by hand: click at about 2 mm, stops flat against the block. Let go: it drops to its rest stop and the switch opens |
 
-**PTFE guide tube, optional (owner's idea 2026-10-04; `fairlead_base_ptfe.stl`).** Insurance, not the fix: the Rev C.4 spool cap is the fix (doc 01). Without the tube the line runs 36 mm free from the barrel to the 7 mm base hole. A 4 mm OD PTFE tube (the 3D printer kind, 2 mm bore) standing up through the base hole cuts that to 25 mm, into a 2 mm bore, and sets where the line lands, square on the barrel. Its tip sits 11 mm above the base's inner face and 25 mm below where the line leaves the barrel, 2 mm outside the cap's swept r 32: it cannot go closer, and a tube pushed in too far hits the spinning cap. Trial it first with no print (owner's ruling): the plain block's mouth is a 7 to 4 mm taper, so a tube pushed down through the base hole wedges in it, and the line's pull on the drop seats it deeper (doc 05 step 24a). Only if the wedged tube walks or wobbles, print `fairlead_base_ptfe.stl`: the same block with a straight bore drawn 4.3 (prints about 4.0 to 4.1, a snug push fit, 26 mm of grip), drawn without the lightening windows (owner 2026-10-05: print time beats material; 15.7 cm3 against 12.8), otherwise identical and printed the same way; the tube is cut 41 mm and sits flush with the block's underside (the flap's hard stop face). The tube's path is drawn in `img/ptfe_tube_path.png`. The plain block's throat is drawn 4.0 and prints about 3.7 to 3.8, so it does not take the tube. Checked in the model (`python cad/inverted.py`, 2026-10-04): the tube clears the spool body and cap at every angle, the finger, the flap and the switch; the line path is clear through the tube and the ptfe block. Not printed, not fitted.
+**PTFE guide tube, optional (my idea; `fairlead_base_ptfe.stl`).** Insurance, not the fix: the Rev C.4 spool cap is the fix (doc 01). Without the tube the line runs 36 mm free from the barrel to the 7 mm base hole. A 4 mm OD PTFE tube (the 3D printer kind, 2 mm bore) standing up through the base hole cuts that to 25 mm, into a 2 mm bore, and sets where the line lands, square on the barrel. Its tip sits 11 mm above the base's inner face and 25 mm below where the line leaves the barrel, 2 mm outside the cap's swept r 32: it cannot go closer, and a tube pushed in too far hits the spinning cap. Trial it first with no print (my call): the plain block's mouth is a 7 to 4 mm taper, so a tube pushed down through the base hole wedges in it, and the line's pull on the drop seats it deeper (doc 05 step 24a). Only if the wedged tube walks or wobbles, print `fairlead_base_ptfe.stl`: the same block with a straight bore drawn 4.3 (prints about 4.0 to 4.1, a snug push fit, 26 mm of grip), drawn without the lightening windows (print time beats material; 15.7 cm3 against 12.8), otherwise identical and printed the same way; the tube is cut 41 mm and sits flush with the block's underside (the flap's hard stop face). The tube's path is drawn in `img/ptfe_tube_path.png`. The plain block's throat is drawn 4.0 and prints about 3.7 to 3.8, so it does not take the tube. Checked in the model (`python cad/inverted.py`, 2026-10-04): the tube clears the spool body and cap at every angle, the finger, the flap and the switch; the line path is clear through the tube and the ptfe block. Not printed, not fitted.
 
 Heights change with v2: the bead at home sits about 196 mm below the ceiling (v1: 179), so the retracted spider hides behind a 10 in beam only if it is 28 mm tall or less, and the line between the spool and the flap is about 72 mm (v1: 55). Line length = (ceiling - 196) - (rest height + spider height + 30) + 72.
 
@@ -85,6 +85,6 @@ Bare KW12-3, three legs: COM to GND, NO to GPIO32, NC unused. Firmware pull-up: 
 
 ## Unverified
 
-- The KW12-3's operating point is taken from the owner's datasheet (2.6 mm pre-travel, 0.8 mm overtravel, 0.7 N). The slotted holes cover about plus or minus 2.5 mm of error.
+- The KW12-3's operating point is taken from the datasheet I have (2.6 mm pre-travel, 0.8 mm overtravel, 0.7 N). The slotted holes cover about plus or minus 2.5 mm of error.
 - The M2 hinge bolt loosening over a season: a drop of threadlocker or CA on its thread in the body.
 - Line wear in the PLA fairlead. Swap for a new print if a groove appears.

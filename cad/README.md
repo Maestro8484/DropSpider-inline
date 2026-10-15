@@ -8,7 +8,7 @@ There is no CAD program. Every printed part is Python code. Run the code and it 
 
 ```powershell
 pip install trimesh manifold3d shapely numpy matplotlib      # once
-.\tools\regen_cad.ps1                                          # the FULL rebuild, owner only; a session exports one part (below)
+.\tools\regen_cad.ps1                                          # the FULL rebuild, mine to run; a session exports one part (below)
 ```
 
 `tools\regen_cad.ps1` runs three scripts in order:
@@ -35,7 +35,7 @@ Same code, same output: the pictures and STLs are rebuilt identically every time
 | `footprint_svg.py` | Laser-cutter SVG of the bracket's ceiling face with every hole, 1:1 mm, seen from below: writes `bracket_footprint.svg` in cad/, and `bracket_footprint_inverted.svg` with the three holes drilled for the inverted install |
 | `raster.py` | The renderer (hidden surfaces, shading, outlines) |
 | `stl/` | Print-ready output. Never edit these by hand |
-| `stl/*.3mf` | The owner's own Bambu Studio projects (plate layout, his print settings), kept beside the STLs for his use. A session never writes, regenerates or saves a .3mf into git; the deliverable of any CAD change is the STL |
+| `stl/*.3mf` | My own Bambu Studio projects (plate layout, my print settings), kept beside the STLs for my own use. A session never writes, regenerates or saves a .3mf into git; the deliverable of any CAD change is the STL |
 
 ## The coordinate frame (every doc uses it)
 
@@ -44,7 +44,7 @@ Units: millimeters.
 - **z = 0** is the outer face of the motor plate. **+z** runs along the rod toward the 606ZZ bearing plate.
 - **Rod axis** at x = 0, y = 40. Servo tower on **+x**. Electronics pad on **-x**.
 - **Line** leaves the spool at x = -25, z = 45 and runs straight down (+y) through the fairlead.
-- Every clockwise or counterclockwise is seen from behind the motor (owner 2026-09-28): looking from -z along the rod toward the 606ZZ end. Spider falling = counterclockwise, winding up = clockwise, the HF0612 locks when the rod turns clockwise.
+- Every clockwise or counterclockwise is seen from behind the motor: looking from -z along the rod toward the 606ZZ end. Spider falling = counterclockwise, winding up = clockwise, the HF0612 locks when the rod turns clockwise.
 - Inverted install (`inverted.py`): the same frame, so y = 0 is the base's outer face and +y points UP in the porch. The line leaves the spool at x = 25, z = 45 and runs through the base (-y). Its pictures use `view_inv()` so the floor is down.
 
 ## Checks the scripts run (read the report every time)
@@ -64,27 +64,27 @@ Units: millimeters.
 
 1. Edit the part's function in `generate.py` or `fairlead.py`. Keep dimensions as named constants at the top where they already are.
 2. Run the checks (`python generate.py`, `python fairlead.py`, `python inverted.py`, `python sensor_mount.py`, as the part needs; they only print, none of them writes an STL) and read the report. Any `CLASH`, `watertight=False`, or lost clearance means stop.
-3. Export only the changed part: `python generate.py --export spool_cap` (several names allowed). **Never `--export-all` and never `regen_cad.ps1` from a session** (owner 2026-09-27, hardened 2026-10-04 after a session's check run rewrote every STL's date and overwrote the owner's own `fairlead_flap_inv.stl`). The export skips a part whose geometry matches the STL on disk, so a file's date changes only when the part changed; the owner reads those dates in File Explorer to know what to print.
-4. Re-render a picture only if the owner asks for it.
+3. Export only the changed part: `python generate.py --export spool_cap` (several names allowed). **Never `--export-all` and never `regen_cad.ps1` from a session** (my rule, hardened 2026-10-04 after a session's check run rewrote every STL's date and overwrote my own `fairlead_flap_inv.stl`). The export skips a part whose geometry matches the STL on disk, so a file's date changes only when the part changed; I read those dates in File Explorer to know what to print.
+4. Re-render a picture only if I ask for it.
 5. Update the doc that describes the part (01 for the spool, finger and bracket, 09 for the fairlead).
-6. Tell the owner which STL changed and whether an already-printed part is now out of date.
-7. Geometry changes need the owner's approval (CLAUDE.md hard constraints).
-8. Some STLs are the owner's own files, not the code's output (`fairlead_flap_inv.stl` is his Fusion redesign, kept as the print file; the code builds it to within 3.5 mm3; `c4002_case_base_extended.stl` and `c4002_case_Swivel_mount.stl` are his radar mount redesign of 2026-10-13, not in the code at all). `c4002_case_short_mount.stl` is the code's radar fork, renamed by the owner from `ld2450_fork_screw.stl`; its function, export key and picture key carry that name since 2026-10-14. A session never overwrites one of those; if the code's version is wanted, the owner says so.
+6. Tell me which STL changed and whether an already-printed part is now out of date.
+7. Geometry changes need my approval (CLAUDE.md hard constraints).
+8. Some STLs are my own files, not the code's output (`fairlead_flap_inv.stl` is my Fusion redesign, kept as the print file; the code builds it to within 3.5 mm3; `c4002_case_base_extended.stl` and `c4002_case_Swivel_mount.stl` are my radar mount redesign of 2026-10-13, not in the code at all). `c4002_case_short_mount.stl` is the code's radar fork, which I renamed from `ld2450_fork_screw.stl`; its function, export key and picture key carry that name since 2026-10-14. A session never overwrites one of those; if I want the code's version, I'll say so.
 
 ## Lessons already learned (do not repeat these)
 
-- **Print orientation lives in code.** Parts that must print a certain way have a `*_print()` function that turns them before export. Never ask the owner to rotate in the slicer.
+- **Print orientation lives in code.** Parts that must print a certain way have a `*_print()` function that turns them before export. Never ask me to rotate in the slicer.
 - **Recesses face up.** A recess on the bed side leaves a ceiling with nothing under it; Bambu Studio reports "floating regions" or "isolated object". The finger v1 failed this way.
-- **No overhangs on the spool, and no ramp for a wall.** The spool is the one-piece body (teeth, separator, barrel; prints ratchet face down) plus a flat cap that is the far wall (prints outer face down, lugs up), located by three lugs in the spoke windows and screwed on with 3x M3x8 so the seam at the barrel's corner stays shut whatever the rod stack's end play (owner 2026-10-05); both print with zero supports. A far wall printed as part of the body can only be a 45 degree ramp, and the line walked up and off the Rev C.3 one's 2 mm ramp (owner 2026-10-04); a separate flat cap gives a vertical wall 7 mm tall. Keep the barrel centred on the line's feed point (z 45). The spool hub must end flush with its face; a stub under a flange forced supports once.
+- **No overhangs on the spool, and no ramp for a wall.** The spool is the one-piece body (teeth, separator, barrel; prints ratchet face down) plus a flat cap that is the far wall (prints outer face down, lugs up), located by three lugs in the spoke windows and screwed on with 3x M3x8 so the seam at the barrel's corner stays shut whatever the rod stack's end play; both print with zero supports. A far wall printed as part of the body can only be a 45 degree ramp, and the line walked up and off the Rev C.3 one's 2 mm ramp; a separate flat cap gives a vertical wall 7 mm tall. Keep the barrel centred on the line's feed point (z 45). The spool hub must end flush with its face; a stub under a flange forced supports once.
 - **Thin features fail in PLA.** Keep printed walls at 1.2 mm or more near loads. Finger v1 had 0.9 mm walls and a half-width tip; the current finger is 7 mm wide with a 7 mm plate.
 - **Tip shapes must match the teeth.** An unbeveled 7 mm finger could not seat in any tooth gap. The 20 degree bevel on the ramp side fixed it. Re-run the seating check after any finger or tooth change.
-- **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead's two M3 screws are countersunk flush (owner: no glue).
+- **Nothing may stick out of the ceiling face** (y = 0). That is why the fairlead's two M3 screws are countersunk flush (no glue, my rule).
 - **Directions are easy to get backwards.** One-way clutch: it only lets the spool overrun in the direction the rod can drive it (flaw M1). Check any direction claim against the frame above before writing it into a doc.
-- **The bracket is printed and final.** Changes should bolt or screw to it, not require reprinting it. No glue (owner 2026-09-26).
+- **The bracket is printed and final.** Changes should bolt or screw to it, not require reprinting it. No glue.
 
-- **Printed holes come out small on the owner's printer.** A 4.8 mm socket printed 4.5; a 10.0 spacer in a 10.2 hole was too tight. Draw slide fits 0.2 to 0.3 mm a side bigger, and free-turning pins about 0.25 mm a side. A fit check (2026-09-26) found 9 fits wrong; see the git log. **Bearing press fits: the HF0612 would not go into a 10.0 hole, 10.2 was tight, and a 10.7 hole printed at 10.7 and was loose (owner 2026-09-28).** Its hole is now drawn 10.3 (firm press); the disk's stub hole is the same 10.3. On the one-piece spool (Rev C.3 and C.4) the hole is 10.2, and its 9.9 snap lip printed too tight and was carved out (owner 2026-10-05), so the C.4 hole is one plain diameter with no lip; it pressed in with some force and fits tightly (owner 2026-10-05). The cap's centre hole is 11.0 so spacer B passes through and bears on the bearing, never the cap's plastic. Call it the one-way bearing, not HF0612, in anything the owner reads. The 606ZZ seat drawn 16.8 would not take the bearing even heated (2026-09-27); it is drawn 17.0, not yet fitted.
+- **Printed holes come out small on my printer.** A 4.8 mm socket printed 4.5; a 10.0 spacer in a 10.2 hole was too tight. Draw slide fits 0.2 to 0.3 mm a side bigger, and free-turning pins about 0.25 mm a side. A fit check (2026-09-26) found 9 fits wrong; see the git log. **Bearing press fits: the HF0612 would not go into a 10.0 hole, 10.2 was tight, and a 10.7 hole printed at 10.7 and was loose.** Its hole is now drawn 10.3 (firm press); the disk's stub hole is the same 10.3. On the one-piece spool (Rev C.3 and C.4) the hole is 10.2, and its 9.9 snap lip printed too tight and was carved out, so the C.4 hole is one plain diameter with no lip; it pressed in with some force and fits tightly. The cap's centre hole is 11.0 so spacer B passes through and bears on the bearing, never the cap's plastic. Call it the one-way bearing, not HF0612, in anything written for me to read. The 606ZZ seat drawn 16.8 would not take the bearing even heated (2026-09-27); it is drawn 17.0, not yet fitted.
 - **A boolean cut can silently miss.** The fairlead bore once sat at y -78 because of a sign flip, so the part printed solid. Every functional void now has a check that fails if it misses (line path check, flatness check in `fairlead.py`).
-- **A face something mounts on must be one plane.** Check the distinct levels of the faces under it (the switch face and the fairlead's mounting face each had a 0.8 to 1 mm step the owner had to shim).
+- **A face something mounts on must be one plane.** Check the distinct levels of the faces under it (the switch face and the fairlead's mounting face each had a 0.8 to 1 mm step I had to shim).
 - **A recess on the bed side needs stepped bridging**, or it prints a roof over air. The finger's screw-head recess uses it: two strips, then a square, then the round hole.
 - **Every member starts on the bed plane**, and ribs run the full height to both ends.
 - **`lbl()` in render.py takes render-world coordinates, (x, z, -y), not assembly coordinates.** A label given (x, y, z) lands somewhere else on the page (wall_install.png, 2026-09-27).
@@ -98,4 +98,4 @@ Write a function in `render.py` that builds a list of `(mesh, color)` pairs from
 
 - Python 3.10 or later. `trimesh` path functions that need `rtree` (area of a cross-section) are avoided; install `rtree` if you add one.
 - Rendering is CPU only; big pictures take a minute or two.
-- The owner's chat session can edit these text files but cannot write STL or PNG files into the project folder. After an owner CAD change, run `regen_cad.ps1` here.
+- My chat session can edit these text files but can't write STL or PNG files into the project folder. After a CAD change made there, run `regen_cad.ps1` here.
