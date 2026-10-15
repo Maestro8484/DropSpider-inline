@@ -74,4 +74,4 @@ The mechanism, the firmware and the radar are built and running on the bench, ov
 
 ## License
 
-MIT for the firmware and tools, CC BY 4.0 for the docs, pictures and printed parts, by Joe Schmidt. The C4002 radar case is drawn after a MakerWorld enclosure and carries its CC BY-NC-SA terms. All of it in `LICENSE`.
+MIT for all of it, firmware, tools, CAD, printed parts and docs, by Joe Schmidt. The one exception is the C4002 radar case, drawn after a MakerWorld enclosure and carrying its CC BY-NC-SA terms. All of it in `LICENSE`.
