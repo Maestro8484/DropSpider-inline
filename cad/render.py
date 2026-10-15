@@ -10,8 +10,8 @@ COL = {"bracket": "#9aa0a6", "spool_ratchet": "#1f6feb", "spool_body": "#58a6ff"
        "fairlead_body": "#8b5cf6", "fairlead_flap": "#d946ef", "fairlead_flap_inv": "#d946ef", "switch_kw12": "#111111",
        "finger": "#e5534b", "rod_6mm": "#444", "coupler": "#d4a72c", "spacer_A": "#2da44e", "spacer_B": "#2da44e",
        "bearing_606": "#57606a", "hf0612": "#f59e0b", "bearing_retainer": "#6b7280", "spool_shield": "#a5b4fc", "motor_nema11": "#24292f", "servo_sg90": "#0969da",
-       "ld2450_fork": "#ea580c", "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38",
-       "wall_mount": "#b45309", "ld2450_fork_screw": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
+       "ld2450_cradle": "#f97316", "ld2450_radar": "#1d4f38", "spool_onepiece": "#58a6ff", "spool_cap": "#1f6feb", "c4002_case": "#1d4f38",
+       "wall_mount": "#b45309", "c4002_case_short_mount": "#ea580c", "beam": "#c9a66b", "ceiling": "#e5e7eb",
        "bolt": "#57606a", "nut": "#374151", "screw": "#8a6d3b",
        "hinge_plate": "#b45309", "hinge_clip": "#d97706", "pin": "#57606a", "tie_bar": "#92400e", "strut": "#f59e0b",
        "fairlead_base": "#8b5cf6", "brace": "#6b7280", "line": "#111111", "bead": "#f59e0b", "electronics": "#16a34a"}
@@ -19,43 +19,70 @@ LABEL = {"bracket": "bracket.stl", "spool_ratchet": "spool_ratchet.stl", "spool_
          "fairlead_body": "fairlead_body.stl", "fairlead_flap": "fairlead_flap.stl (hinged bumper)", "fairlead_flap_inv": "fairlead_flap_inv.stl (flap with the tab under the switch)",
          "switch_kw12": "KW12-3 limit switch", "finger": "finger.stl on the SG90 spline", "rod_6mm": "6 mm rod, 100 mm",
          "coupler": "5-to-6 mm coupler", "spacer_A": "spacer_A_6mm.stl", "spacer_B": "spacer_B_50mm.stl",
-         "bearing_606": "606ZZ ball bearing", "hf0612": "HF0612 one-way bearing (clutch), pressed into spool_body", "bearing_retainer": "bearing_retainer.stl (holds the 606ZZ in, 2x M3)", "spool_shield": "spool_shield.stl (flat disc between disk and spool)", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
-         "ld2450_fork": "ld2450_fork.stl (glued)", "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
-         "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)", "ld2450_fork_screw": "ld2450_fork_screw.stl (2x M3 through the base, no glue)",
+         "bearing_606": "606ZZ ball bearing", "hf0612": "HF0612 one-way bearing (clutch), pressed into the spool", "bearing_retainer": "bearing_retainer.stl (holds the 606ZZ in, 2x M3)", "spool_shield": "spool_shield.stl (flat disc between disk and spool)", "motor_nema11": "NEMA 11 motor", "servo_sg90": "SG90 servo",
+         "ld2450_cradle": "ld2450_cradle.stl (tilts on one M3 bolt)", "ld2450_radar": "LD2450 radar",
+         "spool_onepiece": "spool_onepiece.stl (Rev C.4: teeth, separator and barrel in one; the one-way bearing presses into it)",
+         "spool_cap": "spool_cap.stl (the barrel's flat far wall, 3x M3x8 into the spokes)",
+         "c4002_case": "C4002 radar in its snap-lid case (c4002_case_base.stl and c4002_case_lid.stl)",
+         "wall_mount": "wall_mount.stl (shelf, wall plate, 2 braces)",
+         "c4002_case_short_mount": "c4002_case_short_mount.stl, the radar fork (2x M3 through the base, no glue)",
          "beam": "porch beam (stand-in)", "ceiling": "porch ceiling (stand-in)",
          "bolt": "6x M3 x 10 to 12 bolt, from below", "nut": "6x M3 nut, tapped into the shelf's pockets", "screw": "4x #4 x 1 in wood screw",
          "hinge_plate": "hinge_plate.stl (4x #4 screws into the beam)", "hinge_clip": "hinge_clip.stl x2 (2x M3 each, on the pad)",
          "pin": "pins: 2x M3 x 25 (hinge), 4x M3 x 20 (struts), nuts", "tie_bar": "tie_bar.stl (2x M3 through the base's x 65 holes)",
          "strut": "strut.stl x2 (the 45 degree bar, pushed)",
          "fairlead_base": "fairlead_base.stl (under the base, 2x M3 from inside)", "brace": "2x steel corner brace, 6 in (owner drills the base)",
-         "line": "3 lb line, out through a 7 mm hole in the base", "bead": "stop bead",
+         "line": "the line: bonded nylon thread, size 69, out through a 7 mm hole in the base", "bead": "stopper: the disc on the line that lifts the flap at home",
          "electronics": "room for the controller board on the pad, 52 x 75 x 30 (stand-in box)"}
 
 def rview(m):
     # render world: X = x, Y = z (rod), Z = -y (floor is down, ceiling mount on top)
     mm = m.copy(); v = mm.vertices.copy(); mm.vertices = np.column_stack([v[:, 0], v[:, 2], -v[:, 1]]); return mm
 
-def save(img, name, title, labels=(), keys=(), loc="upper right"):
+def save(img, name, title, labels=(), keys=(), loc="upper right", outside=False):
+    """outside=True puts the legend beside the picture instead of over it (the page grows to fit), for a long legend."""
     import matplotlib.patches as mp
     fig, ax = plt.subplots(figsize=(img.shape[1] / 100, img.shape[0] / 100 + 0.5))
-    ax.imshow(img); ax.set_axis_off(); ax.set_title(title, fontsize=13)
+    ax.imshow(img); ax.set_axis_off(); ax.set_title(title, fontsize=13, loc="left" if outside else "center")
     for lab in labels:
         x, y, t = lab[:3]
         if len(lab) == 5: ax.annotate(t, xy=lab[3:], xytext=(x, y), fontsize=10, bbox=dict(fc="white", ec="0.6", alpha=0.9), arrowprops=dict(arrowstyle="->", color="0.3"))   # label with a pointer to the part
         else: ax.text(x, y, t, fontsize=10, bbox=dict(fc="white", ec="0.6", alpha=0.9))
     if keys:
-        ax.legend(handles=[mp.Patch(color=COL[k], label=LABEL[k]) for k in keys], loc=loc, fontsize=10, framealpha=0.95)
+        handles = [mp.Patch(color=COL[k], label=LABEL[k]) for k in keys]
+        if outside: ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.0, 1.0), fontsize=10, framealpha=0.95, borderaxespad=0.5)
+        else: ax.legend(handles=handles, loc=loc, fontsize=10, framealpha=0.95)
     fig.savefig(os.path.join(IMG, name), dpi=100, bbox_inches="tight"); plt.close(fig)
 
 def lbl(proj, pt, dx, dy, text, arrow=False):
     x, y, _ = proj(np.array([pt])); return (x[0] + dx, y[0] + dy, text) + ((x[0], y[0]) if arrow else ())
 
-def assembly_png():
-    A = G.assembly()
+def current_parts(A):
+    """The parts on the device today (2026-10-14) in place of the ones generate.assembly() still carries for its checks:
+    the Rev C.4 one-piece spool and its cap for the Rev C.2 disk, shield and body (the one-way bearing moved into the
+    C.4 seat), and the C4002 in its case on the fork for the parked LD2450 and its cradle. Keys keep their order, so the legend reads top down."""
+    import sensor_mount as S, c4002_case as C
+    out = {}
+    for k, m in A.items():
+        if k in ("spool_shield", "spool_body", "ld2450_radar"): continue
+        if k == "spool_ratchet":
+            sp = G.spool_onepiece(); sp.apply_translation([0, G.AXIS_Y, G.OP_Z0]); out["spool_onepiece"] = sp
+            cp = G.spool_cap(); cp.apply_translation([0, G.AXIS_Y, G.OP_Z0]); out["spool_cap"] = cp
+        elif k == "hf0612":
+            z0 = G.OP_Z0 + G.OP_L - G.OP_SEAT_L
+            out[k] = G.D(G.cyl(G.HF0612_OD / 2, G.HF0612_LEN, z0, 0, G.AXIS_Y), G.cyl(3, G.HF0612_LEN + 2, z0 - 1, 0, G.AXIS_Y))
+        elif k == "ld2450_cradle":
+            out["c4002_case"] = S._place(C._local(False), S.TILT_DEG)   # the case where the cradle was, tilted 50 degrees, floor opening out
+        else: out[k] = m
+    return out
+
+def assembly_png(views=("assembly_iso.png", "assembly_iso_top.png")):
+    A = current_parts(G.assembly())
     for view, (el, az) in {"assembly_iso.png": (-28, -55), "assembly_iso_top.png": (30, -125)}.items():
+        if view not in views: continue
         img, proj = raster.render([(rview(m), COL[k]) for k, m in A.items()], elev=el, azim=az, W=1300, H=950)
         labels = [lbl(proj, (-25, 45, -76), 15, 25, "line exits down through the fairlead")] if view == "assembly_iso.png" else []
-        save(img, view, "Mechanism A, Rev C.1 - installed, ceiling mount" + (" (view from below)" if view == "assembly_iso.png" else " (view from above, ceiling removed)"), labels, keys=list(A.keys()))
+        save(img, view, "Mechanism A, Rev C.1 (Rev C.4 spool, C4002 radar) - installed, ceiling mount" + (" (view from below)" if view == "assembly_iso.png" else " (view from above, ceiling removed)"), labels, keys=list(A.keys()), outside=True)
 
 def exploded_png():
     A = G.assembly()
@@ -65,7 +92,7 @@ def exploded_png():
            "spool_ratchet": (0, 90, 20), "hf0612": (0, 90, 38), "spool_shield": (0, 90, 46), "spool_body": (0, 90, 55), "spacer_B": (0, 90, 95),
            "bearing_606": (0, 90, 150), "rod_6mm": (0, 150, 20),
            "fairlead_body": (-110, 40, -40), "fairlead_flap": (-110, 40, -40), "switch_kw12": (-110, 40, -40),
-           "ld2450_fork": (40, 20, 20), "ld2450_cradle": (70, 60, 20), "ld2450_radar": (100, 75, 20)}
+           "c4002_case_short_mount": (40, 20, 20), "ld2450_cradle": (70, 60, 20), "ld2450_radar": (100, 75, 20)}
     items = []
     for k, m in A.items():
         mm = m.copy(); mm.apply_translation(off.get(k, (0, 0, 0))); items.append((rview(mm), COL[k]))
@@ -126,7 +153,7 @@ def steps_png():
     A = G.assembly()
     base = ["bracket"]
     fl = ("fairlead_body", "fairlead_flap", "switch_kw12")
-    rd = ("ld2450_fork", "ld2450_cradle", "ld2450_radar")
+    rd = ("c4002_case_short_mount", "ld2450_cradle", "ld2450_radar")
     steps = [("Step 1: press 606ZZ into the end plate, motor onto the motor plate", base, ["bearing_606", "motor_nema11"]),
              ("Step 2: coupler onto the motor shaft (set screw on the 5 mm side)", base + ["bearing_606", "motor_nema11"], ["coupler"]),
              ("Step 3: hold spacer A, spool, spacer B in the gap, disk toward the motor", base + ["bearing_606", "motor_nema11", "coupler"], ["spacer_A", "spool_ratchet", "hf0612", "spool_shield", "spool_body", "spacer_B"]),
@@ -182,16 +209,16 @@ def fairlead_exploded_png():
 def inverted_png():
     """The owner's inverted install: device turned over on two 6 in corner braces standing up the beam, line out through the base."""
     import inverted as INV
-    A = INV.assembly_inverted(); A.update(INV.line_and_bead())
+    A = INV.assembly_inverted(current=True); A.update(INV.line_and_bead())
     A.update({k: G.I(m, G.bx(-200, 250, -300, 200, -25, 135)) for k, m in INV.porch().items()})   # a short length of beam and ceiling, so the device reads
     key = lambda k: "brace" if k.startswith("brace") else k
     img, proj = raster.render([(INV.view_inv(m), COL[key(k)]) for k, m in A.items()], elev=-12, azim=210, W=1300, H=1000)   # from the pad end, beam behind (owner's build 2026-10-01: servo end at the beam)
     labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, -110), 12, -60, f"line falls {abs(INV.LINE_X - INV.X_BEAM):.0f} mm from the beam's face", True),
               lbl(proj, (INV.X_BEAM - 140, -INV.BRACE_Z[0], -2), -260, 60, "base sits on the braces' flat legs", True),
               lbl(proj, (INV.LINE_X + 10, -INV.LINE_Z, -30), 200, 60, "fairlead, flap and switch under the base", True),
-              lbl(proj, (INV.RADAR_FORK[0] - 25, -INV.RADAR_FORK[1], -40), -120, 120, "radar under the pad end, looking toward the beam and down", True)]
-    save(img, "inverted_install.png", "Inverted install (owner's build, servo end at the beam): device turned over, sitting on two 6 in steel corner braces that stand up the beam, line out the bottom (view from below, inside the porch)",
-         labels, keys=["bracket", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "beam", "ceiling"], loc="upper right")
+              lbl(proj, (INV.RADAR_FORK[0] - 25, -INV.RADAR_FORK[1], -40), -560, 80, "C4002 in its case under the pad end, looking toward the beam and down\n(drawn on the code's fork; the owner's swivel mount is his own file)", True)]
+    save(img, "inverted_install.png", "Inverted install (owner's build, servo end at the beam): device turned over on two 6 in steel corner braces\nthat stand up the beam, line out the bottom (view from below, inside the porch)",
+         labels, keys=["bracket", "spool_onepiece", "spool_cap", "electronics", "fairlead_base", "fairlead_flap", "switch_kw12", "brace", "line", "bead", "c4002_case_short_mount", "c4002_case", "beam", "ceiling"], outside=True)
 
 def inverted_fairlead_png(elev=-12, azim=35, name="inverted_fairlead.png"):
     """Close-up for the build guide: the fairlead block under the base, flap, switch, both block screws, line and bead."""
@@ -204,7 +231,7 @@ def inverted_fairlead_png(elev=-12, azim=35, name="inverted_fairlead.png"):
     items += [(INV.view_inv(m), "#57606a") for m in screws] + [(INV.view_inv(L["line"]), "#111111"), (INV.view_inv(L["bead"]), COL["bead"])]
     img, proj = raster.render(items, elev=elev, azim=azim, W=1300, H=1000)
     labels = [lbl(proj, (INV.LINE_X, -INV.LINE_Z, 25), 60, -40, "line: from the spool, down through the 7 mm hole, the block's bore, the flap's slot", True),
-              lbl(proj, (INV.LINE_X, -INV.LINE_Z, -40), -420, -60, "bead: lifts the flap at home", True),
+              lbl(proj, (INV.LINE_X, -INV.LINE_Z, -40), -420, -60, "stopper: lifts the flap at home", True),
               lbl(proj, (43, -47, -15), 60, 20, "KW12-3 on the outer face, legs up; roller on the flap's tab", True),
               lbl(proj, (32, -83, -8), 80, -60, "M3 x 12 from inside the base (x2)", True)]
     save(img, name, "Inverted install, fairlead v2: switch above the flap, legs up, flap lowest (only the base is drawn above it)",
@@ -288,5 +315,13 @@ def drive_direction_png():
     fig.savefig(os.path.join(IMG, "drive_direction.png"), dpi=110, bbox_inches="tight"); plt.close(fig)
 
 if __name__ == "__main__":
-    base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); rod_section_png(); drive_direction_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
+    import sys
+    only = sys.argv[1:]   # python render.py assembly_iso.png inverted_install.png   draws just those; no names draws every picture
+    if only:
+        iso = tuple(v for v in only if v.startswith("assembly_iso"))
+        if iso: assembly_png(iso)
+        if "inverted_install.png" in only: inverted_png()
+        if "inverted_fairlead.png" in only: inverted_fairlead_png()
+    else:
+        base_png(); lock_png(); assembly_png(); exploded_png(); steps_png(); rod_section_png(); drive_direction_png(); fairlead_png(); fairlead_exploded_png(); inverted_png()
     print("renders written to", os.path.abspath(IMG))

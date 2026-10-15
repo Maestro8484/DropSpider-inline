@@ -60,8 +60,7 @@ What is proven, what is not, and what could stop the build. Evidence for every c
 
 ## For a CAD or code session (found by the publish pass, 2026-10-14; docs could not fix these)
 
-- `docs/img/assembly_iso.png` and `docs/img/inverted_install.png` show the Rev C.2 ratchet spool, the parked LD2450 in its cradle and "6 lb line". The parts on the device are the Rev C.4 spool and cap and the C4002 in its case on the owner's swivel mount (his own Fusion files, so a render can only show a stand-in). Rerender with `cad/render.py` and `cad/inverted.py`, then `python tools/make_build_guide.py`. The README and the build guide say the drawings are older than the radar mount until then.
-- `cad/sensor_mount.py` still names the bolted fork `ld2450_fork_screw` in its functions and the keys `generate.py` uses for the checks; the STL it exports is `c4002_case_short_mount.stl`. Rename when that file is next open, so the code and the STL agree.
+- Both items closed 2026-10-14: the two drawings redrawn with the Rev C.4 spool and the C4002 case on the code's fork (`python cad/render.py assembly_iso.png inverted_install.png`), and the fork is `c4002_case_short_mount` in the code, matching its STL. `docs/img/assembly_iso_top.png` and the other CAD pictures still show the Rev C.2 stack; redraw them with `cad/render.py` only if the owner asks.
 
 ## Candidate Rev D items (not started)
 

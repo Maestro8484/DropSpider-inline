@@ -129,7 +129,7 @@ FORK_SCREW_DZ = 17.0           # holes at z 45 and 79, outside the ears (z 51.3.
 FORK_SCREW_D = 3.6             # M3 clearance; prints about 3.3 to 3.4
 
 
-def ld2450_fork_screw():
+def c4002_case_short_mount():
     """The radar fork with a 3 mm plate, 44 long along z, and two holes for M3. Same ears and pivot as
     ld2450_fork, so the cradle is unchanged. Drawn in its ceiling-install place (y 4 = the face against
     the bracket's base); inverted.py turns it over under the base."""
@@ -139,8 +139,8 @@ def ld2450_fork_screw():
     return G.D(m, *[G.vcyl(FORK_SCREW_D / 2, 10, 0, 68, Z_CENTER + s * FORK_SCREW_DZ) for s in (-1, 1)])
 
 
-def ld2450_fork_screw_print():
-    m = ld2450_fork_screw()
+def c4002_case_short_mount_print():
+    m = c4002_case_short_mount()
     m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
     m.apply_translation(-m.bounds[0]); return m
 

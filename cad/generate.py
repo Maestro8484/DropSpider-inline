@@ -415,7 +415,7 @@ PARTS = {
     "shim_1mm": lambda: tube(1),
     "shim_2mm": lambda: tube(2),
     "ld2450_cradle": ld2450_cradle_print,
-    "c4002_case_short_mount": lambda: __import__("sensor_mount").ld2450_fork_screw_print(),   # the radar fork, both installs: 2x M3, no glue (owner 2026-09-27; the glued ld2450_fork is retired)
+    "c4002_case_short_mount": lambda: __import__("sensor_mount").c4002_case_short_mount_print(),   # the radar fork, both installs: 2x M3, no glue (owner 2026-09-27; the glued ld2450_fork is retired)
     "fairlead_base": lambda: __import__("inverted").fairlead_base_print(),
     "fairlead_base_ptfe": lambda: __import__("inverted").fairlead_base_print(ptfe=True, windows=False),   # same block, straight 4.3 bore for the 4 mm PTFE guide tube (2026-10-04); no lightening windows (owner 2026-10-05: print time beats material)
     "fairlead_flap_inv": lambda: __import__("inverted").fairlead_flap_inv_print(),   # inverted install only: doc 09 flap plus the tab under the switch roller (2026-09-28)             # inverted install only (docs/06): fairlead block under the base
@@ -431,7 +431,7 @@ def assembly():
     import fairlead as F
     A["fairlead_body"] = F.fairlead_body(); A["fairlead_flap"] = F.fairlead_flap(); A["switch_kw12"] = F.switch_model()
     import sensor_mount as S
-    A["ld2450_fork"] = S.ld2450_fork_screw();   # bolted fork (key kept for the checks below)
+    A["c4002_case_short_mount"] = S.c4002_case_short_mount();   # bolted fork (key kept for the checks below)
     A["ld2450_cradle"] = S.ld2450_cradle(); A["ld2450_radar"] = S.ld2450_board()
     f = finger(); f.apply_transform(trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1]))
     f.apply_translation([SERVO_SHAFT_X, AXIS_Y, FINGER_Z0]); A["finger"] = f
@@ -480,7 +480,7 @@ def onepiece_checks(A):
     print(f"barrel flat z {bz0:.2f} to {bz1:.2f}, line feed point z {V.LINE_Z:.1f}: {V.LINE_Z - bz0:.2f} from the separator, {bz1 - V.LINE_Z:.2f} from the cap; "
           f"centred with 1 mm to spare each side: {V.LINE_Z - bz0 >= 1.0 and bz1 - V.LINE_Z >= 1.0}")
     print(f"cap wall {CAP_R - BARREL_D / 2:.1f} above the barrel, separator wall {OP_SEP_R - BARREL_D / 2:.1f} (C.3 far wall was 2.0, a ramp)")
-    for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle",
+    for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "c4002_case_short_mount", "ld2450_cradle",
               "hf0612", "spacer_A", "spacer_B", "rod_6mm", "bearing_606"):
         v = I(sp, near[f]).volume
         if v > 0.05: print(f"CLASH spool_onepiece x {f}: {v:.2f}")
@@ -519,7 +519,7 @@ def onepiece_checks(A):
         if I(A["finger"], rr).volume < 0.05: seat.append(deg)
     print("finger seats in a tooth gap:", bool(seat), f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle)")
     ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=L); ring.apply_translation([0, AXIS_Y, OP_Z0 + L / 2])
-    print("2 mm swept clearance (teeth and cap):", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle")), "mm3")
+    print("2 mm swept clearance (teeth and cap):", ", ".join(f"{k} {I(ring, A[k]).volume:.1f}" for k in ("bracket", "fairlead_body", "servo_sg90", "c4002_case_short_mount", "ld2450_cradle")), "mm3")
     n, c, ar = P.face_normals, P.triangles_center, P.area_faces
     steep = (n[:, 2] < -0.71) & (c[:, 2] > 0.05)
     print(f"body print orientation (ratchet face down): {ar[steep].sum():.2f} mm2 steeper than 45 degrees off the bed (pass under 0.5)")
@@ -580,7 +580,7 @@ if __name__ == "__main__":
     A = assembly()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
     pairs = [(m, f) for m in ("spool_ratchet", "spool_body", "finger")
-             for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "ld2450_fork", "ld2450_cradle")]
+             for f in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12", "servo_sg90", "motor_nema11", "coupler", "c4002_case_short_mount", "ld2450_cradle")]
     for m, f in pairs:
         v = I(A[m], A[f]).volume
         if v > 0.5: print(f"CLASH {m} x {f}: {v:.1f}")
@@ -596,6 +596,6 @@ if __name__ == "__main__":
           f"(window {seat[0]:.2f} to {seat[-1]:.2f} deg)" if seat else "(NO seating angle: finger or teeth changed badly)")
     ring = trimesh.creation.annulus(r_min=TOOTH_TIP_R + 0.01, r_max=TOOTH_TIP_R + 2, height=16)
     ring.apply_translation([0, AXIS_Y, 43])   # spool spans z 36..50
-    for k in ("bracket", "fairlead_body", "servo_sg90", "ld2450_fork", "ld2450_cradle"):
+    for k in ("bracket", "fairlead_body", "servo_sg90", "c4002_case_short_mount", "ld2450_cradle"):
         print(f"2 mm swept clearance, spool vs {k}: {I(ring, A[k]).volume:.1f} mm3 overlap")
     onepiece_checks(A)

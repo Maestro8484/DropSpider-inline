@@ -23,7 +23,7 @@ What is new:
                      checks, no holes: the owner drills the base to the braces' own holes, 2026-09-27),
                      at the base's ends. The owner's orientation (2026-09-27): the flat leg under the
                      base, the other leg standing UP the beam's face beside the device, screwed to it.
-  radar              part of the device (owner 2026-09-27): ld2450_fork_screw (cad/sensor_mount.py,
+  radar              part of the device (owner 2026-09-27): c4002_case_short_mount (cad/sensor_mount.py,
                      same ears as ld2450_fork, no glue), cradle and radar, turned over and bolted
                      under the base at the PAD end (the end away from the beam) with 2x M3 drilled at
                      x -80, z 38.5 and 72.5, the radar just past the base's end, looking toward the
@@ -273,7 +273,7 @@ def radar_on_base(tilt=RADAR_TILT):
     base's servo end: bolted to the base's outer face with 2x M3, looking toward the beam (-x) and down (-y)."""
     R = trimesh.transformations.rotation_matrix(math.pi, [0, 0, 1])
     out = {}
-    for k, m in (("ld2450_fork_screw", S.ld2450_fork_screw()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
+    for k, m in (("c4002_case_short_mount", S.c4002_case_short_mount()), ("ld2450_cradle", S.ld2450_cradle(tilt)), ("ld2450_radar", S.ld2450_board(tilt))):
         mm = m.copy(); mm.apply_transform(R); mm.apply_translation([RADAR_SHIFT[0], RADAR_SHIFT[1], 0])
         mm.apply_transform(RY_END)                                     # end for end: now looks +x, toward the beam at the servo end
         mm.apply_translation([RADAR_FORK[0] + 62.0, 0, RADAR_FORK[1] + 62.0]); out[k] = mm
@@ -286,16 +286,23 @@ def pcb_box():
 
 
 def line_and_bead(drop=120.0):
+    """The line (bonded nylon thread) and the stopper, the disc on it that lifts the flap at home (key "bead" kept for the pictures' legend)."""
     line = G.vcyl(0.3, 40 + drop, -drop, LINE_X, LINE_Z)
-    bead = trimesh.creation.icosphere(radius=4, subdivisions=3); bead.apply_translation([LINE_X, FL_Y - F.FT / 2 - 4 - 3.3, LINE_Z])
+    bead = G.vcyl(5.0, 2.0, FL_Y - F.FT / 2 - 2.0 - 3.3, LINE_X, LINE_Z)   # the stopper: a 10 mm disc, 2 thick, just below the flap
     return {"line": line, "bead": bead}
 
 
-def assembly_inverted():
+def assembly_inverted(current=False):
+    """current=True draws the parts on the device today (Rev C.4 spool and cap, the C4002 in its case on the fork) for the
+    pictures; the default keeps generate.assembly()'s Rev C.2 stack and the parked LD2450 for the checks above."""
     A = {k: v for k, v in G.assembly().items() if k not in ("bracket", "fairlead_body", "fairlead_flap", "switch_kw12") and not k.startswith("ld2450")}
     A["bracket"] = bracket_inverted()
     A["fairlead_base"] = fairlead_base(); A["fairlead_flap"] = flap_installed(); A["switch_kw12"] = switch_installed()
     A.update(corner_braces()); A.update(radar_on_base()); A["electronics"] = pcb_box()
+    if current:
+        import render as R, c4002_case as C
+        A = R.current_parts(A)
+        A["c4002_case"] = C.case_on_porch(RADAR_TILT)
     return A
 
 
@@ -319,11 +326,11 @@ if __name__ == "__main__":
     print(f"mounting face is one plane at y 0: {abs(body.bounds[1][1]) < 0.01} (nothing above y 0; contact area {body.area_faces[at0].sum():.0f} mm2)")
     A = assembly_inverted()
     print("--- clash check, overlap volume in mm3 (none listed = clear) ---")
-    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "ld2450_fork_screw", "ld2450_cradle", "ld2450_radar", "electronics"]
+    new = ["fairlead_base", "fairlead_flap", "switch_kw12", "brace_0", "brace_1", "c4002_case_short_mount", "ld2450_cradle", "ld2450_radar", "electronics"]
     bad = False
     for k in new:
         for j, part in A.items():
-            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"} or {k, j} <= {"ld2450_fork_screw", "ld2450_cradle", "ld2450_radar"}: continue   # roller on flap tail; radar sits in its cradle
+            if j == k or {k, j} <= {"fairlead_flap", "switch_kw12"} or {k, j} <= {"c4002_case_short_mount", "ld2450_cradle", "ld2450_radar"}: continue   # roller on flap tail; radar sits in its cradle
             v = G.I(A[k], part).volume
             if v > 0.5: print(f"CLASH {k} x {j}: {v:.1f}"); bad = True
     if not bad: print("block, flap, switch, braces, radar and the 52 x 75 x 30 electronics box clear every part")
@@ -386,7 +393,7 @@ if __name__ == "__main__":
         r = spool.copy(); r.apply_transform(trimesh.transformations.rotation_matrix(math.radians(deg), [0, 0, 1], point=[0, G.AXIS_Y, 0]))
         worst = max(worst, G.I(fat, r).volume)
     print(f"tube plus {PTFE_TIP_CLR} mm all round vs the spool body and cap at every 15 deg: {'clear' if worst < 0.01 else 'HITS %.2f mm3' % worst}")
-    for k in ("bracket", "finger", "fairlead_flap", "switch_kw12", "servo_sg90", "ld2450_fork_screw", "ld2450_cradle", "electronics"):
+    for k in ("bracket", "finger", "fairlead_flap", "switch_kw12", "servo_sg90", "c4002_case_short_mount", "ld2450_cradle", "electronics"):
         v = G.I(tube, A[k]).volume
         if v > 0.05: print(f"CLASH ptfe_tube x {k}: {v:.2f}")
     print(f"tube inside the ptfe block's bore: {G.I(tube, pb).volume:.2f} mm3 overlap (0 = fits; the plain block's throat is drawn 4.0 and prints about 3.7 to 3.8, so it does not take the 4.0 tube)")

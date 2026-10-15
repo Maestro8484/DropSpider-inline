@@ -110,7 +110,7 @@ def main_inverted():
     drilled = [(lx, lz, INV.LINE_HOLE_D)] + [(x, z, 3.4) for x, z in bs + rs]
     # where the parts sit: cut just under the base's outer face
     block = footprint(INV.fairlead_base(), -0.3)
-    fork = footprint(INV.radar_on_base()["ld2450_fork_screw"], -0.3)
+    fork = footprint(INV.radar_on_base()["c4002_case_short_mount"], -0.3)
     edge_x = G.bracket().bounds[1][0]          # servo-side edge of the base, x 75
     fz = [z for _, z in rs]
     labels = [

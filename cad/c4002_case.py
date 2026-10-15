@@ -251,7 +251,7 @@ def picture(path):
     img1, _ = raster.render([(b, "#1d4f38"), (lid_side, "#4ade80")], elev=40, azim=-120, W=900, H=700)
     A = V.assembly_inverted()
     box = G.bx(-140, -40, -60, 20, 20, 100)
-    parts = [(V.view_inv(G.I(A[k], box)), c) for k, c in (("bracket", "#9aa0a6"), ("ld2450_fork_screw", "#ea580c"), ("servo_sg90", "#0969da"))]
+    parts = [(V.view_inv(G.I(A[k], box)), c) for k, c in (("bracket", "#9aa0a6"), ("c4002_case_short_mount", "#ea580c"), ("servo_sg90", "#0969da"))]
     parts.append((V.view_inv(case_on_porch(50)), "#1d4f38"))
     img2, _ = raster.render(parts, elev=-12, azim=210, W=900, H=700)
     fig, ax = plt.subplots(1, 2, figsize=(18, 7.6))

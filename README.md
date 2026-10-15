@@ -8,7 +8,7 @@ The name `dropspider-tiltspool` is saved for Mechanism B (a servo tilts the spoo
 
 ![The device turned over on two corner braces on the porch beam, line out through the base](docs/img/inverted_install.png)
 
-The drawing shows the earlier radar cradle; the radar now rides in a snap-lid case on a swivel mount (doc 02, doc 06). The firmware and everything else in the picture are as built.
+The drawing shows the Rev C.4 spool and the C4002 in its case on the code's fork; my own swivel mount (doc 02, doc 06) is a Fusion file, so the fork stands in for it.
 
 ## How it works
 
