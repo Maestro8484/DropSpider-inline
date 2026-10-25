@@ -43,6 +43,7 @@ void radarPoll();       // call from loop(): reads whatever the UART holds; 1.5 
 bool radarTalking();    // result frames arriving (task safe)
 bool radarFire();       // the last two readings both passed the trigger rule (task safe)
 bool radarClear();      // nobody in view, or everyone farther than the setting clearcm (task safe); false while silent
+bool radarApproaching();// a reading in the last 500 ms showed someone walking toward the sensor, any distance (task safe): the machine pre-wakes the motor driver on it
 void radarMarkFire(bool viaLink);   // the machine task says a drop just started on the sensor: keep what it saw, for the page (task safe)
 int  radarProbe();      // find which free pin carries the sensor's signal and listen there; -1 if none (blocks 0.4 s)
 void radarRaw();        // print the last 96 bytes heard on RX2

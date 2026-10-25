@@ -47,6 +47,7 @@ static uint32_t lastGood = 0, frames = 0, bad = 0, bytes = 0;
 static uint32_t fpsFrom = 0, fpsCount = 0;
 static float fps = 0;
 static volatile int fireRun = 0;        // consecutive readings that passed the rule (read by the machine task)
+static volatile uint32_t approachAt = 0; // millis of the last reading with someone approaching at any distance (the machine task pre-wakes the driver on it)
 static volatile bool clearNow = false;  // nobody near (read by the machine task)
 static volatile uint32_t goodAt = 0;    // = lastGood, for the machine task
 static int rxPin = PIN_RADAR_RX, txPin = PIN_RADAR_TX;
@@ -86,6 +87,7 @@ static void judge() {
   int sp = abs((int)rd.speed);
   rd.etaMs = (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) ? (int)((long)rd.mdist * 1000 / sp) : 0;
   bool toward = moving && rd.dir == 2 && sp >= S.approach && rd.mdist > 0;
+  if (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) approachAt = millis();   // any approach, any distance: pre-wake
   rd.fire = toward && ((S.fireCm && rd.mdist <= S.fireCm) || (rd.etaMs > 0 && rd.etaMs <= S.leadMs));
   fireRun = rd.fire ? fireRun + 1 : 0;
   // Only a moving person holds the re-arm (owner 2026-10-11: "it needs to have a better
@@ -255,15 +257,16 @@ void radarPoll() {
 }
 
 bool radarTalking() { uint32_t g = goodAt; return g && millis() - g < RADAR_SILENT_MS; }
-bool radarFire()    { return radarTalking() && fireRun >= 2; }
+bool radarFire()    { return radarTalking() && fireRun >= FIRE_RUNS; }
 bool radarClear()   { return radarTalking() && clearNow; }
+bool radarApproaching() { uint32_t a = approachAt; return radarTalking() && a && millis() - a < 500; }
 
 // Called by the machine task the moment a drop starts on the sensor: keep what the
 // radar saw, in words, for the page's "last drop fired by the radar" row.
 void radarMarkFire(bool viaLink) {
   if (viaLink) {
     RadarReading r = rd;
-    snprintf(why, sizeof why, "%d cm away, %d cm/s %s, %d ms before arrival, two readings in a row",
+    snprintf(why, sizeof why, "%d cm away, %d cm/s %s, %d ms before arrival, first reading",
              r.mdist, abs((int)r.speed), r.dir == 2 ? "approaching" : r.dir == 0 ? "going away" : "no direction", r.etaMs);
   } else {
     snprintf(why, sizeof why, "OUT pin high on GPIO33 (serial link %s)", S.sensor == 4002 ? "silent" : "not used, sensor 2410");

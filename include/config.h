@@ -64,6 +64,9 @@
 
 // ---------- timing ----------
 #define SERVO_MOVE_MS       350    // time for the finger to travel
+#define RELEASE_MARGIN_MS   50     // on top of SERVO_MOVE_MS before the drop starts (was 150; porch 2026-10-25, the drop landed 0.3 s late)
+#define PREWAKE_HOLD_MS     2500   // armed and idle: the driver wakes when the radar sees someone approaching and goes back off this long after the last such reading (saves the 250 ms wake at the trigger)
+#define FIRE_RUNS           1     // radar readings in a row that must pass the rule before it fires (was 2; each reading is 100 ms)
 #define LOCK_SEAT_MS        700    // servo keeps pushing while the spool settles onto a tooth
 #define TRIGGER_DEBOUNCE_MS 60     // sensor must stay HIGH this long
 #define CLEAR_BEFORE_REARM  2000   // sensor must read LOW this long before the next scare

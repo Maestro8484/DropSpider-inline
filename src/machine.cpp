@@ -31,6 +31,7 @@ static bool cycle = false;              // true while running a full drop cycle
 static St   benchReturn = ST_WAIT_CLEAR;
 
 static bool driverIsOn = false;
+static uint32_t preWokeAt = 0;                       // millis of the last approaching reading that kept the driver pre-woken (0 = not pre-woken)
 // A dead stop (the switch cut-off) in stealthChop can leave the TMC2209 in a current
 // state "from which it cannot recover" or with its outputs switched off on a short
 // flag (datasheet rev 1.05 p42); only EN high and low again clears it. Owner found
@@ -418,6 +419,7 @@ static void startCycle(TriggerSource src) {
     return;
   }
   cycle = true;
+  preWokeAt = 0;                                  // the cycle owns the driver from here
   lastTrigger = src;
   lastTriggerMs = millis();
   dropCountBump();
@@ -805,7 +807,20 @@ static void step() {
 
     case ST_IDLE:
       if (pressed) { startCycle(TRIG_BUTTON); break; }
-      if (S.armed && sensorNow && (viaRadar || now - highSince >= TRIGGER_DEBOUNCE_MS)) startCycle(TRIG_SENSOR);
+      if (S.armed && sensorNow && (viaRadar || now - highSince >= TRIGGER_DEBOUNCE_MS)) { startCycle(TRIG_SENSOR); break; }
+      // Pre-wake (porch 2026-10-25, drops landing 0.3 s late): waking the driver at the
+      // trigger costs about 250 ms of blocking waits. Armed, with the radar as the trigger,
+      // the driver wakes as soon as someone is seen walking toward the sensor, at any
+      // distance, and goes back off PREWAKE_HOLD_MS after the last such reading. Armed
+      // idle is still driver off whenever nobody is approaching.
+      if (S.armed && viaRadar) {
+        if (radarApproaching()) {
+          if (!driverIsOn) { driverOn(); logf("[wake] motor driver on: someone approaching"); }
+          preWokeAt = now;
+        } else if (preWokeAt && driverIsOn && now - preWokeAt >= PREWAKE_HOLD_MS) {
+          driverOff(); preWokeAt = 0; logf("[wake] motor driver off again: nobody approaching");
+        }
+      }
       break;
 
     case ST_LOCKOUT:
@@ -832,7 +847,7 @@ static void step() {
       // Never start the drop before the finger has finished its swing: relms (250)
       // was shorter than the finger's travel time (SERVO_MOVE_MS), and with setrel 30
       // the swing is 55 degrees (2026-10-06).
-      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + RELEASE_MARGIN_MS) || stepper->isRunning()) break;
       noteUnload();
       startDrop();
       break;
@@ -962,7 +977,7 @@ static void step() {
       break;
 
     case ST_BENCH_FREE:
-      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + RELEASE_MARGIN_MS) || stepper->isRunning()) break;
       noteUnload();
       benchMove(pendAct, pendArg);
       break;
@@ -971,7 +986,7 @@ static void step() {
       // The servo stays powered: it was detached after relms (250 ms), shorter than
       // the finger's own travel time (SERVO_MOVE_MS), so the finger could stop part
       // way out, near the teeth (2026-10-06). Lock, a jog, a rewind or off end it.
-      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + 150) || stepper->isRunning()) break;
+      if (inState() < (uint32_t)max((int)S.releaseMs, SERVO_MOVE_MS + RELEASE_MARGIN_MS) || stepper->isRunning()) break;
       noteUnload();
       benchDone("rel: finger out and held by the servo, motor on and holding the spider (jog to lower it, off lets it slide down)");
       break;
