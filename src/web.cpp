@@ -73,11 +73,51 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  .card>h2{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
  .card.fold>*:not(h2){display:none} .card.fold>h2{margin:0}
  .tg{font-weight:400;text-transform:none;letter-spacing:0;color:#a995ff;font-size:12px}
+ .leo{border:2px solid #b36cff;background:#1b1230}
+ .leo h2.big2{font-size:30px;line-height:1.1;color:#c98bff;text-transform:none;letter-spacing:0;font-weight:800;margin:0 0 4px;text-shadow:0 0 14px rgba(179,108,255,.55)}
+ .leo .job{color:#e3c9ff;font-size:18px;font-weight:600;margin:0 0 12px}
+ .leo .st{font-size:26px;font-weight:700;margin:6px 0 10px}
+ .leo .q{font-size:20px;font-weight:700;margin:14px 0 8px;color:#e3c9ff}
+ .leo .g3{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+ .leo .g3 button{font-size:20px;padding:22px 6px;border-radius:14px}
+ .leo .g2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:10px}
+ .leo .g2 button{font-size:17px;padding:16px 6px}
+ .leo .fact{font-size:17px;margin:6px 0}
+ .leo .say{min-height:24px;font-size:17px;color:#ffd97a;margin:10px 0 0;font-weight:600}
+ .leo .tip{color:#bfb4d2;font-size:14px;margin-top:12px;border-top:1px solid #4a3a6a;padding-top:10px}
+ button.e{background:#2f7fcf} button.ok2{background:#2f9b58} button.l{background:#c75a2a}
 </style></head><body>
 <h1>DropSpider</h1>
 <div class="sub" id="where">&nbsp;</div>
 
 <div id="savebar"><span id="savetxt"></span><button onclick="c('save')">Save settings</button></div>
+
+<div class="card leo">
+ <h2 class="big2">LEO'S JOB</h2>
+ <div class="job">Make the spider drop at exactly the right moment. Watch a walk, then press one of the three buttons.</div>
+ <div class="st" id="lstate">...</div>
+ <div class="fact" id="lfact">No drop yet. Have someone walk up to the door.</div>
+ <div class="q">Was that drop...</div>
+ <div class="g3">
+  <button class="e" onclick="leo('early')">TOO EARLY</button>
+  <button class="ok2" onclick="leo('perfect')">PERFECT</button>
+  <button class="l" onclick="leo('late')">TOO LATE</button>
+ </div>
+ <div class="say" id="lsay"></div>
+ <div class="q">How far it drops</div>
+ <div class="fact" id="llen">-</div>
+ <div class="g3">
+  <button onclick="leolen(-100)">10 cm shorter</button>
+  <button class="p" onclick="c('drop')">TEST DROP</button>
+  <button onclick="leolen(100)">10 cm longer</button>
+ </div>
+ <div class="q">Radar</div>
+ <div class="g2">
+  <button onclick="if(confirm('Everyone out of the radar view for 40 seconds (go inside). Start?'))cs('radar calib 8 30')">Learn the empty yard</button>
+  <button id="larm" onclick="c(armed?'disarm':'arm')">Arm</button>
+ </div>
+ <div class="tip" id="ltip">The radar is aimed by hand: 45 degrees down, along the stairs. If it can only see people when they are already close, press Learn the empty yard first, then try a small tilt toward the street. If people LEAVING the house set it off, tilt it a little more down. Every button here saves by itself.</div>
+</div>
 
 <div class="card">
  <div class="state" id="state">...</div>
@@ -239,6 +279,27 @@ function c(cmd){cmd=(cmd||'').trim();if(!cmd)return;const ev=window.event,el=str
  fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(r=>r.text()).then(t=>{
   const lines=t.split('\n').filter(l=>l&&!l.startsWith('> '));showReply(el,lines.length?lines[0]:'sent: '+cmd)}).catch(()=>showReply(el,'the board did not answer')).then(tick)}
 function nudge(d){if(!st)return;c('servo '+Math.max(0,Math.min(180,st.servoDeg+d)))}
+// ---- Leo's card (owner 2026-10-25): three buttons judge the last drop and move one knob,
+// the fire distance, then save. The radar fires the instant it first sees someone when
+// the fire distance is above that first sighting, so TOO LATE then points at the radar.
+function cs(cmd){fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c='+encodeURIComponent(cmd)}).then(()=>fetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'c=save'})).then(tick)}
+function lsay(t){document.getElementById('lsay').textContent=t}
+function fireDist(){const r=rlast&&rlast.r;if(!r||!r.why)return 0;const m=/(\d+) cm away/.exec(r.why);return m?+m[1]:0}
+function leo(v){if(!st)return;const fc=st.settings.firecm||0,fd=fireDist();
+ if(!fd){lsay('No drop fired by the radar yet. Have someone walk up first.');return}
+ if(v==='perfect'){cs('firecm '+fc);lsay('Saved. The radar fires when someone is about '+fd+' cm away. Leave it there.');return}
+ if(v==='early'){const n=Math.max(60,Math.min(fc,fd)-40);cs('firecm '+n);lsay('OK, later: it now fires at '+n+' cm instead of '+fd+'. Try another walk.');return}
+ if(fd<fc-20){lsay('The radar already fires the second it sees someone (at '+fd+' cm). To be earlier: press Learn the empty yard, or tilt the radar a little toward the street. The fall itself takes about '+((st.landMs||2000)/1000).toFixed(1)+' s and cannot be shortened from here.')}
+ else{const n=Math.min(500,fc+40);cs('firecm '+n);lsay('OK, earlier: it now fires at '+n+' cm instead of '+fc+'. Try another walk.')}}
+function leolen(d){if(!st)return;const max=st.settings.line-70,n=Math.max(100,Math.min(max,st.settings.dropmm+d));
+ if(n===st.settings.dropmm)lsay(d>0?'That is as far as the line allows ('+max+' mm). A longer drop needs a longer line.':'That is the shortest drop.');else{cs('dropmm '+n);lsay('Drop is now '+n+' mm ('+(n/25.4/12).toFixed(1)+' ft). Press TEST DROP to see it.')}}
+function leoTick(s){const r=rlast&&rlast.r,fd=fireDist();
+ const big=s.fault?'STOPPED: '+s.fault:s.busy?(s.state.indexOf('rewind')>=0?'Winding back up':'DROPPING'):(s.armed?'Ready and watching':'Asleep (not armed)');
+ document.getElementById('lstate').textContent=big;
+ document.getElementById('lfact').textContent=fd?'Last drop: the radar fired when the person was '+fd+' cm ('+(fd/30.48).toFixed(1)+' ft) away, and the spider hit bottom '+((s.landMs||0)/1000).toFixed(1)+' s later. Drops so far: '+s.drops:'No drop fired by the radar yet this power-up. Drops so far: '+s.drops;
+ document.getElementById('llen').textContent='Drops '+s.settings.dropmm+' mm ('+(s.settings.dropmm/25.4/12).toFixed(1)+' ft). The line allows up to '+(s.settings.line-70)+' mm.';
+ document.getElementById('larm').textContent=s.armed?'Disarm (go to sleep)':'Arm (wake up)';
+ if(r&&r.calib>0)lsay('Learning the yard: '+r.calib+' s left, stay out of its view.')}
 function teachAsk(){if(!st)return;if(confirm('Set the drop length to where the spider hangs now? It winds up to the switch, counts the turns, and SAVES that count as the drop distance (now '+st.settings.dropmm+' mm). To bring it home without changing the drop distance, use Bring it home instead.'))c('teach')}
 function lbl(k){const f=document.getElementById('f_'+k);const s=f&&f.closest('label')&&f.closest('label').querySelector('span');return s&&s.firstChild?s.firstChild.textContent.trim():k}
 function rrange(){const A=document.getElementById('rclose'),B=document.getElementById('rfar');if(A.value===''||B.value==='')return;delete A.dataset.touched;delete B.dataset.touched;c('radar range '+A.value+' '+B.value)}
@@ -279,6 +340,7 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  const bar=document.getElementById('bar');bar.className=s.fault?'no':s.busy?'wa':(s.state==='ready'&&armed)?'ok':'';
  document.getElementById('bstate').textContent=s.state+(s.state==='ready'?(armed?', armed':', not armed'):'');document.getElementById('blog').textContent=lastLine;
  if(s.cyc!==cycSeq){cycSeq=s.cyc;cycles()}
+ leoTick(s);
 }).catch(()=>{})}
 let lastLine='',cycSeq=-1;
 function cycles(){fetch('/api/cycles').then(r=>r.json()).then(d=>{
