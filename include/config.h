@@ -90,6 +90,7 @@
 // If the switch trips before this fraction of the expected rewind, the line snagged
 // or broke rather than the spider arriving.
 #define REWIND_MIN_FRAC     0.25f
+#define JAM_REWIND_MM       60     // a rewind after a drop that meets the switch within this: the spider never left home, motor against the ratchet, stop
 
 // ---------- network ----------
 #define HOSTNAME            "dropspider"         // page at http://dropspider.local

@@ -485,8 +485,21 @@ static bool finishRewind() {
   long expected = lastDropSteps - unloadRan;
   if (S.limitFitted && !alreadyHome) {
     if (cutByLimit) {
-      if (cycle && ran < (long)(REWIND_MIN_FRAC * expected)) {
-        strike("limit switch tripped far too early: check for a snag or a broken line");
+      if (cycle && ran * mmPerStep() < JAM_REWIND_MM) {
+        // The switch closed almost at once: the spider never left home, so the motor
+        // spun against the finger still in the ratchet. The one fault that stops the
+        // device (owner 2026-10-25).
+        fault = "drop ran against the finger: the spider never left home (motor spun with the ratchet engaged)";
+        faultNow = true;
+        logf("[fault] %s", fault);
+        logSnapshot();
+      } else if (cycle && ran < (long)(REWIND_MIN_FRAC * expected)) {
+        // Short rewind: the spool lagged a fast motor, or the finger clicked down the
+        // teeth on the way out. It came home, so note it and carry on (owner 2026-10-25:
+        // these clear themselves; no strike, no stop).
+        measuredDrop = (int)(ran * mmPerStep());
+        logf("[rewind] short: the spider fell %d mm of the %d the motor ran; carrying on", measuredDrop, (int)(expected * mmPerStep()));
+        faultRun = 0; fault = "";
       } else if (cycle) {
         measuredDrop = (int)(ran * mmPerStep());
         long extra = ran - expected - UNLOAD_STEPS;
