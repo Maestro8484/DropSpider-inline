@@ -100,6 +100,7 @@ static void printStatus() {
 static const char *const HELP[] = {
   "commands:",
   "  status | help | arm | disarm | save | defaults | clear",
+  "  deactivate      off switch, saved: disarmed and deactivated through power cycles (delivery drivers); activate turns it back on and arms",
   "  drop            full cycle now (unload + finger out, powered drop, settle, rewind, lock)",
   "  rel             unload + finger out only; motor stays on holding the spider",
   "  lock            finger in, seat move onto a tooth, then driver off",
@@ -178,8 +179,10 @@ void consoleRun(const String &raw, String *capture) {
 
   if      (cmd == "help")     printHelp();
   else if (cmd == "status")   printStatus();
-  else if (cmd == "arm")      { S.armed = 1; logf("armed (every power-up arms on its own)"); }
+  else if (cmd == "arm")      { if (!S.active) logf("refused: DEACTIVATED from the page. Send activate (page: Activate) first"); else { S.armed = 1; logf("armed (every power-up arms on its own)"); } }
   else if (cmd == "disarm")   { S.armed = 0; logf("disarmed until the next power cycle"); }
+  else if (cmd == "deactivate") { S.armed = 0; String why; settingsSet("active", "0", why); settingsSave(); logf("DISARMED AND DEACTIVATED, saved: it will not drop, and a power cycle will not arm it, until activate (page: Activate)"); }
+  else if (cmd == "activate") { String why; settingsSet("active", "1", why); settingsSave(); S.armed = 1; logf("ACTIVATED and armed, saved: every power-up arms again"); }
   else if (cmd == "save")     { settingsSave(); logf("saved"); }
   else if (cmd == "defaults") { settingsDefaults(); logf("defaults loaded (not saved)"); printStatus(); }
   else if (cmd == "clear")    motion(ACT_CLEAR, 0, src);

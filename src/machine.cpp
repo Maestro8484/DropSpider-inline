@@ -781,6 +781,7 @@ static void step() {
     int n = pressN; pressN = 0;
     if (n >= PRESS_SLEEP) {
       if (S.armed) { S.armed = 0; logf("[switch] pressed %d times: asleep, not armed. The radar is ignored until the switch is pressed %d times again, Arm on the page, or a power cycle", n, PRESS_SLEEP); }
+      else if (!S.active) logf("[switch] pressed %d times, but it is DEACTIVATED from the page: stays off until Activate there", n);
       else { S.armed = 1; logf("[switch] pressed %d times: awake, armed", n); }
     } else if (n >= PRESS_REHOME) {
       logf("[rehome] limit switch pressed %d times", n);

@@ -86,11 +86,23 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  .leo .say{min-height:24px;font-size:17px;color:#ffd97a;margin:10px 0 0;font-weight:600}
  .leo .tip{color:#bfb4d2;font-size:14px;margin-top:12px;border-top:1px solid #4a3a6a;padding-top:10px}
  button.e{background:#2f7fcf} button.ok2{background:#2f9b58} button.l{background:#c75a2a}
+ .offb{display:none;border:3px solid #e2604f;background:#2a0f0f;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+ .offb.on{display:block} .offb .t{font-size:34px;font-weight:900;color:#ff7a6a;line-height:1.1} .offb .s{color:#f3c9c3;font-size:16px;margin:8px 0 12px}
+ .offb button{font-size:18px;padding:16px 20px;background:#2f9b58}
+ .offc{border:2px solid #e2604f} .offc button.big3{width:100%;font-size:20px;padding:20px 8px;background:var(--bad)}
+ .offc .s{color:var(--dim);font-size:14px;margin-top:8px}
+ .ver{font-family:ui-monospace,Consolas,monospace;color:#a995ff}
 </style></head><body>
 <h1>DropSpider</h1>
 <div class="sub" id="where">&nbsp;</div>
 
 <div id="savebar"><span id="savetxt"></span><button onclick="c('save')">Save settings</button></div>
+
+<div class="offb" id="offb">
+ <div class="t">DISARMED AND DEACTIVATED</div>
+ <div class="s" id="offs">The board confirms: not armed, off switch saved. It will not drop, and a power cut will not wake it.</div>
+ <button onclick="if(confirm('Turn the DropSpider back on and arm it?'))c('activate')">Activate: turn it back on and arm</button>
+</div>
 
 <div class="card leo">
  <h2 class="big2">LEO'S JOB</h2>
@@ -115,6 +127,11 @@ static const char PAGE[] PROGMEM = R"HTML(<!doctype html>
  <div class="g2">
   <button onclick="if(confirm('Everyone out of the radar view for 40 seconds (go inside). Start?'))cs('radar calib 8 30')">Learn the empty yard</button>
   <button id="larm" onclick="c(armed?'disarm':'arm')">Arm</button>
+ </div>
+ <div class="q">Off switch</div>
+ <div class="offc" style="border-radius:12px;padding:12px">
+  <button class="big3" onclick="if(confirm('Turn the DropSpider OFF for good? It will not drop for anyone (delivery drivers included), and a power cut will not wake it. Only the Activate button on this page turns it back on.'))c('deactivate')">DEACTIVATE: off for good, delivery drivers safe</button>
+  <div class="s">Saved on the board. The red banner at the top of the page is the board itself confirming it is disarmed and deactivated.</div>
  </div>
  <div class="tip" id="ltip">The radar is aimed by hand: 45 degrees down, along the stairs. If it can only see people when they are already close, press Learn the empty yard first, then try a small tilt toward the street. If people LEAVING the house set it off, tilt it a little more down. Every button here saves by itself.</div>
 </div>
@@ -294,7 +311,7 @@ function leo(v){if(!st)return;const fc=st.settings.firecm||0,fd=fireDist();
 function leolen(d){if(!st)return;const max=st.settings.line-70,n=Math.max(100,Math.min(max,st.settings.dropmm+d));
  if(n===st.settings.dropmm)lsay(d>0?'That is as far as the line allows ('+max+' mm). A longer drop needs a longer line.':'That is the shortest drop.');else{cs('dropmm '+n);lsay('Drop is now '+n+' mm ('+(n/25.4/12).toFixed(1)+' ft). Press TEST DROP to see it.')}}
 function leoTick(s){const r=rlast&&rlast.r,fd=fireDist();
- const big=s.fault?'STOPPED: '+s.fault:s.busy?(s.state.indexOf('rewind')>=0?'Winding back up':'DROPPING'):(s.armed?'Ready and watching':'Asleep (not armed)');
+ const big=!s.settings.active?'OFF: deactivated (see the red banner)':s.fault?'STOPPED: '+s.fault:s.busy?(s.state.indexOf('rewind')>=0?'Winding back up':'DROPPING'):(s.armed?'Ready and watching':'Asleep (not armed)');
  document.getElementById('lstate').textContent=big;
  document.getElementById('lfact').textContent=fd?'Last drop: the radar fired when the person was '+fd+' cm ('+(fd/30.48).toFixed(1)+' ft) away, and the spider hit bottom '+((s.landMs||0)/1000).toFixed(1)+' s later. Drops so far: '+s.drops:'No drop fired by the radar yet this power-up. Drops so far: '+s.drops;
  document.getElementById('llen').textContent='Drops '+s.settings.dropmm+' mm ('+(s.settings.dropmm/25.4/12).toFixed(1)+' ft). The line allows up to '+(s.settings.line-70)+' mm.';
@@ -311,7 +328,9 @@ function build(s){let h='';for(const[k,l,hint]of SETS){h+='<label><span>'+l+'<sm
  document.getElementById('sets').innerHTML=h;built=1}
 function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  st=s;armed=!!s.armed;
- document.getElementById('where').textContent=s.where;
+ document.getElementById('where').innerHTML=s.where+' &middot; firmware <span class="ver">'+(s.fw||'?')+'</span>';
+ {const off=!s.settings.active;document.getElementById('offb').classList.toggle('on',off);document.title=off?'DropSpider OFF':'DropSpider';
+  if(off)document.getElementById('offs').textContent='The board confirms: '+(s.armed?'ARMED (should not be: press Activate then Deactivate again)':'not armed')+', off switch saved, firmware '+(s.fw||'?')+'. It will not drop, and a power cut will not wake it.'}
  {const f=document.getElementById('ip');if(document.activeElement!==f)f.value=s.ipSaved||''}
  document.getElementById('state').textContent=s.state;
  document.getElementById('drops').textContent=s.drops;
@@ -323,7 +342,7 @@ function tick(){fetch('/api/status?since='+since).then(r=>r.json()).then(s=>{
  document.getElementById('lsw').textContent=(s.limit?'closed':'open')+', closed '+s.limitCloses+' times since power-up';
  document.getElementById('sdeg').textContent=s.servoDeg+'°'+(s.servoOn?' holding':' (servo off)');
  document.getElementById('armb').textContent=armed?'Disarm':'Arm';
- let h=armed?chip('armed','ok'):chip('not armed (asleep): Arm, 5 presses of the switch, or a power cycle arms it','wa');
+ let h=!s.settings.active?chip('DEACTIVATED, off switch saved: only Activate on this page wakes it','no'):armed?chip('armed','ok'):chip('not armed (asleep): Arm, 5 presses of the switch, or a power cycle arms it','wa');
  h+=s.limitFitted?(s.limit?chip('spider home (switch pressed)','ok'):s.home?chip('spider home (seated on the finger)','ok'):chip('switch open, spider not home','wa')):chip('limit switch off in settings'+(s.limit?', reads pressed':', reads open'),'wa');
  h+=s.viaRadar?(s.sensor?chip('radar rule passing: would fire','no'):chip('radar watching, rule not met','ok')):(s.sensor?chip('OUT pin (GPIO33): someone there','wa'):chip('OUT pin (GPIO33): clear','ok'));
  if(s.driverOn)h+=chip('motor powered','wa');

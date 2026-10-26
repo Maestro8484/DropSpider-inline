@@ -42,7 +42,7 @@ Every network update switches the motor and servo off first. After any update th
 
 ### Firmware version
 
-Every firmware the PC compiles carries a version read from git at that moment (`tools/fw_version.py`, run by the `build_flags` line in `platformio.ini`). The board shows it in the boot log, in the first `status` line, as `fw` in `/api/status` and on the page's Status card. Reading it off the board is the only way to know what is loaded; the bench log's "flash N" count was kept by hand until flash 11.
+Every firmware the PC compiles carries a version read from git at that moment (`tools/fw_version.py`, run by the `build_flags` line in `platformio.ini`). The board shows it in the boot log, in the first `status` line, as `fw` in `/api/status`, in the page's subtitle under the title and on its Status card. Reading it off the board is the only way to know what is loaded; the bench log's "flash N" count was kept by hand until flash 11.
 
 | Reads | Means |
 |---|---|
@@ -142,6 +142,7 @@ USB serial at 115200, the web page's Console card, or `tools/console.py`. Replie
 |---|---|
 | `help`, `status` | list commands; show state, settings, sensor, limit switch, rewind steps |
 | `arm`, `disarm` | let the radar fire it, or ignore the radar (the page calls not armed "asleep"). Every power-up arms on its own and armed is never saved; `disarm` holds until `arm`, 5 presses of the limit switch, or the next power cycle |
+| `deactivate`, `activate` | the saved off switch (2026-10-25, so delivery drivers are left alone). `deactivate` disarms and saves `active 0`: it will not drop, a power cycle does not arm it, 5 switch presses do not wake it, `arm` is refused; the page shows a red DISARMED AND DEACTIVATED banner built from the board's own status. `activate` saves `active 1` and arms again. Page: the Off switch block on Leo's card, the Activate button on the banner |
 | `drop` | full cycle now (works when disarmed): unload and release, powered drop, settle, rewind, lock |
 | `rel` | unload and release only (steps 1 to 3 of the drop): the motor winds up 1/12 turn while the finger swings out, then stays on holding the spider. `jog` lowers it; `off` lets it slide down on the motor's drag |
 | `rewind` | rewind only, then locks (finger in, seated, motor off); stops at the limit switch |

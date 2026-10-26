@@ -2,6 +2,19 @@
 
 Finished work, newest first, one plain line each. Shape from Keep a Changelog (keepachangelog.com). Work still to do is in `ROADMAP.md`; the full detail of any line is in the git history for that date.
 
+## 2026-10-25
+
+### Added
+- Saved off switch (flash 15): `deactivate` on the page or the console disarms and saves `active 0`; the device will not drop, a power cycle does not arm it, 5 switch presses do not wake it, `arm` is refused, and the page shows a red DISARMED AND DEACTIVATED banner built from the board's own status. `activate` turns it back on and arms. Verified on the board through a restart.
+- Leo's card at the top of the page (flash 12): the state and the last drop in plain words, TOO EARLY / PERFECT / TOO LATE buttons that move the fire distance 40 cm and save by themselves, drop length 10 cm shorter / TEST DROP / 10 cm longer within the line, Learn the empty yard, Arm, an aim tip.
+- `tools/porch_watch.py` and `scripts/porch_watch.bat`: a read-only live window that prints each trigger, fire distance, drop, rewind and fault as the board logs them.
+- Firmware version in the page subtitle next to the address.
+
+### Changed
+- Faults (flash 11): a rewind after a drop that meets the switch within 60 mm means the spider never left home, the motor spun against the finger, and that is the one fault that stops the device. Any other short rewind is a log line and the cycle carries on, no strike.
+- Timing (flashes 13 and 14): fires on the first passing radar reading instead of two; finger wait 400 ms over the 350 ms servo travel; the motor driver pre-wakes when the radar sees anyone moving in view and goes off 2.5 s after; driver settle 130 ms; the drop counter is written to flash after the fall, not at the trigger. A page drop lands in about 1.82 s from the trigger, was 1.96.
+- Porch settings as left on the board: drop 1263 mm (the line's ceiling), 600 rpm, fire distance 270 cm, approach 10 cm/s, radar range 60 to 500 cm in 80 cm steps, motion sensitivity high then the yard learned (custom). Details and every walk in `docs/commissioning_log.md`.
+
 ## 2026-10-14
 
 ### Changed

@@ -43,6 +43,7 @@ static const Row ROWS[] = {
   { "firecm",  "fireCm", &S.fireCm,        0,    1100,   DEF_FIRE_CM },       // 0 = off
   { "clearcm", "clearCm",&S.clearCm,       50,   1100,   DEF_CLEAR_CM },
   { "clearms", "clearMs",&S.clearMs,       0,    600000, DEF_CLEAR_MS },      // 0 = wait for clear
+  { "active",  "active", &S.active,        0,    1,      DEF_ACTIVE },        // 0 = deactivated: never arms, through power cycles
   { "radarinv","radInv", &S.radarInv,      0,    1,      DEF_RADAR_INV },
 };
 static const size_t N = sizeof(ROWS) / sizeof(ROWS[0]);
@@ -76,7 +77,9 @@ void settingsBegin() {
   // default to being armed and ready even with power cycled"). disarm, and the disarm
   // that every bench move does, hold only until the next power cycle. The home guard in
   // machine.cpp still stops a power-up with the spider down on a fault instead of arming.
-  S.armed = DEF_ARMED;
+  // The one exception is the saved off switch (owner 2026-10-25): deactivated from the
+  // page, it never arms, power cycle or not, until activated from the page again.
+  S.armed = S.active ? DEF_ARMED : 0;
   savedCopy = S;
   boots = prefs.getULong("boots", 0) + 1;
   prefs.putULong("boots", boots);

@@ -6,6 +6,7 @@
 
 struct Settings {
   int servoLock, servoRel, lineMm, rpm, rewindDir, settleMs, rearmMs, armed;
+  int active;        // saved off switch (owner 2026-10-25): 0 = deactivated, never arms, through power cycles, until "activate"
   int limitFitted, limitInverted;
   int dropMm, dropRpm, dropAcc, dropDec, releaseMs;
   int sensor, approach, leadMs, fireCm, clearCm, clearMs, radarInv;
