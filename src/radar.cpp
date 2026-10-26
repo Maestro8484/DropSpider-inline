@@ -87,7 +87,7 @@ static void judge() {
   int sp = abs((int)rd.speed);
   rd.etaMs = (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) ? (int)((long)rd.mdist * 1000 / sp) : 0;
   bool toward = moving && rd.dir == 2 && sp >= S.approach && rd.mdist > 0;
-  if (moving && rd.dir == 2 && sp > 0 && rd.mdist > 0) approachAt = millis();   // any approach, any distance: pre-wake
+  if (moving && rd.mdist > 0) approachAt = millis();   // anyone moving in view, any direction or distance: pre-wake the driver
   rd.fire = toward && ((S.fireCm && rd.mdist <= S.fireCm) || (rd.etaMs > 0 && rd.etaMs <= S.leadMs));
   fireRun = rd.fire ? fireRun + 1 : 0;
   // Only a moving person holds the re-arm (owner 2026-10-11: "it needs to have a better

@@ -422,7 +422,7 @@ static void startCycle(TriggerSource src) {
   preWokeAt = 0;                                  // the cycle owns the driver from here
   lastTrigger = src;
   lastTriggerMs = millis();
-  dropCountBump();
+  // the saved drop counter is written at the end of the drop (flash write, off the trigger path)
   drops++;
   if (faultRun == 0) fault = "";
   if (src == TRIG_SENSOR) radarMarkFire(viaRadar);   // keep what the radar saw, for the page
@@ -858,6 +858,7 @@ static void step() {
       logf("[drop] ran %ld steps (%d mm) in %lu ms at up to %d rpm; motor holding",
            ran, (int)(ran * mmPerStep()), (unsigned long)(millis() - dropStartMs), S.dropRpm);
       if (cycle && lastTriggerMs) landMs = millis() - lastTriggerMs;
+      if (cycle) dropCountBump();                 // the saved counter, written here so the flash write never delays the drop
       enter(ST_SETTLE);
       break;
     }
